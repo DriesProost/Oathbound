@@ -115,3 +115,9 @@ See [feedback design and audio provenance](docs/feedback.md). `npm test` include
 Oathbound now includes an owned heraldic icon, install manifest and production-only offline shell. Keep offers **Add to home screen**; new builds show **Update & reload** rather than refreshing an unfinished entry automatically. Phone navigation, touch targets, keyboard/type sizing, safe-area spacing and short landscape layouts have been refined. Existing campaign data still uses the same local persistence model.
 
 For phone installation, publish the production `dist` directory over HTTPS, open it online once, then install from Keep or your browser menu. Check Chronicle in the installed app before logging there: some platforms keep its storage separate. See [mobile field-test instructions and update behavior](docs/mobile-field-test.md). The optional `scripts/mobile-pwa-smoke.cjs` verifies layouts, installability, offline startup and save preservation. Stage 2D remains deferred.
+
+### Publish for Android installation
+
+The **Publish Oathbound** GitHub Actions workflow builds for `https://driesproost.github.io/Oathbound/` and publishes the tested production shell to GitHub Pages. Enable it once in repository **Settings → Pages → Source → GitHub Actions**, then open **Actions → Publish Oathbound → Run workflow**. Wait for a successful deployment before opening that address on your phone. Future main-branch pushes publish updates automatically.
+
+On Android, open the address in Chrome, choose **⋮ → Install app / Add to home screen → Install**, then launch the Oathbound icon. Progress is stored on that phone/browser; existing Windows localhost progress does not automatically transfer to the new address.
