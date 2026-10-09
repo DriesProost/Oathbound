@@ -1,8 +1,8 @@
 # Stage 2 proposal: a personal campaign
 
-Status: approved with amendments. Stages 2A and 2B are implemented. Stage 2B is awaiting weekly-goal review; 2C, 2D and custom deeds remain unimplemented.
+Status: approved with amendments. Stages 2A, 2B and 2C are implemented. Stage 2C is awaiting kg-tracker review; 2D and custom deeds remain unimplemented.
 
-Approved amendments: retain the centrally configured reward-budget concept but leave it disabled; use per-goal/daily reward slots for now. Outcome data, weigh-ins and target attainment never award progression or create punitive streaks. Campaign editing remains independent of the Knight domain. Stage 2A has been approved. Stop after 2B for review and stop again before custom deeds.
+Approved amendments: retain the centrally configured reward-budget concept but leave it disabled; use per-goal/daily reward slots for now. Outcome data, weigh-ins and target attainment never award progression or create punitive streaks. Campaign editing remains independent of the Knight domain. Stages 2A and 2B have been approved. Stop after 2C for review and stop again before custom deeds.
 
 The campaign should follow the player's real goals. Daily rewards remain immediate, attributes grow through repeated behaviours, and ranks remain long-term milestones. Missing a day or disabling a goal never deletes history.
 

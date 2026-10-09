@@ -1,3 +1,4 @@
+import { validWeightData } from "./weight";
 import { attributes, quests, type Reward } from "./config";
 import { validDay, dayKey, weekStart, addDays } from "./calendar";
 import {
@@ -28,8 +29,6 @@ const object = (v: unknown): v is ObjectValue =>
   !!v && typeof v === "object" && !Array.isArray(v);
 const number = (v: unknown): v is number =>
   typeof v === "number" && Number.isFinite(v) && v >= 0;
-const positiveGrams = (v: unknown) =>
-  number(v) && Number.isSafeInteger(v) && v > 0;
 function reward(v: unknown): v is Reward {
   return (
     object(v) &&
@@ -83,44 +82,13 @@ function validCampaign(c: unknown, created: string) {
     ) && unique(c.revisions.map((r: ObjectValue) => r.id))
   );
 }
-function validWeight(w: unknown) {
-  if (
-    !object(w) ||
-    !object(w.settings) ||
-    !["kg", "lb"].includes(w.settings.displayUnit) ||
-    !Array.isArray(w.measurements)
-  )
-    return false;
-  const s = w.settings;
-  return (
-    (s.baseline === null ||
-      (object(s.baseline) &&
-        validDay(s.baseline.date) &&
-        positiveGrams(s.baseline.grams))) &&
-    (s.targetGrams === null || positiveGrams(s.targetGrams)) &&
-    w.measurements.every(
-      (m: unknown) =>
-        object(m) &&
-        typeof m.id === "string" &&
-        m.id.length > 0 &&
-        validDay(m.date) &&
-        positiveGrams(m.grams) &&
-        typeof m.createdAt === "string" &&
-        Number.isFinite(Date.parse(m.createdAt)) &&
-        typeof m.updatedAt === "string" &&
-        Number.isFinite(Date.parse(m.updatedAt)),
-    ) &&
-    unique(w.measurements.map((m: ObjectValue) => m.id)) &&
-    unique(w.measurements.map((m: ObjectValue) => m.date))
-  );
-}
 function validateBaseV3(s: unknown): State {
   if (
     !base(s) ||
     s.version !== 3 ||
     !validCampaign(s.campaign, s.created) ||
     !validOaths(s.oaths) ||
-    !validWeight(s.weight)
+    !validWeightData(s.weight)
   )
     return failure();
   if (

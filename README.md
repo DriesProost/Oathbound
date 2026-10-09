@@ -13,7 +13,7 @@ npm run dev
 
 On Windows, open the folder containing `package.json`, type `cmd` in File Explorer's address bar, and run these commands. Open the Local address printed by Vite. Keep that window open while using the app.
 
-Run `npm test` for campaign goals, targets, weekly boundaries/snapshots, reward slots, progression, action timing, Oath correction and persistence/migration tests. Run `npm run build` for TypeScript checking and the production build.
+Run `npm test` for campaign goals, targets, weekly boundaries/snapshots, reward slots, progression, action timing, Oath correction and persistence/migration tests, plus kg conversion, weight editing, sparse trends and outcome-isolation checks. Run `npm run build` for TypeScript checking and the production build.
 
 ## Structure
 
@@ -27,6 +27,9 @@ Run `npm test` for campaign goals, targets, weekly boundaries/snapshots, reward 
 - `src/CampaignEditor.tsx`: independent goal → target → review flow, shared by onboarding and campaign editing.
 - `src/campaign.css`: campaign parchment, form and responsive presentation.
 - `src/storage.ts`: validated versioned persistence and safe migration.
+- `src/weight.ts`: exact kg/gram boundaries, independent outcome CRUD, baseline/target calculations and sparse seven-day averages.
+- `src/WeightChronicle.tsx`, `src/WeightChart.tsx`, `src/WeightSettingsFields.tsx`: manuscript tracker, measurement chart and reusable optional setup fields.
+- `src/weight.css`: responsive weight ledger and forms.
 - `src/components.tsx`: attribute progress, reward display, Oath lifecycle and historical correction controls.
 - `src/App.tsx`: onboarding, Keep, Quest Board, Journey, Knight and Chronicle.
 - `src/KnightArt.tsx`: temporary knight illustration.
@@ -67,7 +70,7 @@ Rewards are fixed per template and remain unchanged by larger targets. Each goal
 
 A confirmed kilometre patrol records its selected distance on Journey. Steps never imply kilometres. Previously recorded distance is retained when switching targets or disabling walking. Unlogged dates remain unknown.
 
-`progression.rewardBudget` centrally retains the possible future ordinary/Oath budget, with `enabled: false`. No global reward ceiling is enforced. Outcome settings and records are independent of reward-bearing deeds; body-weight data never contributes to Renown, attribute XP or Oath streaks. Selecting weight management currently saves that goal and clearly explains that tracker UI arrives in 2C. No measurements are fabricated.
+`progression.rewardBudget` centrally retains the possible future ordinary/Oath budget, with `enabled: false`. No global reward ceiling is enforced. Outcome settings and records are independent of reward-bearing deeds; body-weight data never contributes to Renown, attribute XP or Oath streaks. Selecting Weight Management enables its separate Chronicle tracker. Optional starting weight and target can be configured during campaign setup or left for later. No measurements are fabricated.
 
 ## Weekly commissions — Stage 2B
 
@@ -81,4 +84,20 @@ Quest Board shows a compact pinned **This Week** notice. Chronicle lists closed 
 
 Existing 2A saves receive an additive v3 upgrade. Before changing the current save, its exact bytes are retained at `oathbound.knight.v3.2a.backup`; existing backups are never overwritten. Rewards, goal choices, criteria, Oaths, distance and outcome data are preserved. The new default weekly target begins in the current local week, counting existing actual training days in that week. Earlier closed weeks have no invented targets or results. Invalid/partial newer schemas and failed backup writes leave the source untouched.
 
-Stop for review after 2B. Kg weight tracking (2C), lb support (2D) and custom deeds are not implemented. Audio, accounts, sync, wearables, calorie databases, equipment customisation and keep-building remain deferred. Remote fonts are optional; system and Georgia fallbacks work offline.
+## Weight Chronicle — Stage 2C
+
+Enable **Weight Management** in **Knight → Configure campaign**, then open **Chronicle**. Campaign setup defaults to **Set this up later**; the optional short form can set a dated starting weight and target without inventing measurements. Chronicle provides date + kg entry (today by default, past dates allowed), optional starting/target settings and actual dated history. No weighing deed is added to the Quest Board.
+
+All values are positive safe integer grams internally. Decimal kg input is parsed using integer arithmetic, with up to three fractional places; 87.45 kg stores exactly 87,450 g. Forms accept decimal points or commas without thousands separators and use broad 0.1–1,000 kg guardrails; the domain itself has no narrow human-weight bounds. Stage 2C displays and accepts kg only.
+
+The first weigh-in leaves baseline unset and offers **Use this as my starting weight** explicitly. A manually configured starting weight is independent of the measurements: editing/deleting its source entry never changes it silently. Baseline and target are optional; target may be above or below baseline. Current summaries show actual latest weight, signed change since starting weight, target distance and direction-aware baseline-to-target span. Equal baseline/target uses distance without division by zero. Passing a target preserves the factual distance while clamping only the displayed span. Measurements earlier than the starting date are retained without claiming a change since that later baseline.
+
+One weigh-in is allowed per local date. Adding another on an occupied date asks for explicit replacement; confirming preserves the existing ID and creation timestamp. Editing retains identity and can move a date, but an occupied destination is rejected without merging entries. Deletion needs confirmation and removes only that measurement. Valid timestamps and unique IDs/dates are checked at persistence boundaries.
+
+The chart keeps authoritative raw points visible. Seven-day averages are calculated only from actual observations in each recorded date’s inclusive trailing seven calendar days (that date plus six preceding dates), and appear only with at least three observations. There are no synthetic dates, filled-in observations or saved derived values. Dashed average segments break across unsupported observation windows or long gaps; sparse histories still show raw measurements.
+
+Disabling the goal retains every measurement and setting in a collapsed read-only ledger; re-enabling restores normal controls and history unchanged. Weight operations persist independently and never award Renown, XP, rank progress, weekly bonuses, achievements or weighing streaks. They preserve campaign configuration, deed receipts, Oaths, weekly activity links and Journey distance.
+
+The existing v3 schema already supports this tracker: no new save version or migration is needed. Valid pre-existing weight data remains intact, and old empty trackers remain empty until the player records a measurement or explicitly sets a baseline. Existing migration and backup policies continue unchanged.
+
+Stop for review after 2C. Lb support (2D) and custom deeds are not implemented. Audio, accounts, sync, wearables, calorie databases, equipment customisation and keep-building remain deferred. Remote fonts are optional; system and Georgia fallbacks work offline.

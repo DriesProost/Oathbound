@@ -76,7 +76,7 @@ export type OathRecord = {
   status: "taken" | "kept" | "broken";
   reward: Reward | null;
 };
-// Outcome storage is separate from reward-bearing activity records. Tracker UI comes in 2C.
+// Outcome storage is separate from reward-bearing activity records. Measurements and settings never produce progression rewards.
 export type WeightSettings = {
   displayUnit: "kg" | "lb";
   baseline: { date: string; grams: number } | null;

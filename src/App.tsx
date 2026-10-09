@@ -1,3 +1,5 @@
+import WeightChronicle from "./WeightChronicle";
+import { setWeightSettings } from "./weight";
 import { WeeklyTraining, WeeklyLedger } from "./WeeklyTraining";
 import { ensureWeeklyPeriod, weeklyTarget, currentCommission } from "./weekly";
 import { weekStart, nextWeekStart } from "./calendar";
@@ -103,10 +105,12 @@ export default function App() {
     if (next !== state) update(next);
   }, [state, now]);
   function update(next: State) {
+    return persist(ensureWeeklyPeriod(next, dayKey(now)));
+  }
+  function persist(next: State) {
     try {
-      const ready = ensureWeeklyPeriod(next, dayKey(now));
-      save(ready);
-      setState(ready);
+      save(next);
+      setState(next);
       setError("");
       return true;
     } catch {
@@ -136,7 +140,13 @@ export default function App() {
             setOnboardingGoals(draft);
             setStep(1);
           }}
-          onSave={(goals) => update(createKnight(name, dayKey(now), goals))}
+          today={dayKey(now)}
+          onSave={(goals, weightSettings) => {
+            const next = createKnight(name, dayKey(now), goals);
+            return update(
+              weightSettings ? setWeightSettings(next, weightSettings) : next,
+            );
+          }}
         />
       </main>
     );
@@ -258,14 +268,19 @@ export default function App() {
             nextStart: nextWeekStart(today, state.weekly.weekStartsOn),
           }}
           initialGoals={currentGoals}
+          initialWeightSettings={state.weight.settings}
+          today={today}
           error={error}
           onCancel={() => {
             setCampaignEditing(false);
             setError("");
           }}
-          onSave={(goals) => {
+          onSave={(goals, weightSettings) => {
             try {
-              const next = configureCampaign(state, goals, today);
+              const configured = configureCampaign(state, goals, today);
+              const next = weightSettings
+                ? setWeightSettings(configured, weightSettings)
+                : configured;
               if (!update(next)) return false;
               setCampaignEditing(false);
               setTab("Quest Board");
@@ -725,7 +740,7 @@ export default function App() {
                     </ul>
                     {activeGoals.some((g) => g.id === "weight") && (
                       <p className="target-help">
-                        Weight tracking is coming next. Outcomes do not earn
+                        Weight is recorded in Chronicle. Outcomes do not earn
                         Renown or XP.
                       </p>
                     )}
@@ -778,7 +793,7 @@ export default function App() {
                     <h2>No deeds posted yet.</h2>
                     <p>
                       {activeGoals.some((g) => g.id === "weight")
-                        ? "Your weight-management goal is saved for the upcoming tracker. Add a behaviour goal to earn progress through controllable actions."
+                        ? "Your weight tracker is available in Chronicle. Add a behaviour goal to earn progress through controllable actions."
                         : "Choose the goals that serve you. Your earlier campaign remains in the Chronicle."}
                     </p>
                     <button
@@ -1030,6 +1045,15 @@ export default function App() {
                   </p>
                 </section>
               )}
+              <WeightChronicle
+                state={state}
+                today={today}
+                update={persist}
+                configure={() => {
+                  setCampaignEditing(true);
+                  window.scrollTo({ top: 0 });
+                }}
+              />
               <WeeklyLedger state={state} date={today} />
               <section className="panel chronicle-ledger">
                 <div className="ledger-heading">
@@ -1103,8 +1127,8 @@ export default function App() {
                 )}
               </section>
               <p className="muted">
-                Progress stays in this browser. Weight and detailed step logging
-                remain future work.
+                Progress and measurements stay in this browser. Detailed step
+                logging remains future work.
               </p>
             </>
           )}

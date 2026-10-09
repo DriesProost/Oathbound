@@ -1,3 +1,11 @@
+import { dayKey } from "./calendar";
+import {
+  WeightSettingsFields,
+  weightSettingsDraft,
+  parseWeightSettingsDraft,
+} from "./WeightSettingsFields";
+import type { WeightSettings } from "./model";
+import "./weight.css";
 import { formatDay } from "./presentation";
 import { useState } from "react";
 import {
@@ -43,12 +51,16 @@ export default function CampaignEditor({
   onCancel,
   error = "",
   weeklyContext,
+  initialWeightSettings,
+  today = dayKey(),
 }: {
   initialGoals?: CampaignGoal[];
   mode: "onboarding" | "edit";
-  onSave: (goals: CampaignGoal[]) => boolean;
+  onSave: (goals: CampaignGoal[], weightSettings?: WeightSettings) => boolean;
   onCancel: (draft: CampaignGoal[]) => void;
   error?: string;
+  initialWeightSettings?: WeightSettings;
+  today?: string;
   weeklyContext?: { currentTarget: number; nextStart: string };
 }) {
   const [goals, setGoals] = useState(() =>
@@ -56,6 +68,20 @@ export default function CampaignEditor({
   );
   const [page, setPage] = useState<"goals" | "targets" | "review">("goals");
   const [validation, setValidation] = useState("");
+  const previousWeight = initialWeightSettings || {
+    displayUnit: "kg" as const,
+    baseline: null,
+    targetGrams: null,
+  };
+  const [configureWeight, setConfigureWeight] = useState(false);
+  const [weightDraft, setWeightDraft] = useState(() =>
+    weightSettingsDraft(previousWeight, today),
+  );
+  function weightSettings() {
+    return configureWeight && goals.some((g) => g.id === "weight" && g.active)
+      ? parseWeightSettingsDraft(weightDraft, previousWeight, today)
+      : undefined;
+  }
   const selected = goals.filter((g) => g.active);
   function target(id: GoalId, next: GoalTarget) {
     setGoals((gs) => gs.map((g) => (g.id === id ? { ...g, target: next } : g)));
@@ -83,6 +109,16 @@ export default function CampaignEditor({
         "Check your targets: enter a value within the shown range, or a criterion of 3–160 characters.",
       );
       return;
+    }
+    if (page === "targets") {
+      try {
+        weightSettings();
+      } catch (e) {
+        setValidation(
+          e instanceof Error ? e.message : "Check your weight settings.",
+        );
+        return;
+      }
     }
     setValidation("");
     setPage(page === "goals" ? "targets" : "review");
@@ -138,7 +174,13 @@ export default function CampaignEditor({
               setValidation("Your targets need a valid value before saving.");
               return;
             }
-            onSave(goals);
+            try {
+              onSave(goals, weightSettings());
+            } catch (e) {
+              setValidation(
+                e instanceof Error ? e.message : "Check your settings.",
+              );
+            }
           } else next();
         }}
       >
@@ -196,7 +238,7 @@ export default function CampaignEditor({
                     <small>{goalDefinitions[goal.id].description}</small>
                     {goal.id === "weight" && (
                       <small className="availability-note">
-                        Weight tracking is coming next. This goal adds no
+                        Weight is recorded in Chronicle. This goal adds no
                         reward-bearing deeds.
                       </small>
                     )}
@@ -409,11 +451,40 @@ export default function CampaignEditor({
                     </p>
                   )}
                   {t.metric === "outcome" && (
-                    <p>
-                      Weight measurements and target progress are an outcome
-                      record. The tracker is coming next; neither measurements
-                      nor weight changes earn Renown or XP.
-                    </p>
+                    <>
+                      <p>
+                        Weight is a separate Chronicle record. Measurements,
+                        changes and reaching a target earn no Renown or XP.
+                      </p>
+                      <label className="weight-setup-choice">
+                        <input
+                          type="radio"
+                          name="weight-setup"
+                          checked={!configureWeight}
+                          onChange={() => setConfigureWeight(false)}
+                        />
+                        {initialWeightSettings
+                          ? "Keep current settings · set this up later in Chronicle"
+                          : "Set this up later"}
+                      </label>
+                      <label className="weight-setup-choice">
+                        <input
+                          type="radio"
+                          name="weight-setup"
+                          checked={configureWeight}
+                          onChange={() => setConfigureWeight(true)}
+                        />
+                        Add optional starting weight and target
+                      </label>
+                      {configureWeight && (
+                        <WeightSettingsFields
+                          draft={weightDraft}
+                          onChange={setWeightDraft}
+                          today={today}
+                          prefix="campaign-weight"
+                        />
+                      )}
+                    </>
                   )}
                 </fieldset>
               );
@@ -470,10 +541,20 @@ export default function CampaignEditor({
                     {goal.id === "temperance" && (
                       <RewardText reward={oathDefinition.reward} />
                     )}{" "}
+                    {goal.id === "weight" && configureWeight && (
+                      <p>
+                        {weightDraft.baselineKg
+                          ? `Starting weight: ${weightDraft.baselineKg} kg · ${formatDay(weightDraft.baselineDate)}`
+                          : "Starting weight remains unset."}{" "}
+                        {weightDraft.targetKg
+                          ? `Target: ${weightDraft.targetKg} kg.`
+                          : "No target set."}
+                      </p>
+                    )}
                     {goal.id === "weight" && (
                       <small className="availability-note">
-                        Saved for the upcoming tracker. No measurements are
-                        invented.
+                        Enter measurements in Chronicle when ready. No
+                        measurements are invented.
                       </small>
                     )}
                   </div>
