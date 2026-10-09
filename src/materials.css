@@ -724,3 +724,268 @@
     color: #dbc496;
   }
 }
+/* Stronghold, character record, survey and ledger: the same materials with distinct roles. */
+.keep-page .hero {
+  border-top: 9px solid #676955;
+  box-shadow:
+    inset 0 1px 0 #c7bd9350,
+    0 5px 12px #30261e20;
+}
+.keep-page .hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-left: 1px solid #c4af7735;
+  border-right: 1px solid #c4af7735;
+  margin: 5px;
+}
+.keep-page .hero-art .stronghold-arch {
+  border-top-color: #b6aa792b;
+  border-left-color: #b6aa7920;
+  border-right-color: #b6aa7918;
+}
+.keep-page .oath-card .oath-title {
+  border-bottom: 1px solid #d7c9a7;
+  padding-bottom: 16px;
+}
+.keep-page .oath-card .oath-summary span {
+  font-size: 10px;
+}
+.knight-page .character-record {
+  flex: 1;
+  min-width: 0;
+}
+.character-record .rank-badge {
+  font-size: 11px;
+  margin-bottom: 16px;
+  background: #e9e3cf;
+  border-color: #ccba8d;
+  color: #7d6945;
+}
+.character-renown {
+  max-width: 430px;
+  border-top: 1px solid #d4c3a0;
+  border-bottom: 1px solid #d4c3a0;
+  padding: 14px 0;
+  margin-bottom: 16px;
+}
+.record-renown-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  gap: 15px;
+}
+.record-renown-heading > span {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: #8b7b57;
+}
+.record-renown-heading strong {
+  font:
+    29px Georgia,
+    serif;
+  font-weight: 400;
+  color: #435b3e;
+}
+.character-renown p {
+  font-size: 11px;
+  color: #798466;
+  margin-top: 9px;
+}
+.knight-page .record-service {
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+.knight-page .knight-profile {
+  border-top: 3px solid #b49a67;
+}
+.ledger-period {
+  display: block;
+  margin-left: auto;
+  text-align: right;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #9b875b;
+}
+.ledger-period time {
+  display: block;
+  font:
+    11px Georgia,
+    serif;
+  letter-spacing: 0;
+  color: #80765c;
+  margin-top: 6px;
+}
+.chronicle-page .chronicle-ledger .ledger-heading {
+  border-bottom: 1px solid #cdbc93;
+  padding-bottom: 18px;
+  margin-bottom: 0;
+}
+.chronicle-page .history-day {
+  padding: 18px 8px 8px;
+  border-color: #cdbc9370;
+}
+.chronicle-page .history-day:first-of-type {
+  border-top: none;
+}
+.chronicle-page .history-day .section-heading > span {
+  font-family: Georgia, serif;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.chronicle-page .historical-correction {
+  background: #eee6d2;
+  border: 1px solid #d8c9a6;
+}
+.map-sheet {
+  background-image:
+    linear-gradient(
+      90deg,
+      #b79c6620,
+      transparent 10%,
+      transparent 90%,
+      #b79c6610
+    ),
+    var(--paper-wash);
+}
+.map-place-name {
+  font:
+    16px Georgia,
+    serif;
+  fill: currentColor;
+  paint-order: stroke;
+  stroke: #f1e8d1;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.route-landmarks .next-destination {
+  border-bottom: 2px dotted #a58e60;
+  color: #7a7956;
+}
+.route-note-label {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #98865e;
+  margin-bottom: 7px;
+}
+@media (max-width: 760px) {
+  .keep-page .hero {
+    border-top-width: 7px;
+  }
+  .knight-page .character-record {
+    width: 100%;
+  }
+  .character-renown {
+    margin: 0 0 15px;
+    max-width: none;
+    text-align: left;
+  }
+  .character-renown p {
+    font-size: 11px;
+  }
+  .record-renown-heading strong {
+    font-size: 26px;
+  }
+  .ledger-heading {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .ledger-period {
+    flex-basis: 100%;
+    text-align: left;
+    margin-left: 32px;
+    margin-top: 2px;
+    font-size: 8px;
+  }
+  .ledger-period time {
+    display: inline;
+    margin-left: 7px;
+  }
+  .chronicle-page .history-day {
+    padding: 17px 0 7px;
+  }
+  .chronicle-page .history-day .section-heading > span {
+    font-size: 11px;
+  }
+  .map-place-name {
+    font-size: 19px;
+  }
+  .route-landmarks span {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+  .map-key {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 760px) {
+  .knight-page .knight-profile {
+    display: grid;
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 16px;
+    text-align: left;
+    align-items: start;
+    padding: 22px 16px;
+  }
+  .knight-page .profile-art {
+    width: 100px;
+    padding: 23px 4px 14px;
+    border-width: 4px;
+  }
+  .knight-page .heraldic-caption {
+    font-size: 6px;
+    letter-spacing: 0.8px;
+  }
+  .knight-page .rank-insignia {
+    width: 30px;
+    height: 32px;
+    bottom: 7px;
+  }
+  .knight-page .rank-insignia svg {
+    width: 27px;
+    height: 31px;
+  }
+  .knight-page .rank-insignia span {
+    font-size: 10px;
+    padding-bottom: 3px;
+  }
+  .character-record > .eyebrow {
+    font-size: 7px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .knight-page .character-record h2 {
+    font-size: 31px;
+    overflow-wrap: anywhere;
+  }
+  .character-record .rank-badge {
+    font-size: 10px;
+    margin: 8px 0 12px;
+  }
+  .character-renown {
+    padding: 11px 0;
+    margin-bottom: 11px;
+  }
+  .record-renown-heading {
+    gap: 8px;
+  }
+  .record-renown-heading > span {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+  .record-renown-heading strong {
+    font-size: 24px;
+  }
+  .character-renown p {
+    font-size: 10px;
+  }
+  .knight-page .record-service {
+    font-size: 10px;
+  }
+  .character-record > .muted {
+    font-size: 10px;
+  }
+}

@@ -101,7 +101,7 @@ export default function JourneyMap({ distance }: { distance: number }) {
                   }}
                   d={path}
                   fill="none"
-                  stroke="#a18c65"
+                  stroke="#9b8460"
                   strokeWidth="3"
                   strokeDasharray="4 6"
                 />
@@ -130,6 +130,14 @@ export default function JourneyMap({ distance }: { distance: number }) {
                   strokeWidth="1.5"
                 />
                 <Icon x={stop.x - 12} y={stop.y - 12} width={24} height={24} />
+                <text
+                  className="map-place-name"
+                  x={stop.x}
+                  y={stop.y + 39}
+                  textAnchor="middle"
+                >
+                  {stop.name === "Your Keep" ? "The Keep" : stop.name}
+                </text>
               </g>
             );
           })}
@@ -153,9 +161,9 @@ export default function JourneyMap({ distance }: { distance: number }) {
         <div className="map-key">
           <span>
             <i />
-            Your position
+            Your position · {travelled.toFixed(1)} km
           </span>
-          <span>30 km to Oakhaven</span>
+          <span>30 km route</span>
         </div>
       </div>
       <ol className="route-landmarks">
@@ -165,13 +173,21 @@ export default function JourneyMap({ distance }: { distance: number }) {
           return (
             <li
               key={stop.name}
-              className={reached ? "reached" : ""}
+              className={
+                (reached ? "reached " : "") +
+                (stop.name === next?.name ? "next-destination" : "")
+              }
               aria-current={stop.name === current.name ? "step" : undefined}
             >
               <Icon size={19} />
               <strong>{stop.name}</strong>
               <span>
-                {stop.km} km · {reached ? "Reached" : "Ahead"}
+                {stop.km} km ·{" "}
+                {reached
+                  ? "Reached"
+                  : stop.name === next?.name
+                    ? "Next destination"
+                    : "Ahead"}
               </span>
             </li>
           );
@@ -180,6 +196,9 @@ export default function JourneyMap({ distance }: { distance: number }) {
       <div className="route-inscription">
         <Flag size={19} />
         <div>
+          <span className="route-note-label">
+            {next ? "THE ROAD AHEAD" : "A DESTINATION REACHED"}
+          </span>
           <strong>
             {next
               ? `${(next.km - distance).toFixed(1)} km to ${next.name}`

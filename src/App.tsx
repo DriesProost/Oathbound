@@ -505,9 +505,13 @@ export default function App() {
                   <span>STEADY IN PURPOSE</span>
                 </div>
                 <div className="hero-quote">
-                  Your keep is quiet.
+                  {total.renown
+                    ? "Good deeds leave their mark."
+                    : "Your keep is quiet."}
                   <br />
-                  Your story is just beginning.
+                  {total.renown
+                    ? "Return steady in purpose."
+                    : "Your story is just beginning."}
                   <div>
                     EST. {new Date(state.created + "T12:00:00").getFullYear()}
                   </div>
@@ -664,11 +668,32 @@ export default function App() {
                     </span>
                   </div>
                 </div>
-                <div>
-                  <span className="eyebrow">YOUR CHARACTER</span>
+                <div className="character-record">
+                  <span className="eyebrow">A HERALDIC RECORD</span>
                   <h2>{state.name}</h2>
                   <span className="rank-badge dark">{rank.rank.name}</span>
-                  <p>
+                  <div className="character-renown">
+                    <div className="record-renown-heading">
+                      <span>RENOWN EARNED</span>
+                      <strong>{total.renown.toLocaleString()}</strong>
+                    </div>
+                    <div
+                      className="progress light"
+                      role="progressbar"
+                      aria-label="Knight rank progress"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={Math.round(rank.progress * 100)}
+                    >
+                      <i style={{ width: `${rank.progress * 100}%` }} />
+                    </div>
+                    <p>
+                      {rank.next
+                        ? `${(rank.next.threshold - total.renown).toLocaleString()} Renown to ${rank.next.name}`
+                        : "Knight Banneret · your highest rank, earned."}
+                    </p>
+                  </div>
+                  <p className="record-service">
                     {total.renown} Renown earned across{" "}
                     {state.entries.length +
                       Object.values(state.oaths).filter(
@@ -677,8 +702,7 @@ export default function App() {
                     recorded deeds.
                   </p>
                   <p className="muted">
-                    Starting equipment: steel helm, simple armour, oak shield.
-                    Appearance customisation will come in a later chapter.
+                    Steel helm · simple armour · oak shield
                   </p>
                 </div>
               </div>
@@ -727,7 +751,7 @@ export default function App() {
               <JourneyMap distance={total.distance} />
               <p className="journey-method">
                 Complete “Patrol the Realm” after walking 3 km to move along the
-                road. Distance is self-reported; wearable tracking comes later.
+                road. Distance is self-reported.
               </p>
               <button
                 className="primary"
@@ -798,6 +822,12 @@ export default function App() {
                     <span className="eyebrow">A PERSONAL CAMPAIGN LEDGER</span>
                     <h2>Your chronicle</h2>
                   </div>
+                  <span className="ledger-period">
+                    BEGUN{" "}
+                    <time dateTime={state.created}>
+                      {formatDay(state.created, true)}
+                    </time>
+                  </span>
                 </div>
                 {!historyDates.length ? (
                   <div className="empty">
@@ -825,7 +855,9 @@ export default function App() {
                     return (
                       <div className="history-day" key={date}>
                         <div className="section-heading">
-                          <h3>{formatDay(date, true)}</h3>
+                          <h3>
+                            <time dateTime={date}>{formatDay(date, true)}</time>
+                          </h3>
                           <span>{earned} Renown</span>
                         </div>
                         {entries.map((e) => (
