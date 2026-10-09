@@ -275,3 +275,13 @@ html[data-keyboard="open"] .sound-offer {
 .deed-status-options summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; text-decoration: underline; text-underline-offset: 3px; }
 .deed-status-options p { margin: .25rem 0; }
 .deed-status-options button { display: block; }
+
+.journey-story { margin-top: 1.5rem; padding: clamp(1rem, 4vw, 2rem); background: #f4eddd; border: 1px solid #cbbd9a; border-top: 3px solid #8b7652; }
+.journey-story h2 { margin: .4rem 0; }
+.journey-chapter { border-top: 1px solid #d3c8b0; margin-top: 1rem; }
+.journey-chapter summary { cursor: pointer; padding: 1rem 0; min-height: 44px; }
+.journey-chapter summary span { font-size: .8rem; color: #5e6858; margin-right: .75rem; }
+.journey-chapter summary strong { font-family: Georgia, serif; font-weight: 500; }
+.journey-chapter p { max-width: 65ch; line-height: 1.8; margin: 0 0 1rem; }
+.journey-story .journey-chapter { text-align: left; }
+.journey-story .journey-chapter p { font-size: 1rem; text-align: left; color: #425043; }

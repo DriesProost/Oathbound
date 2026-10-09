@@ -57,6 +57,7 @@ import {
 } from "./campaign";
 import type { CampaignGoal } from "./model";
 import KnightArt from "./KnightArt";
+import { knightAppearance } from "./appearance";
 import { formatDay } from "./presentation";
 import JourneyMap from "./JourneyMap";
 import {
@@ -693,7 +694,7 @@ function OathboundApp() {
                 </div>
                 <div className="hero-art">
                   <div className="stronghold-arch" aria-hidden="true" />
-                  <KnightArt />
+                  <KnightArt renown={total.renown} xp={total.xp} />
                   <span>STEADY IN PURPOSE</span>
                 </div>
                 <div className="hero-quote">
@@ -931,7 +932,7 @@ function OathboundApp() {
               >
                 <div className="profile-art">
                   <span className="heraldic-caption">BY DEED, NOT WORD</span>
-                  <KnightArt />
+                  <KnightArt renown={total.renown} xp={total.xp} />
                   <div
                     className="rank-insignia"
                     aria-label={`${rank.rank.name} insignia`}
@@ -980,8 +981,9 @@ function OathboundApp() {
                     recorded deeds.
                   </p>
                   <p className="muted">
-                    Steel helm · simple armour · oak shield
+                    {knightAppearance(total.renown, total.xp).description}
                   </p>
+                  <p className="muted">{knightAppearance(total.renown, total.xp).message}</p>
                 </div>
               </div>
               <section className="panel campaign-summary">

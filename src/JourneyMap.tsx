@@ -187,8 +187,20 @@ export default function JourneyMap({ distance }: { distance: number }) {
               : "Oakhaven reached"}
           </strong>
           <p>{current.inscription}</p>
+          {next && <p className="muted">{current.teaser}</p>}
         </div>
       </div>
+      <section className="journey-story" aria-label="Tales of the Oakhaven road">
+        <span className="eyebrow">TALES OF THE OAKHAVEN ROAD</span>
+        <h2>The road that remembers</h2>
+        <p className="muted">Each place holds a chapter. Reached chapters stay here to reread, at your own pace.</p>
+        {stops.filter((stop) => distance >= stop.km).map((stop) => (
+          <details key={stop.name} className="journey-chapter" open={stop.name === current.name}>
+            <summary><span>{stop.name} · {stop.km} km</span><strong>{stop.title}</strong></summary>
+            <div>{stop.story.map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>
+          </details>
+        ))}
+      </section>
     </div>
   );
 }
