@@ -4,6 +4,7 @@ import { dayKey } from './calendar';
 import { rankProgress, ranks, attributeProgress, type Attribute } from './domain';
 // Only presentation thresholds: they never change earned XP, ranks, or rewards.
 export const appearanceRules = {
+  honorificRankIndex: 2,
   presenceGroomingLevel: 3,
   bodyMiddleProgress: 0.5,
   bodyTargetProgress: 1,
@@ -58,4 +59,11 @@ export function bodyAppearance(weight?: State['weight'], today = dayKey()): {
   const index = progress >= appearanceRules.bodyTargetProgress ? target :
     Math.abs(target - start) === 2 && progress >= appearanceRules.bodyMiddleProgress ? 1 : start;
   return {build: bodyBuilds[index], progress, linked: true, hasTrend: true};
+}
+
+// Display-only honour: a player's saved personal name is never rewritten.
+export function knightlyName(name: string, renown: number) {
+  const stage = ranks.indexOf(rankProgress(renown).rank);
+  return stage >= appearanceRules.honorificRankIndex && !/^sir\b/i.test(name.trimStart())
+    ? `Sir ${name}` : name;
 }

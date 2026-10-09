@@ -2,6 +2,8 @@ import { Castle, DoorOpen, Wind } from "lucide-react";
 // Presentation metadata, separate from walking rewards and persisted distance.
 export const landmarks = [
   {
+    id: "keep",
+    sceneAlt: "A modest stone holdfast at dawn, with a smoking chimney and muddy working yard.",
     name: "Your Keep",
     km: 0,
     x: 70,
@@ -17,6 +19,8 @@ export const landmarks = [
     ],
   },
   {
+    id: "mill",
+    sceneAlt: "A mossy watermill beside an alder-lined river, with a wooden wheel and crows in the trees.",
     name: "Old Mill",
     km: 9,
     x: 195,
@@ -32,6 +36,8 @@ export const landmarks = [
     ],
   },
   {
+    id: "inn",
+    sceneAlt: "Warm inn windows beside a wet road at dusk, with horses waiting outside.",
     name: "Wayfarer’s Inn",
     km: 21,
     x: 425,
@@ -47,6 +53,8 @@ export const landmarks = [
     ],
   },
   {
+    id: "oakhaven",
+    sceneAlt: "An open town gate, timbered houses and lanterns beneath a distant church tower.",
     name: "Oakhaven",
     km: 30,
     x: 560,

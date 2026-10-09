@@ -57,7 +57,7 @@ import {
 } from "./campaign";
 import type { CampaignGoal } from "./model";
 import KnightArt from "./KnightArt";
-import { knightAppearance } from "./appearance";
+import { knightAppearance, knightlyName } from "./appearance";
 import { formatDay } from "./presentation";
 import JourneyMap from "./JourneyMap";
 import {
@@ -282,6 +282,7 @@ function OathboundApp() {
     total = totals(state),
     rank = rankProgress(total.renown),
     oath = oathStats(state, today);
+  const displayName = knightlyName(state.name, total.renown);
   const currentGoals = campaignGoals(state.campaign, today);
   const campaignQuests = availableQuests(state, now);
   const showOath =
@@ -499,7 +500,7 @@ function OathboundApp() {
         <div className="sidebar-profile">
           <div className="avatar">{state.name[0].toUpperCase()}</div>
           <div>
-            <strong>{state.name}</strong>
+            <strong>{displayName}</strong>
             <small>{rank.rank.name} · A life well fought</small>
           </div>
         </div>
@@ -551,7 +552,7 @@ function OathboundApp() {
               </span>
               <h1>
                 {tab === "Keep"
-                  ? `Welcome to your keep, ${state.name}.`
+                  ? `Welcome to your keep, ${displayName}.`
                   : tab === "Quest Board"
                     ? "Small deeds. Lasting change."
                     : tab === "Journey"
@@ -612,7 +613,12 @@ function OathboundApp() {
             </div>
           )}
           <AppUpdate />
-          <FeedbackSurface />
+          <FeedbackSurface onReadJourney={() => {
+            feedback.dismiss();
+            switchTab("Journey");
+            requestAnimationFrame(() => document.querySelector<HTMLDetailsElement>(".journey-postcard[open]")
+              ?.querySelector<HTMLElement>("summary")?.focus());
+          }} />
           {notice && (
             <div className="notice" role="status">
               <div className="ceremony-seal">
@@ -647,7 +653,7 @@ function OathboundApp() {
               >
                 <div className="hero-copy">
                   <span className="eyebrow">WITHIN YOUR STRONGHOLD</span>
-                  <h2>{state.name}</h2>
+                  <h2>{displayName}</h2>
                   <span className="rank-badge">
                     <Shield size={14} />
                     {rank.rank.name}
@@ -945,7 +951,7 @@ function OathboundApp() {
                 </div>
                 <div className="character-record">
                   <span className="eyebrow">A HERALDIC RECORD</span>
-                  <h2>{state.name}</h2>
+                  <h2>{displayName}</h2>
                   <span className="rank-badge dark">{rank.rank.name}</span>
                   <div className="character-renown">
                     <div className="record-renown-heading">

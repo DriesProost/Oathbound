@@ -1,0 +1,36 @@
+.journey-page .journey-story { padding: 1.25rem 0 0; border: 0; background: transparent; }
+.journey-postcards { display: grid; gap: 1.3rem; margin-top: 1.5rem; }
+.journey-postcard { min-width: 0; background: #eee5d1; border: 1px solid #b9a780; box-shadow: 0 3px 9px #45372012; }
+.journey-postcard summary { cursor: pointer; list-style: none; }
+.journey-postcard summary::-webkit-details-marker { display: none; }
+.journey-postcard summary:focus-visible { outline: 3px solid #5b704d; outline-offset: 4px; }
+.postcard-caption { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.1rem; border-bottom: 1px solid #c3b28f; }
+.postcard-caption h3 { font-family: Georgia, serif; margin: 0; color: #2c4433; font-size: clamp(1.3rem, 3vw, 1.75rem); font-weight: 500; line-height: 1.2; }
+.journey-story .postcard-caption p { margin: .35rem 0 0; color: #6c6857; font-size: .85rem; font-style: italic; }
+.postcard-action { display: flex; flex-shrink: 0; align-items: center; gap: .35rem; color: #526347; font-size: .75rem; min-height: 44px; }
+.postcard-action .when-open { display: none; }
+.journey-postcard[open] .when-open { display: inline; }
+.journey-postcard[open] .when-closed { display: none; }
+.journey-postcard[open] .postcard-action svg { transform: rotate(180deg); }
+.postcard-scene { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #344334; isolation: isolate; }
+.postcard-scene img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 45%; }
+.postcard-scene::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 65%, #17251b55); pointer-events: none; }
+.scene-status { position: absolute; z-index: 1; top: .7rem; left: .7rem; display: flex; align-items: center; gap: .35rem; padding: .35rem .5rem; background: #203527dd; border: 1px solid #cfb88070; color: #f4e9d1; font-size: .72rem; letter-spacing: .03em; }
+.scene-unrevealed img { filter: blur(7px) saturate(.35) brightness(.43); transform: scale(1.06); }
+.scene-unrevealed::after { background: #1b291f25; }
+.postcard-body { position: relative; z-index: 2; margin: -1.35rem .9rem .9rem; padding: clamp(1rem, 3vw, 1.7rem); background: #faf3e2; border: 1px solid #cab88f; border-top: 3px solid #968157; box-shadow: 0 3px 10px #241c1715; }
+.postcard-body h4 { font-family: Georgia, serif; text-align: left; margin: 0 0 1rem; color: #304b36; font-size: clamp(1.35rem, 3vw, 1.8rem); font-weight: 500; line-height: 1.3; }
+.journey-story .postcard-body p { max-width: 65ch; margin: 0 0 1rem; color: #425043; font-size: 1rem; line-height: 1.8; text-align: left; }
+.postcard-teaser { border-top: 1px solid #d6c7a9; margin-top: 1.35rem; padding-top: 1rem; }
+.postcard-teaser strong { color: #6e674d; font-size: .78rem; letter-spacing: .07em; text-transform: uppercase; }
+.journey-story .postcard-teaser p { margin: .4rem 0 0; font-style: italic; }
+.journey-story .unrevealed-note { padding: .8rem 1rem; margin: 0; color: #6c6857; font-size: .85rem; }
+@media (min-width: 1100px) {
+  .journey-postcards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .journey-postcard[open] { grid-column: 1 / -1; }
+}
+@media (max-width: 380px) {
+  .postcard-caption { padding: .8rem; gap: .5rem; }
+  .postcard-action { font-size: .68rem; gap: .1rem; }
+  .postcard-body { margin-inline: .5rem; padding: .9rem; }
+}

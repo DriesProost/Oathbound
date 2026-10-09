@@ -367,3 +367,10 @@
   max-height: calc(100dvh - 160px);
   overflow: auto;
 }
+
+.feedback-arrival { max-width: 420px; margin-top: 1rem; border: 1px solid #c1b18b; background: #ede4d0; }
+.feedback-arrival img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; object-position: center 45%; }
+.feedback-arrival > div { padding: .6rem .8rem 0; }
+.feedback-arrival strong { display: block; font-family: Georgia, serif; color: #304b36; font-size: 1.15rem; }
+.feedback-arrival span { display: block; margin-top: .2rem; color: #69664f; font-size: .78rem; }
+.feedback-arrival .text-button { margin: .2rem .6rem .5rem; text-align: left; min-height: 44px; }

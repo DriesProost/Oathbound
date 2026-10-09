@@ -2,6 +2,7 @@ import { useFeedbackPulse } from "./feedback/Feedback";
 import { useEffect, useRef, useState } from "react";
 import { Trees, Flag } from "lucide-react";
 import { landmarks as stops } from "./journey";
+import JourneyStories from "./JourneyStories";
 const routes = [
   "M70 260 C60 180 145 260 195 165",
   "M195 165 C255 60 355 290 425 230",
@@ -190,17 +191,7 @@ export default function JourneyMap({ distance }: { distance: number }) {
           {next && <p className="muted">{current.teaser}</p>}
         </div>
       </div>
-      <section className="journey-story" aria-label="Tales of the Oakhaven road">
-        <span className="eyebrow">TALES OF THE OAKHAVEN ROAD</span>
-        <h2>The road that remembers</h2>
-        <p className="muted">Each place holds a chapter. Reached chapters stay here to reread, at your own pace.</p>
-        {stops.filter((stop) => distance >= stop.km).map((stop) => (
-          <details key={stop.name} className="journey-chapter" open={stop.name === current.name}>
-            <summary><span>{stop.name} · {stop.km} km</span><strong>{stop.title}</strong></summary>
-            <div>{stop.story.map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>
-          </details>
-        ))}
-      </section>
+      <JourneyStories distance={distance} />
     </div>
   );
 }

@@ -25,6 +25,8 @@ import {
   type Preferences,
 } from "./audio";
 import "./feedback.css";
+import { landmarks } from "../journey";
+import { landmarkScene } from "../journeyArt";
 const titles: Record<FeedbackEvent["kind"], string> = {
   rank: "RISE",
   landmark: "A LANDMARK REACHED",
@@ -415,11 +417,13 @@ function roman(n: number) {
     }
   return text;
 }
-export function FeedbackSurface() {
+export function FeedbackSurface({ onReadJourney }: { onReadJourney?: () => void }) {
   const { batch, dismiss } = useFeedback();
   const [pulse] = useFeedbackPulse(3200);
   if (!batch) return null;
   const lead = batch.events[0];
+  const arrivedNames = batch.events.filter(e => e.kind === "landmark").map(e => e.name);
+  const arrival = landmarks.findLast(stop => arrivedNames.includes(stop.name));
   return (
     <section
       className={`reward-feedback tier-${lead.kind}${pulse?.id === batch.id ? " feedback-fresh" : ""}`}
@@ -472,6 +476,16 @@ export function FeedbackSurface() {
             </li>
           ))}
         </ul>
+        {arrival && (
+          <div className="feedback-arrival" data-arrival={arrival.id}>
+            {landmarkScene(arrival.id) && <img src={landmarkScene(arrival.id)}
+              alt={arrival.sceneAlt} width={1440} height={810} />}
+            <div><strong>{arrival.name}</strong><span>{arrival.km} km from the Keep</span></div>
+            {onReadJourney && <button className="text-button" onClick={onReadJourney}>
+              Read {arrival.name}’s chapter
+            </button>}
+          </div>
+        )}
         {lead.kind === "correction" && (
           <p>
             Only this Oath entry’s reward was adjusted. Your other deeds remain

@@ -1,8 +1,21 @@
 import {describe, it, expect} from 'vitest';
-import {knightAppearance} from './appearance';
+import {knightAppearance, knightlyName} from './appearance';
 import {progression} from './config';
 import {landmarks} from './journey';
 describe('earned visual progression', () => {
+  it('adds Sir only from Knight Errant onward using existing rank rules', () => {
+    progression.ranks.forEach((rank, index) => {
+      expect(knightlyName('Rowan', rank.threshold)).toBe(index >= 2 ? 'Sir Rowan' : 'Rowan');
+    });
+    expect(knightlyName('Rowan', progression.ranks[2].threshold - 1)).toBe('Rowan');
+  });
+  it('preserves a chosen name and does not duplicate an existing honorific', () => {
+    expect(knightlyName('Sir Rowan', progression.ranks[2].threshold)).toBe('Sir Rowan');
+    expect(knightlyName('SiR Rowan', progression.ranks[4].threshold)).toBe('SiR Rowan');
+    expect(knightlyName('Sirena', progression.ranks[2].threshold)).toBe('Sir Sirena');
+    expect(knightlyName('Rowan', 0)).toBe('Rowan');
+  });
+
   it('starts as a squire and follows existing rank thresholds exactly', () => {
     expect(knightAppearance().description).toContain('Wool tunic');
     progression.ranks.forEach((rank, i) => {
