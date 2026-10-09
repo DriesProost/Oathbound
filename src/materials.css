@@ -1,0 +1,726 @@
+/* Shared, restrained material language. Clear text surfaces stay above decorative framing. */
+:root {
+  --paper: #f7f1e1;
+  --paper-edge: #d5c4a0;
+  --ink: #344936;
+  --oak: #655039;
+  --iron: #666a56;
+  --wax: #894b3b;
+  --old-gold: #ab9160;
+  --paper-wash: linear-gradient(
+    100deg,
+    #c4a87512,
+    transparent 24%,
+    transparent 85%,
+    #c4a87512
+  );
+  --paper-shadow: 1px 3px 7px #32271920;
+}
+/* The Oath keeps every control and explanation, but reduces its spacing and stacks. */
+.oath-compact {
+  padding: 22px 24px 18px;
+}
+.oath-compact .oath-notice-heading {
+  gap: 12px;
+}
+.oath-compact .oath-emblem {
+  width: 40px;
+  height: 46px;
+}
+.oath-compact h2 {
+  font-size: 28px;
+}
+.oath-compact .eyebrow {
+  margin-bottom: 4px;
+  font-size: 8px;
+}
+.oath-compact .oath-promise {
+  margin: 8px 0 10px;
+  font-size: 15px;
+}
+.oath-compact .oath-date-switch {
+  margin-bottom: 8px;
+  gap: 7px;
+}
+.oath-compact .oath-date-switch button {
+  padding: 7px 10px;
+  font-size: 11px;
+  min-height: 34px;
+}
+.oath-compact .oath-status {
+  font-size: 11px;
+}
+.oath-compact .oath-take {
+  margin: 9px 0 0;
+  padding: 10px 16px;
+  min-height: 40px;
+}
+.oath-compact .oath-confirm {
+  margin-top: 11px;
+  padding-top: 10px;
+}
+.oath-compact .confirmation-label {
+  font-size: 11px;
+  margin-bottom: 7px;
+}
+.oath-compact .oath-confirm > div {
+  gap: 8px;
+}
+.oath-compact .oath-confirm .secondary,
+.oath-compact .oath-confirm .text-button {
+  margin: 0;
+  font-size: 11px;
+  min-height: 40px;
+  padding: 10px 12px;
+}
+.oath-compact .timing-note {
+  margin-top: 7px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.oath-compact .oath-offered-reward {
+  margin-top: 11px;
+  padding-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+}
+.oath-compact .oath-offered-reward > span {
+  font-size: 8px;
+}
+.oath-compact .oath-offered-reward .rewards {
+  margin: 0;
+  font-size: 11px;
+}
+.oath-compact .oath-footnote {
+  margin-top: 7px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.oath-compact .correction-link {
+  margin-top: 9px;
+  min-height: 34px;
+}
+/* A ledger inscription replaces the summary's dashboard card. */
+.board-page .board-summary {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid #ddd3bb;
+  border-bottom: 1px solid #ddd3bb;
+  border-radius: 0;
+  padding: 14px 2px;
+  margin-bottom: 29px;
+}
+.board-summary > svg {
+  color: #93815b;
+  width: 20px;
+}
+.board-summary strong {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: var(--ink);
+}
+.board-summary p {
+  font-size: 11px;
+  color: #8b8b72;
+}
+.board-inscription {
+  display: block;
+  font-size: 9px;
+}
+/* Slight edge lift, a quiet pin and one seal; no torn edges or paper stains. */
+.parchment-notice {
+  background-color: #fbf6e8;
+  background-image: var(--paper-wash);
+  border-color: var(--paper-edge);
+  box-shadow:
+    1px 4px 7px #281b2330,
+    inset 0 1px 0 #fffdf4;
+  border-radius: 1px 3px 2px 1px;
+}
+.parchment-notice::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 5px;
+  bottom: -3px;
+  height: 2px;
+  border-bottom: 1px solid #d4c29c75;
+  pointer-events: none;
+}
+.parchment-notice .notice-pin {
+  width: 7px;
+  height: 7px;
+  top: 9px;
+  left: 20px;
+  box-shadow: 1px 2px 3px #43312570;
+}
+.parchment-notice.completed {
+  background-color: #f4efdf;
+}
+.parchment-notice .complete-button {
+  max-width: 170px;
+  line-height: 1.5;
+  white-space: normal;
+}
+.completion-receipt {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-shrink: 0;
+  padding: 6px 0;
+}
+.wax-seal {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 48% 52% 49% 51%;
+  background: var(--wax);
+  border: 2px solid #aa6b54;
+  box-shadow:
+    inset 0 0 0 3px #6e332538,
+    1px 2px 3px #5b3f2425;
+  color: #f1dfbb;
+  flex-shrink: 0;
+}
+.receipt-title {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  color: #8a7554;
+}
+.completion-receipt .rewards {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 10px;
+}
+/* Parchment is a surface, not a filter over content. */
+.keep-page .attribute,
+.knight-page .attribute,
+.knight-page .panel,
+.chronicle-page .panel,
+.journey-page .panel,
+.keep-page .oath-card {
+  background-color: var(--paper);
+  background-image: var(--paper-wash);
+  border: 1px solid var(--paper-edge);
+  border-radius: 3px;
+  box-shadow: var(--paper-shadow);
+}
+.keep-page .attribute,
+.knight-page .attribute {
+  border-top: 2px solid #ae976c;
+}
+.keep-page .attribute span,
+.knight-page .attribute span {
+  color: #6f775e;
+}
+.keep-page .attribute-xp,
+.knight-page .attribute-xp {
+  color: #6f7d60;
+}
+.keep-page .hero {
+  border: 5px solid #4d5040;
+  border-radius: 3px;
+  outline: 1px solid #b7a16a55;
+  outline-offset: -8px;
+  background-color: #253d30;
+  box-shadow: 0 5px 12px #30261e20;
+}
+.hero-art {
+  z-index: 0;
+}
+.hero-art > svg {
+  position: relative;
+  z-index: 1;
+}
+.stronghold-arch {
+  position: absolute;
+  width: 88%;
+  height: 92%;
+  top: 4%;
+  border: 8px solid #b6aa7920;
+  border-bottom: 0;
+  border-radius: 48% 48% 0 0;
+  background: linear-gradient(90deg, #0b1b1740, transparent, #0b1b1740);
+  box-shadow: inset 0 0 0 1px #a69e7125;
+}
+.keep-page .hero-copy .eyebrow {
+  color: #c3bc92;
+}
+.keep-page .hero-quote {
+  color: #c4c3a4;
+}
+.keep-page .section-heading h2 {
+  font-size: 27px;
+}
+.keep-page .oath-card {
+  outline: 1px solid #b8a78155;
+  outline-offset: -7px;
+}
+.keep-page .oath-title {
+  color: #7b7959;
+}
+.keep-page .oath-card .oath-summary {
+  border-color: #d8ccb0;
+}
+.keep-page .oath-card blockquote {
+  color: #857d63;
+}
+.keep-page .deeds-summary {
+  border-bottom: 1px solid #ddd2b8;
+  padding-bottom: 12px;
+}
+.knight-page .knight-profile {
+  padding: 25px;
+  gap: 35px;
+}
+.knight-page .profile-art {
+  position: relative;
+  padding: 24px 10px 12px;
+  border: 5px solid #75664a;
+  border-radius: 3px;
+  outline: 1px solid #c6b47d;
+  outline-offset: -8px;
+  background:
+    radial-gradient(ellipse at 50% 40%, #65754e55, transparent 70%), #263e31;
+}
+.heraldic-caption {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font:
+    8px Georgia,
+    serif;
+  letter-spacing: 1.5px;
+  color: #cdbb86;
+}
+.rank-insignia {
+  position: absolute;
+  bottom: 9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 45px;
+  display: grid;
+  place-items: center;
+  background: #243b2d;
+  color: #dbc68e;
+}
+.rank-insignia svg {
+  position: absolute;
+  width: 35px;
+  height: 40px;
+}
+.rank-insignia span {
+  font:
+    12px Georgia,
+    serif;
+  padding-bottom: 5px;
+}
+.knight-page .rank-row {
+  border-color: #ded1b4;
+  padding: 15px 12px;
+}
+.knight-page .rank-row strong {
+  font-family: Georgia, serif;
+  font-weight: 400;
+}
+.knight-page .current-rank {
+  background: #e5e6d3;
+  box-shadow: inset 3px 0 #ac9463;
+  color: #5e7247;
+}
+.knight-page .earned-rank {
+  color: #8d7950;
+}
+.knight-page .panel > h2 {
+  border-bottom: 1px solid #dfd1b1;
+  padding-bottom: 12px;
+}
+.chronicle-page .history-stats:not(.oath-history) {
+  background: var(--paper);
+  background-image: var(--paper-wash);
+  border-top: 2px solid #bba47b;
+  border-bottom: 1px solid var(--paper-edge);
+  padding: 5px 0;
+  gap: 0;
+}
+.chronicle-page .history-stats:not(.oath-history) .panel {
+  background: none;
+  border: 0;
+  border-right: 1px solid #ddcfaf;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 16px 22px;
+}
+.chronicle-page .history-stats:not(.oath-history) .panel:last-child {
+  border-right: 0;
+}
+.chronicle-page .history-stats span {
+  color: #777c64;
+}
+.chronicle-page .chronicle-ledger {
+  border-left: 7px solid #586144;
+  box-shadow:
+    inset 3px 0 #ccb98b,
+    1px 4px 8px #35271915;
+}
+.ledger-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: #887b54;
+  margin-bottom: 15px;
+}
+.ledger-heading h2 {
+  margin: 0;
+  color: var(--ink);
+}
+.ledger-heading .eyebrow {
+  margin-bottom: 5px;
+  font-size: 8px;
+  color: #8b7c52;
+}
+.chronicle-page .history-day {
+  border-top: 1px solid #cdbc9365;
+  padding-top: 18px;
+}
+.chronicle-page .history-day h3 {
+  font:
+    17px Georgia,
+    serif;
+  color: #6d6349;
+}
+.chronicle-page .history-entry {
+  border-bottom: 1px solid #c9ba9428;
+  padding: 12px 0;
+}
+.chronicle-page .historical-oath {
+  border-top: 0;
+}
+.chronicle-page .history-day .section-heading {
+  margin-bottom: 6px;
+}
+/* A route on a survey sheet, rather than a percentage bar. */
+.journey-page .journey {
+  max-width: 100%;
+  padding: 28px;
+}
+.journey-page .journey > h2 {
+  font-size: 34px;
+  margin-bottom: 20px;
+}
+.map-sheet {
+  position: relative;
+  background: #f1e8d1;
+  background-image: var(--paper-wash);
+  border: 1px solid #c4b18a;
+  outline: 1px solid #c6b78f70;
+  outline-offset: -7px;
+  box-shadow: var(--paper-shadow);
+  padding: 18px 20px 12px;
+}
+.map-sheet > svg {
+  width: 100%;
+  display: block;
+  max-height: 370px;
+}
+.map-caption {
+  display: block;
+  text-align: left;
+  font:
+    9px Georgia,
+    serif;
+  color: #88744d;
+  letter-spacing: 1.5px;
+  padding: 2px 0 0 8px;
+}
+.map-key {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  font-size: 10px;
+  color: #8c7e5c;
+  padding: 0 8px;
+}
+.map-key > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.map-key i {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--wax);
+}
+.route-landmarks {
+  padding: 0;
+  margin: 20px 0 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.route-landmarks li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  color: #92886e;
+  padding: 12px 5px;
+  border-bottom: 1px solid #d5c6a2;
+}
+.route-landmarks strong {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 14px;
+}
+.route-landmarks span {
+  font-size: 10px;
+}
+.route-landmarks .reached {
+  color: #597148;
+}
+.route-landmarks [aria-current="step"] {
+  border-bottom: 2px solid #9e8656;
+}
+.route-inscription {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+  margin-top: 20px;
+  padding: 17px 0;
+  color: #8f7c52;
+  border-bottom: 1px solid #d8c9a7;
+}
+.route-inscription strong {
+  font:
+    17px Georgia,
+    serif;
+  color: #4d6143;
+}
+.journey-page .route-inscription p {
+  font:
+    italic 13px/1.6 Georgia,
+    serif;
+  color: #877b5e;
+  margin: 7px 0 0;
+  max-width: none;
+}
+.journey-page .journey-method {
+  font-size: 11px;
+  max-width: 600px;
+  margin: 20px auto 0;
+}
+@media (max-width: 1100px) {
+  .completion-receipt {
+    gap: 8px;
+  }
+  .completion-receipt .rewards {
+    font-size: 9px;
+  }
+  .wax-seal {
+    width: 32px;
+    height: 32px;
+  }
+}
+@media (max-width: 760px) {
+  .oath-compact {
+    padding: 20px 16px 16px;
+  }
+  .oath-compact h2 {
+    font-size: 23px;
+  }
+  .oath-compact .oath-emblem {
+    width: 34px;
+    height: 40px;
+  }
+  .oath-compact .oath-promise {
+    font-size: 13px;
+  }
+  .oath-compact .oath-date-switch button {
+    font-size: 10px;
+    padding: 7px 8px;
+  }
+  .oath-compact .oath-confirm > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .oath-compact .oath-confirm .secondary,
+  .oath-compact .oath-confirm .text-button {
+    padding: 9px 5px;
+    font-size: 10px;
+    min-height: 40px;
+  }
+  .oath-compact .timing-note,
+  .oath-compact .oath-footnote {
+    font-size: 10px;
+  }
+  .oath-compact .oath-offered-reward {
+    gap: 5px;
+  }
+  .oath-compact .oath-offered-reward .rewards {
+    font-size: 10px;
+  }
+  .board-page .board-summary {
+    padding: 13px 0;
+    gap: 10px;
+  }
+  .board-summary strong {
+    font-size: 15px;
+  }
+  .board-inscription {
+    display: none;
+  }
+  .completion-receipt {
+    flex-basis: calc(100% - 42px);
+    margin-left: 42px;
+    border-top: 1px solid #dbcbaa;
+    padding: 11px 0 0;
+    gap: 10px;
+  }
+  .completion-receipt .rewards {
+    flex-direction: row;
+    flex-wrap: wrap;
+    font-size: 10px;
+    gap: 5px 12px;
+  }
+  .receipt-title {
+    font-size: 8px;
+  }
+  .parchment-notice.completed .quest-info {
+    flex-basis: calc(100% - 42px);
+  }
+  .keep-page .hero-copy {
+    padding: 23px 15px;
+  }
+  .keep-page .hero-copy .eyebrow {
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .keep-page .hero {
+    border-width: 4px;
+  }
+  .keep-page .hero-art svg {
+    width: 195px;
+  }
+  .stronghold-arch {
+    width: 92%;
+    height: 86%;
+    top: 8%;
+    border-width: 5px;
+  }
+  .keep-page .parchment-notice {
+    padding: 23px 12px 16px;
+  }
+  .keep-page .section-heading h2 {
+    font-size: 25px;
+  }
+  .knight-page .knight-profile {
+    padding: 22px 18px;
+    gap: 22px;
+  }
+  .knight-page .rank-row {
+    padding: 14px 6px;
+    gap: 10px;
+  }
+  .knight-page .rank-row span {
+    font-size: 11px;
+  }
+  .chronicle-page .history-stats:not(.oath-history) .panel {
+    padding: 17px 16px;
+  }
+  .chronicle-page .history-stats:not(.oath-history) .panel:nth-child(even) {
+    border-right: 0;
+  }
+  .chronicle-page .history-stats:not(.oath-history) .panel:nth-child(-n + 2) {
+    border-bottom: 1px solid #ddcfaf;
+  }
+  .chronicle-page .chronicle-ledger {
+    border-left-width: 5px;
+    padding: 22px 15px;
+  }
+  .chronicle-page .history-day h3 {
+    font-size: 15px;
+  }
+  .chronicle-page .history-day .section-heading > span {
+    font-size: 10px;
+  }
+  .ledger-heading .eyebrow {
+    letter-spacing: 1px;
+  }
+  .journey-page .journey {
+    padding: 25px 15px;
+  }
+  .journey-page .journey > h2 {
+    font-size: 30px;
+  }
+  .map-sheet {
+    padding: 16px 8px 12px;
+  }
+  .map-caption {
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .map-sheet > svg {
+    min-height: 170px;
+  }
+  .map-key {
+    font-size: 9px;
+    gap: 8px;
+    padding: 0 4px;
+  }
+  .route-landmarks {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 15px;
+    margin-top: 15px;
+  }
+  .route-landmarks strong {
+    font-size: 14px;
+  }
+  .route-landmarks li {
+    padding: 11px 5px;
+    gap: 7px;
+  }
+  .route-inscription {
+    margin-top: 14px;
+    padding: 15px 0;
+  }
+  .route-inscription strong {
+    font-size: 16px;
+  }
+  .journey-page .route-inscription p {
+    font-size: 12px;
+  }
+}
+.keep-page .oath-card {
+  align-self: start;
+}
+.board-motto {
+  display: none;
+}
+@media (max-width: 760px) {
+  .board-motto {
+    display: block;
+    font:
+      8px "DM Sans",
+      sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 9px;
+    color: #dbc496;
+  }
+}

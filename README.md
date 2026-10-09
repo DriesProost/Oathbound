@@ -23,7 +23,10 @@ Run `npm test` for progression, action timing, Oath correction and persistence/m
 - `src/components.tsx`: attribute progress, reward display, Oath lifecycle and historical correction controls.
 - `src/App.tsx`: onboarding, Keep, Quest Board, Journey, Knight and Chronicle.
 - `src/KnightArt.tsx`: temporary knight illustration.
-- `src/style.css`: responsive theme. Oak, parchment, pins and seals are confined to the Quest Board reference pending visual review.
+- `src/style.css`: base responsive layout and interface styles.
+- `src/materials.css`: shared parchment, oak, iron, wax and heraldic visual language.
+- `src/presentation.ts`: localized display dates; stored date keys remain unchanged.
+- `src/JourneyMap.tsx`: illustrated route presentation derived from existing walking distance.
 
 ## Progression
 
@@ -35,7 +38,7 @@ All six attributes start at level 1. Going from level L to L+1 costs `100 + 25 *
 
 Workouts, walking, grooming and study can be recorded when performed. Nutrition is confirmed after the centrally configured evening hour (18:00 local time by default). Sleep is retrospective: confirm last night's sleep against the previous date, starting after the first night of the campaign. Active pages refresh the clock and date on focus and every 30 seconds.
 
-Taking an Oath records intention without rewards. Today can be confirmed kept or broken after the evening hour. Yesterday can be confirmed retrospectively, and older recorded Oaths can be corrected in Chronicle. There is no expiry or automatic success/failure. Only confirmed kept Oaths count as sober; taken and unlogged days remain unknown. Recent percentages use confirmed days only and show the denominator.
+Swearing an Oath records intention without rewards. Today can be confirmed kept or broken after the evening hour. Yesterday can be confirmed retrospectively, and older recorded Oaths can be corrected in Chronicle. There is no expiry or automatic success/failure. Only confirmed kept Oaths count as sober; taken and unlogged days remain unknown. Recent percentages use confirmed days only and show the denominator.
 
 Correcting kept → broken removes exactly that record's stored reward; it does not touch other actions or dates. Correcting broken → kept grants the current configured Oath reward once. Repeated confirmations are idempotent. Streak statistics are recalculated from corrected history: legitimate earlier streaks remain, while an incorrectly recorded success no longer inflates a streak.
 

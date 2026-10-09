@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatDay } from "./presentation";
 import {
   Shield,
   Swords,
@@ -135,7 +136,7 @@ export function OathPanel({
     }
   }
   return (
-    <section className="oath-notice">
+    <section className="oath-notice oath-compact">
       <div className="notice-pin" />
       <div className="oath-notice-heading">
         <div className="oath-emblem">
@@ -160,7 +161,7 @@ export function OathPanel({
             }}
           >
             {d === "today" ? "Today" : "Yesterday"} ·{" "}
-            {d === "today" ? today.slice(5) : yesterday.slice(5)}
+            {formatDay(d === "today" ? today : yesterday)}
           </button>
         ))}
       </div>
@@ -207,7 +208,7 @@ export function OathPanel({
                   );
               }}
             >
-              Take today’s Oath <Shield size={16} />
+              Swear today’s Oath <Shield size={16} />
             </button>
           )}
           {(!final || editing) && (

@@ -29,6 +29,8 @@ import {
 } from "./domain";
 import { load, save } from "./storage";
 import KnightArt from "./KnightArt";
+import { formatDay } from "./presentation";
+import JourneyMap from "./JourneyMap";
 import {
   Attributes,
   OathPanel,
@@ -207,7 +209,7 @@ export default function App() {
       q.timing === "end-of-day"
         ? `Confirm after ${String(progression.eveningConfirmationHour).padStart(2, "0")}:00`
         : q.timing === "retrospective"
-          ? `Previous night · ${date}`
+          ? `Previous night · ${formatDay(date)}`
           : "Record when performed";
     return (
       <article
@@ -229,34 +231,45 @@ export default function App() {
             {material && <span className="difficulty">{q.difficulty}</span>}
           </div>
           <p>{q.description}</p>
-          <RewardText reward={recorded?.reward || q.reward} />
-          <small className="quest-timing">
+          {!completed && <RewardText reward={q.reward} />}
+          <small className="quest-timing" id={`timing-${q.id}`}>
             {date < state!.created
               ? "Available after your first night on campaign"
               : completed
-                ? `Recorded · ${date}`
+                ? `Recorded · ${formatDay(date)}`
                 : timing}
           </small>
         </div>
-        <button
-          className={"complete-button " + (completed ? "checked" : "")}
-          disabled={completed || !allowed}
-          aria-label={completed ? `${q.name} completed` : `Complete ${q.name}`}
-          onClick={() => finish(q, date)}
-        >
-          {completed ? (
-            <>
-              <Check size={18} />
-              <span>Sealed</span>
-            </>
-          ) : !allowed ? (
-            "Later"
-          ) : q.timing === "immediate" ? (
-            "Complete"
-          ) : (
-            "Confirm"
-          )}
-        </button>
+        {completed ? (
+          <div
+            className="completion-receipt"
+            aria-label={`${q.name} completed`}
+          >
+            <span className="wax-seal" aria-hidden="true">
+              <Check size={20} />
+            </span>
+            <div>
+              <span className="receipt-title">DEED RECORDED</span>
+              <RewardText reward={recorded!.reward} />
+            </div>
+          </div>
+        ) : (
+          <button
+            className="complete-button"
+            disabled={!allowed}
+            aria-label={`Complete ${q.name}`}
+            aria-describedby={`timing-${q.id}`}
+            onClick={() => finish(q, date)}
+          >
+            {!allowed
+              ? date < state!.created
+                ? "Confirm after your first night"
+                : "Confirm this evening"
+              : q.timing === "immediate"
+                ? "Complete"
+                : "Confirm"}
+          </button>
+        )}
       </article>
     );
   }
@@ -321,7 +334,7 @@ export default function App() {
           </span>
           <div>
             <span className="date">
-              {now.toLocaleDateString("en-GB", {
+              {now.toLocaleDateString(undefined, {
                 weekday: "short",
                 day: "numeric",
                 month: "long",
@@ -335,7 +348,16 @@ export default function App() {
           </div>
         </header>
         <main
-          className={"content " + (tab === "Quest Board" ? "board-page" : "")}
+          className={
+            "content " +
+            ({
+              Keep: "keep-page",
+              "Quest Board": "board-page",
+              Knight: "knight-page",
+              Chronicle: "chronicle-page",
+              Journey: "journey-page",
+            }[tab] || "")
+          }
         >
           <div className="page-heading">
             <div>
@@ -433,7 +455,7 @@ export default function App() {
             <>
               <div className="hero">
                 <div className="hero-copy">
-                  <span className="eyebrow">YOUR KNIGHT</span>
+                  <span className="eyebrow">WITHIN YOUR STRONGHOLD</span>
                   <h2>{state.name}</h2>
                   <span className="rank-badge">
                     <Shield size={14} />
@@ -478,6 +500,7 @@ export default function App() {
                   </button>
                 </div>
                 <div className="hero-art">
+                  <div className="stronghold-arch" aria-hidden="true" />
                   <KnightArt />
                   <span>STEADY IN PURPOSE</span>
                 </div>
@@ -506,7 +529,7 @@ export default function App() {
                     {quests
                       .filter((q) => q.timing === "immediate")
                       .slice(0, 3)
-                      .map((q) => questCard(q))}
+                      .map((q) => questCard(q, true))}
                   </div>
                   <div className="deeds-summary">
                     <Check size={16} />
@@ -619,6 +642,7 @@ export default function App() {
                   </section>
                 ))}
                 <p className="board-bottom">
+                  <span className="board-motto">By deed, not word</span>
                   Take what serves you. Return when the deed is done.
                 </p>
               </div>
@@ -628,7 +652,17 @@ export default function App() {
             <>
               <div className="knight-profile panel">
                 <div className="profile-art">
+                  <span className="heraldic-caption">BY DEED, NOT WORD</span>
                   <KnightArt />
+                  <div
+                    className="rank-insignia"
+                    aria-label={`${rank.rank.name} insignia`}
+                  >
+                    <Shield size={32} />
+                    <span>
+                      {["I", "II", "III", "IV", "V"][ranks.indexOf(rank.rank)]}
+                    </span>
+                  </div>
                 </div>
                 <div>
                   <span className="eyebrow">YOUR CHARACTER</span>
@@ -652,7 +686,17 @@ export default function App() {
               <section className="panel">
                 <h2>The path to knighthood</h2>
                 {ranks.map((r) => (
-                  <div className="rank-row" key={r.name}>
+                  <div
+                    className={
+                      "rank-row " +
+                      (r.name === rank.rank.name
+                        ? "current-rank"
+                        : total.renown >= r.threshold
+                          ? "earned-rank"
+                          : "")
+                    }
+                    key={r.name}
+                  >
                     <Shield size={18} />
                     <strong>{r.name}</strong>
                     <span>{r.threshold.toLocaleString()} Renown</span>
@@ -679,36 +723,12 @@ export default function App() {
           {tab === "Journey" && (
             <section className="journey panel">
               <span className="eyebrow">THE ROAD TO OAKHAVEN</span>
-              <Map size={60} />
               <h2>{total.distance.toFixed(1)} km travelled</h2>
-              <p>
+              <JourneyMap distance={total.distance} />
+              <p className="journey-method">
                 Complete “Patrol the Realm” after walking 3 km to move along the
                 road. Distance is self-reported; wearable tracking comes later.
               </p>
-              <div className="road">
-                {[
-                  { name: "Your keep", km: 0 },
-                  { name: "Old Mill", km: 9 },
-                  { name: "Wayfarer’s Inn", km: 21 },
-                  { name: "Oakhaven", km: 30 },
-                ].map((l) => (
-                  <div
-                    key={l.name}
-                    className={total.distance >= l.km ? "reached" : ""}
-                  >
-                    <span>◆</span>
-                    <strong>{l.name}</strong>
-                    <small>{l.km} km</small>
-                  </div>
-                ))}
-              </div>
-              <div className="progress light">
-                <i
-                  style={{
-                    width: `${Math.min(total.distance / 30, 1) * 100}%`,
-                  }}
-                />
-              </div>
               <button
                 className="primary"
                 onClick={() => switchTab("Quest Board")}
@@ -771,8 +791,14 @@ export default function App() {
                   statistics and only its rewards.
                 </p>
               </section>
-              <section className="panel">
-                <h2>Your chronicle</h2>
+              <section className="panel chronicle-ledger">
+                <div className="ledger-heading">
+                  <BookOpen size={22} />
+                  <div>
+                    <span className="eyebrow">A PERSONAL CAMPAIGN LEDGER</span>
+                    <h2>Your chronicle</h2>
+                  </div>
+                </div>
                 {!historyDates.length ? (
                   <div className="empty">
                     <BookOpen size={32} />
@@ -799,16 +825,7 @@ export default function App() {
                     return (
                       <div className="history-day" key={date}>
                         <div className="section-heading">
-                          <h3>
-                            {new Date(date + "T12:00:00").toLocaleDateString(
-                              "en-GB",
-                              {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric",
-                              },
-                            )}
-                          </h3>
+                          <h3>{formatDay(date, true)}</h3>
                           <span>{earned} Renown</span>
                         </div>
                         {entries.map((e) => (
