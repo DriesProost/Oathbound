@@ -11,12 +11,27 @@ describe('earned visual progression', () => {
       if(i) expect(knightAppearance(rank.threshold-1).stage).toBe(i-1);
     });
   });
-  it('uses actual attribute levels for understated equipment details', () => {
-    expect(knightAppearance(0,{Wisdom:224,Endurance:224}).scholar).toBe(false);
-    const look=knightAppearance(0,{Wisdom:225,Endurance:225});
-    expect(look.scholar).toBe(true);
-    expect(look.traveller).toBe(true);
-    expect(look.stage).toBe(0);
+  it('uses Wisdom for beard stages independently of rank equipment', () => {
+    expect(knightAppearance(0,{Wisdom:224}).beard).toBe(0);
+    expect(knightAppearance(0,{Wisdom:225}).beard).toBe(1);
+    expect(knightAppearance(0,{Wisdom:749}).beard).toBe(1);
+    expect(knightAppearance(0,{Wisdom:750}).beard).toBe(2);
+    expect(knightAppearance(0,{Wisdom:750}).stage).toBe(0);
+    expect(knightAppearance(15000).beard).toBe(0);
+  });
+  it('keeps physique and complexion changes subtle, bounded, and independent', () => {
+    const baseline = knightAppearance();
+    const strong = knightAppearance(0,{Strength:225});
+    const rested = knightAppearance(0,{Vitality:225});
+    expect(strong.buildScale).toBeGreaterThan(baseline.buildScale);
+    expect(strong.faceBrightness).toBe(1);
+    expect(rested.buildScale).toBe(1);
+    expect(rested.faceBrightness).toBeGreaterThan(1);
+    const developed = knightAppearance(0,{Strength:100000,Vitality:100000});
+    expect(developed.buildScale).toBeLessThanOrEqual(1.08);
+    expect(developed.faceBrightness).toBeLessThanOrEqual(1.06);
+    expect(developed.beard).toBe(0);
+    expect(developed.stage).toBe(0);
   });
   it('keeps established map distances and gives every destination a rereadable chapter', () => {
     expect(landmarks.map(s=>s.km)).toEqual([0,9,21,30]);

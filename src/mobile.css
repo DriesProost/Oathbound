@@ -285,3 +285,18 @@ html[data-keyboard="open"] .sound-offer {
 .journey-chapter p { max-width: 65ch; line-height: 1.8; margin: 0 0 1rem; }
 .journey-story .journey-chapter { text-align: left; }
 .journey-story .journey-chapter p { font-size: 1rem; text-align: left; color: #425043; }
+/* Detailed character assets share the same framing in welcome, Keep and Knight. */
+.knight-illustration { position: relative; width: 100%; aspect-ratio: 2 / 3; isolation: isolate; }
+.knight-figure { width: 100%; height: 100%; transform-origin: 50% 60%; }
+.knight-figure img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.knight-figure .knight-complexion { position: absolute; inset: 0; mask-image: radial-gradient(ellipse 10% 7% at 52% 11%, #000 50%, transparent 100%); pointer-events: none; }
+.hero-art .knight-illustration { max-width: 215px; max-height: 305px; width: 100%; z-index: 1; }
+.hero-art > span { z-index: 2; }
+.profile-art .knight-illustration { width: 100%; }
+.welcome-art .knight-illustration { width: 160px; margin: 5px auto 0; }
+@media (max-width: 600px) {
+  .knight-page .knight-profile { grid-template-columns: 1fr; gap: 20px; }
+  .knight-page .profile-art { width: 220px; max-width: 100%; justify-self: center; padding: 25px 9px 16px; }
+  .knight-page .heraldic-caption { font-size: 8px; letter-spacing: 1px; }
+  .hero-art .knight-illustration { max-height: 275px; }
+}
