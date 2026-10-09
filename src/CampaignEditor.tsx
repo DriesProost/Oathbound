@@ -267,6 +267,7 @@ export default function CampaignEditor({
                       <input
                         id="target-strength-weekly"
                         type="number"
+                        inputMode="numeric"
                         required
                         min={campaignRules.trainingSessions.min}
                         max={campaignRules.trainingSessions.max}
@@ -425,6 +426,11 @@ export default function CampaignEditor({
                       <input
                         id={`target-${goal.id}`}
                         type="number"
+                        inputMode={
+                          t.metric === "km" || t.metric === "hours"
+                            ? "decimal"
+                            : "numeric"
+                        }
                         required
                         min={targetRules[t.metric].min}
                         max={targetRules[t.metric].max}

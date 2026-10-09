@@ -109,3 +109,9 @@ Recording a deed now creates one coordinated receipt with exact Renown and attri
 The persistent **Sound** speaker control manages optional generated effects, volume and independently optional brief haptics. Sound starts **unset** and silent. After the first recorded deed/Oath, a one-time offer lets you enable and preview effects or decline. Your choice is saved separately from the campaign. Even when enabled, sound waits for a user gesture on each visit. There is no background music.
 
 See [feedback design and audio provenance](docs/feedback.md). `npm test` includes event ordering, threshold detection, correction isolation, device failures and preference persistence. The optional `scripts/feedback-smoke.cjs` checks browser behavior against a running Vite server and requires externally supplied Playwright/Chromium; `PLAYWRIGHT_MODULE`, `CHROMIUM_PATH` and `OATHBOUND_URL` can specify those paths and the development server. Stage 2D remains deferred.
+
+## Mobile field testing and PWA
+
+Oathbound now includes an owned heraldic icon, install manifest and production-only offline shell. Keep offers **Add to home screen**; new builds show **Update & reload** rather than refreshing an unfinished entry automatically. Phone navigation, touch targets, keyboard/type sizing, safe-area spacing and short landscape layouts have been refined. Existing campaign data still uses the same local persistence model.
+
+For phone installation, publish the production `dist` directory over HTTPS, open it online once, then install from Keep or your browser menu. Check Chronicle in the installed app before logging there: some platforms keep its storage separate. See [mobile field-test instructions and update behavior](docs/mobile-field-test.md). The optional `scripts/mobile-pwa-smoke.cjs` verifies layouts, installability, offline startup and save preservation. Stage 2D remains deferred.

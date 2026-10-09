@@ -1,3 +1,4 @@
+import { AppUpdate, InstallApp } from "./PwaStatus";
 import {
   FeedbackProvider,
   FeedbackSurface,
@@ -459,6 +460,7 @@ function OathboundApp() {
             <button
               key={t.name}
               className={tab === t.name ? "active" : ""}
+              aria-current={tab === t.name ? "page" : undefined}
               onClick={() => switchTab(t.name)}
             >
               <t.icon size={20} />
@@ -591,6 +593,7 @@ function OathboundApp() {
               </button>
             </div>
           )}
+          <AppUpdate />
           <FeedbackSurface />
           {notice && (
             <div className="notice" role="status">
@@ -808,6 +811,7 @@ function OathboundApp() {
                   </section>
                 )}
               </div>
+              <InstallApp />
               <div className="footer-note">
                 <span>✦</span> You are training more than a knight. You are
                 building a life.
@@ -1205,6 +1209,7 @@ function OathboundApp() {
             <button
               key={t.name}
               className={tab === t.name ? "active" : ""}
+              aria-current={tab === t.name ? "page" : undefined}
               onClick={() => switchTab(t.name)}
             >
               <t.icon size={21} />

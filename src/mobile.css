@@ -1,0 +1,272 @@
+/* Phone ergonomics override only presentation; domain and save rules are unchanged. */
+:root {
+  --phone-nav-space: calc(82px + env(safe-area-inset-bottom, 0px));
+}
+button,
+input,
+select {
+  touch-action: manipulation;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #8c794e;
+  outline-offset: 3px;
+}
+.app-update,
+.install-app {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  border-block: 1px solid #d6c8a8;
+  padding: 16px 0;
+  margin: 16px 0;
+  color: #526046;
+}
+.app-update p,
+.install-app p {
+  font-size: 13px;
+  margin: 4px 0;
+}
+.install-app > div:first-child {
+  flex: 1;
+  min-width: 160px;
+}
+.install-instructions {
+  flex-basis: 100%;
+}
+.install-app strong {
+  font-family: Georgia, serif;
+  font-size: 17px;
+}
+@media (max-width: 1000px) {
+  .content,
+  .campaign-shell,
+  .welcome {
+    padding-bottom: calc(var(--phone-nav-space) + 24px);
+  }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+    min-height: 44px;
+    max-width: 100%;
+  }
+  button {
+    min-height: 44px;
+  }
+  .complete-button,
+  .oath-confirm button,
+  .oath-take {
+    min-height: 48px;
+  }
+  .weight-history button,
+  .feedback-dismiss,
+  .notice > button,
+  .migration-note > button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .sound-toggle {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .feedback-controls {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    right: calc(10px + env(safe-area-inset-right, 0px));
+  }
+  .sound-settings {
+    max-width: calc(
+      100vw - 24px - env(safe-area-inset-left, 0px) -
+        env(safe-area-inset-right, 0px)
+    );
+    max-height: calc(100dvh - var(--phone-nav-space) - 68px);
+    overflow: auto;
+  }
+  .sound-offer {
+    bottom: calc(var(--phone-nav-space) + 12px);
+    max-height: calc(100dvh - var(--phone-nav-space) - 84px);
+    overflow: auto;
+  }
+  .feedback-fresh {
+    top: calc(64px + env(safe-area-inset-top, 0px));
+    max-height: calc(100dvh - var(--phone-nav-space) - 90px);
+  }
+  .reward-feedback {
+    overflow-wrap: anywhere;
+  }
+  .feedback-record {
+    min-width: 0;
+  }
+  .feedback-dismiss {
+    flex-shrink: 0;
+  }
+  .topbar {
+    padding-top: env(safe-area-inset-top, 0px);
+    min-height: calc(60px + env(safe-area-inset-top, 0px));
+    height: auto;
+  }
+  .topbar > div {
+    padding-right: 48px;
+  }
+  input,
+  select,
+  textarea {
+    scroll-margin-block: 84px;
+  }
+  .campaign-goal,
+  .weight-setup-choice,
+  .haptic-choice {
+    min-height: 44px;
+  }
+}
+@media (max-width: 760px), (max-height: 500px) and (max-width: 1000px) {
+  .mobile-nav {
+    z-index: 30;
+    padding: 6px max(4px, env(safe-area-inset-right, 0px))
+      calc(6px + env(safe-area-inset-bottom, 0px))
+      max(4px, env(safe-area-inset-left, 0px));
+  }
+  .mobile-nav button {
+    flex: 1;
+    min-width: 0;
+    min-height: 54px;
+    padding: 6px 2px;
+    font-size: 11px;
+    gap: 4px;
+  }
+  .content {
+    padding-inline: max(16px, env(safe-area-inset-left, 0px))
+      max(16px, env(safe-area-inset-right, 0px));
+  }
+  .topbar > span {
+    font-size: 14px;
+    min-width: 0;
+  }
+  .topbar > div {
+    gap: 8px;
+  }
+  .top-renown {
+    gap: 4px;
+    font-size: 11px;
+  }
+  .topbar .small {
+    display: none;
+  }
+  .reward-feedback {
+    gap: 8px;
+    padding: 12px;
+  }
+  .feedback-emblem,
+  .tier-rank .feedback-emblem,
+  .tier-commission .feedback-emblem {
+    width: 38px;
+    height: 38px;
+  }
+  .feedback-record h2 {
+    overflow-wrap: anywhere;
+  }
+  .sound-settings input[type="range"] {
+    min-height: 44px;
+  }
+  .weight-chart svg {
+    width: 100%;
+    height: auto;
+  }
+}
+@media (max-height: 500px) and (max-width: 1000px) {
+  /* Short landscape / keyboard viewports need the full page, not a pinned ceremony. */
+  .feedback-fresh {
+    position: relative;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+  }
+  .mobile-nav button {
+    min-height: 44px;
+  }
+  .mobile-nav {
+    padding-top: 3px;
+    padding-bottom: calc(3px + env(safe-area-inset-bottom, 0px));
+  }
+  .sound-offer {
+    position: static;
+    width: auto;
+    margin: 16px;
+  }
+  .sidebar {
+    display: none;
+  }
+  .main-shell {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+@media (max-width: 360px) {
+  .topbar > span {
+    font-size: 12px;
+  }
+  .topbar {
+    padding-inline: 12px;
+  }
+  .feedback-emblem {
+    display: none;
+  }
+}
+html[data-keyboard="open"] .feedback-fresh {
+  position: relative;
+  top: auto;
+  max-height: none;
+}
+html[data-keyboard="open"] .sound-offer {
+  display: none;
+}
+@media (max-width: 1000px) {
+  .app button,
+  .campaign-shell button,
+  .welcome button {
+    min-height: 44px !important;
+  }
+  .app .complete-button,
+  .oath-confirm button,
+  .oath-take {
+    min-height: 48px !important;
+  }
+}
+@media (max-width: 760px) {
+  .weight-chart text {
+    font-size: 16px;
+  }
+  .map-place-name {
+    font-size: 22px;
+  }
+}
+@media (max-width: 760px), (max-height: 500px) and (max-width: 1000px) {
+  .mobile-nav {
+    display: flex;
+    flex-direction: row;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    justify-content: space-around;
+    background: #f9faf3f5;
+    border-top: 1px solid #dedfd3;
+    gap: 0;
+    backdrop-filter: blur(10px);
+  }
+  .mobile-nav button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  .mobile-nav .active {
+    color: #314f35;
+    background: #e8eddf;
+    border-radius: 6px;
+  }
+}

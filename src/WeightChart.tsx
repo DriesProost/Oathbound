@@ -23,7 +23,7 @@ export default function WeightChart({
     );
   const width = 440,
     height = 230,
-    left = 65,
+    left = 85,
     right = 18,
     top = 16,
     bottom = 40;
