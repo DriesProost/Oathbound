@@ -1,24 +1,860 @@
-import {useState} from 'react';
-import {Castle,ScrollText,Map,Shield,BookOpen,Swords,Footprints,Heart,Crown,Flame,Check,ArrowRight,ChevronRight,Sun,Menu} from 'lucide-react';
-import {attributes,quests,createKnight,completeQuest,recordSetback,totals,rankProgress,oathStats,dayKey,type State,type Attribute} from './domain';
-import {load,save} from './storage';
-const icons:Record<Attribute,typeof Shield>={Strength:Swords,Endurance:Footprints,Resolve:Shield,Vitality:Heart,Presence:Crown,Wisdom:BookOpen};
-const tabs=[{name:'Keep',icon:Castle},{name:'Quest Board',icon:ScrollText},{name:'Journey',icon:Map},{name:'Knight',icon:Shield},{name:'Chronicle',icon:BookOpen}];
-function KnightArt(){return <svg viewBox="0 0 320 350" role="img" aria-label="A steel-armoured knight bearing an oak-green shield"><defs><linearGradient id="steel" x1="0" x2="1"><stop stopColor="#687974"/><stop offset=".5" stopColor="#d0d6ca"/><stop offset="1" stopColor="#596b66"/></linearGradient><linearGradient id="cloak" x2=".7" y2="1"><stop stopColor="#45665a"/><stop offset="1" stopColor="#182c26"/></linearGradient></defs><circle cx="165" cy="154" r="116" fill="#d5c9aa" opacity=".13"/><circle cx="165" cy="154" r="104" fill="none" stroke="#bdad80" opacity=".2"/><path d="M79 307L98 155 128 111 195 110 222 150 246 308Z" fill="url(#cloak)"/><path d="M137 250L130 322H153L166 254 176 322H201L191 248Z" fill="url(#steel)"/><path d="M122 119L151 107 187 111 207 137 196 226 172 256 131 234 115 165Z" fill="url(#steel)"/><path d="M158 124L159 219M128 198L194 202M128 216L193 219" stroke="#465851" strokeWidth="3"/><path d="M141 52L168 41 194 54 200 92 184 113 153 110 134 87Z" fill="url(#steel)"/><path d="M139 72L197 72 190 83 143 83Z" fill="#1a3029"/><path d="M170 46L170 107" stroke="#dae0d3" strokeWidth="4"/><path d="M122 121L97 124 85 146 105 160 125 146M199 121L221 126 234 148 213 160 196 142" fill="url(#steel)"/><path d="M94 153L83 205 96 218 114 160M219 154L235 211 219 227 202 161" fill="url(#steel)"/><path d="M78 168L129 179 127 237 101 267 72 230Z" fill="#294c3d" stroke="#b2ab87" strokeWidth="4"/><path d="M98 187L108 187 108 208 120 208 120 217 108 217 108 239 98 239 98 217 85 217 85 208 98 208Z" fill="#c5b27c"/><path d="M233 166L229 292" stroke="#bbc5b8" strokeWidth="6"/><path d="M214 209L248 212" stroke="#b6a16b" strokeWidth="6"/><path d="M230 295L224 283 235 283Z" fill="#d1d5ca"/><ellipse cx="160" cy="331" rx="80" ry="9" fill="#0c211b" opacity=".35"/></svg>;}
-export default function App(){
- const [initial]=useState(()=>{try{return {state:load(),error:''};}catch{return {state:null,error:'Your saved chronicle could not be read. Your data has been left untouched.'};}});
- const [state,setState]=useState<State|null>(initial.state);const [error,setError]=useState(initial.error);const [tab,setTab]=useState('Keep');const [name,setName]=useState('');const [step,setStep]=useState(0);const [notice,setNotice]=useState('');const [confirm,setConfirm]=useState(false);
- function update(next:State){try{save(next);setState(next);setError('');}catch{setError('Your progress could not be saved. Please check that browser storage is available.');}}
- if(!state)return <main className="welcome"><div className="welcome-card"><div className="brand"><Shield size={30}/><span>OATHBOUND<small>A LIFE WELL FOUGHT</small></span></div><div className="welcome-art"><KnightArt/></div><span className="eyebrow">YOUR CAMPAIGN BEGINS HERE</span><h1>{step===0?'Build a life worthy of your oath.':'Every knight begins as a squire.'}</h1><p>Small actions. Steady resolve. Train your knight through the things that make your real life better.</p>{error?<p role="alert" className="error">{error}</p>:step===0?<><div className="welcome-features"><span><Swords/>Train in the real world</span><span><Shield/>Keep your earned progress</span><span><BookOpen/>Write your own chronicle</span></div><button className="primary" onClick={()=>setStep(1)}>Begin your campaign <ArrowRight size={18}/></button><small className="muted">No account needed. Your progress stays in this browser.</small></>:<form onSubmit={e=>{e.preventDefault();update(createKnight(name));}}><label htmlFor="name">What shall we call you?</label><input id="name" required maxLength={40} value={name} onChange={e=>setName(e.target.value)} placeholder="Your name or knight’s name" autoFocus/><p className="muted">You start with a clean slate: no invented victories, no lost progress after a setback.</p><button className="primary">Take up the shield <ArrowRight size={18}/></button><button type="button" className="text-button" onClick={()=>setStep(0)}>Back</button></form>}</div></main>;
- const today=dayKey(),total=totals(state),rank=rankProgress(total.renown),oath=oathStats(state),done=state.entries.filter(e=>e.date===today),remaining=quests.filter(q=>!done.some(e=>e.questId===q.id));
- function finish(id:string){const next=completeQuest(state!,id);if(next===state)return;update(next);const q=quests.find(q=>q.id===id)!;setNotice(`${q.name} completed · +${q.renown} Renown`);}
- function questCard(q:typeof quests[number]){const Icon=icons[q.attribute],completed=done.some(e=>e.questId===q.id),setback=q.id==='oath'&&state!.oaths[today]===false;return <article className={'quest '+(completed?'completed':'')} key={q.id}><div className={'quest-icon '+q.attribute.toLowerCase()}><Icon size={22}/></div><div className="quest-info"><h3>{q.name}</h3><p>{q.description}</p><div className="rewards"><span>+{q.points} {q.attribute}</span><span className="renown">+{q.renown} Renown</span></div></div><button className={'complete-button '+(completed?'checked':'')} disabled={completed||setback} aria-label={completed?`${q.name} completed`:`Complete ${q.name}`} onClick={()=>finish(q.id)}>{completed?<Check size={20}/>:setback?'Rest':'Complete'}</button></article>;}
- const stats=<div className="attributes">{attributes.map(a=>{const Icon=icons[a];return <div className="attribute" key={a}><Icon size={19}/><span>{a}</span><strong>{total.stats[a]}</strong></div>;})}</div>;
- return <div className="app"><aside className="sidebar"><div className="brand"><Shield size={30}/><span>OATHBOUND<small>A LIFE WELL FOUGHT</small></span></div><div className="sidebar-rule"/><span className="nav-label">YOUR CAMPAIGN</span><nav>{tabs.map(t=><button key={t.name} className={tab===t.name?'active':''} onClick={()=>{setTab(t.name);setNotice('');}}><t.icon size={20}/>{t.name}{tab===t.name&&<ChevronRight size={15}/>}</button>)}</nav><div className="sidebar-quote"><Shield size={22}/><p>“Great deeds are built<br/>from small promises kept.”</p><span>ONE DAY AT A TIME</span></div><div className="sidebar-profile"><div className="avatar">{state.name[0].toUpperCase()}</div><div><strong>{state.name}</strong><small>{rank.rank.name} · Level of life: learning</small></div></div></aside><div className="main-shell"><header className="topbar"><span><Castle size={17}/> Your {tab==='Keep'?'keep':tab.toLowerCase()}</span><div><span className="date">{new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'long'})}</span><span className="top-renown"><Flame size={16}/>{total.renown} <span>Renown</span></span><div className="avatar small">{state.name[0].toUpperCase()}</div></div></header><main className="content"><div className="page-heading"><div><span className="eyebrow">{tab==='Keep'?'A NEW DAY. A WORTHY PURPOSE.':'YOUR CAMPAIGN, ONE DAY AT A TIME.'}</span><h1>{tab==='Keep'?`Welcome to your keep, ${state.name}.`:tab==='Quest Board'?'Small deeds. Lasting change.':tab==='Journey'?'The road ahead.':tab==='Knight'?'The knight you are becoming.':'Every day is part of the story.'}</h1><p>{tab==='Keep'?'Your next chapter is written in the things you do today.':tab==='Quest Board'?'Do the work in the real world, then record your victory here.':tab==='Journey'?'Let your daily walks carry you a little further.':tab==='Knight'?'Earned through consistency. Kept through setbacks.':'A lost skirmish never erases a campaign.'}</p></div><span className="day-badge"><Sun size={17}/> Day {Math.max(1,Math.floor((new Date(today+'T12:00:00').getTime()-new Date(state.created+'T12:00:00').getTime())/86400000)+1)}</span></div>{error&&<p role="alert" className="error">{error}</p>}{notice&&<div className="notice" role="status"><Check size={17}/>{notice}<button aria-label="Dismiss notification" onClick={()=>setNotice('')}>×</button></div>}
- {tab==='Keep'&&<><div className="hero"><div className="hero-copy"><span className="eyebrow">YOUR KNIGHT</span><h2>{state.name}</h2><span className="rank-badge"><Shield size={14}/>{rank.rank.name}</span><p>The armour may be humble.<br/>The promise is anything but.</p><div className="renown-label"><span>RENOWN</span><strong>{total.renown} <small>/ {rank.next?.threshold??total.renown}</small></strong></div><div className="progress"><i style={{width:`${rank.progress*100}%`}}/></div><small className="next-rank">{rank.next?`${rank.next.threshold-total.renown} Renown to ${rank.next.name}`:'Your highest rank, earned.'}</small><button className="hero-link" onClick={()=>setTab('Knight')}>Meet your knight <ArrowRight size={16}/></button></div><div className="hero-art"><KnightArt/><span>STEADY IN PURPOSE</span></div><div className="hero-quote">Your keep is quiet.<br/>Your story is just beginning.<div>EST. {new Date(state.created+'T12:00:00').getFullYear()}</div></div></div>{stats}<div className="dashboard-grid"><section><div className="section-heading"><h2>Today’s quests <span>{done.length}/{quests.length}</span></h2><button className="text-button" onClick={()=>setTab('Quest Board')}>View board <ArrowRight size={15}/></button></div><div className="quest-list">{(remaining.length?remaining.slice(0,3):quests.slice(0,3)).map(questCard)}</div><div className="daily-progress"><div><span>{done.length===quests.length?'A worthy day, well spent.':'A little progress is still progress.'}</span><strong>{Math.round(done.length/quests.length*100)}%</strong></div><div className="progress light"><i style={{width:`${done.length/quests.length*100}%`}}/></div></div></section><section className="oath-card"><div className="oath-title"><Shield size={21}/><span>THE OATH OF TEMPERANCE</span></div><h2>{oath.current}<small>days steadfast</small></h2><p>One promise. Renewed each day.</p><div className="oath-summary"><div><strong>{oath.longest}</strong><span>Longest oath</span></div><div><strong>{oath.sober}</strong><span>Alcohol-free days</span></div></div><blockquote>A setback is a lost skirmish,<br/>not a deleted campaign.</blockquote><button className="text-button" onClick={()=>setTab('Chronicle')}>View your chronicle <ArrowRight size={16}/></button></section></div><div className="footer-note"><span>✦</span> You are training more than a knight. You are building a life.</div></>}
- {tab==='Quest Board'&&<><div className="board-summary"><ScrollText/><div><strong>{done.length} of {quests.length} quests complete</strong><p>Self-reported actions · reset daily · rewards remain yours</p></div></div><div className="quest-list full">{quests.map(questCard)}</div><section className="panel setback"><h2>A different kind of day?</h2><p>If you drank alcohol today, you can record it honestly. Your current oath resets; earned Renown and attributes stay.</p>{state.oaths[today]===false?<p>Recorded. Tomorrow is another opportunity to renew your oath.</p>:confirm?<div><button className="secondary" onClick={()=>{update(recordSetback(state));setConfirm(false);setNotice('Today recorded. Your campaign and earned progress remain.');}}>Record today as not alcohol-free</button><button className="text-button" onClick={()=>setConfirm(false)}>Cancel</button></div>:<button className="text-button" onClick={()=>setConfirm(true)}>Record an oath setback</button>}</section></>}
- {tab==='Knight'&&<><div className="knight-profile panel"><div className="profile-art"><KnightArt/></div><div><span className="eyebrow">YOUR CHARACTER</span><h2>{state.name}</h2><span className="rank-badge dark">{rank.rank.name}</span><p>{total.renown} Renown earned across {state.entries.length} completed quests.</p><p className="muted">Starting equipment: steel helm, simple armour, oak shield. Appearance customisation will come in a later chapter.</p></div></div>{stats}<section className="panel"><h2>The path to knighthood</h2>{['Squire','Man-at-Arms','Knight Errant','Knight','Knight Banneret'].map((r,i)=><div className="rank-row" key={r}><Shield size={18}/><strong>{r}</strong><span>{[0,250,750,1500,3000][i]} Renown</span>{total.renown>=[0,250,750,1500,3000][i]&&<Check size={18}/>}</div>)}</section><section className="panel"><h2>Milestones</h2><p>{state.entries.length?'✦ First deed — your campaign is underway.':'Complete your first quest to write the first line of your story.'}</p>{oath.longest>=7&&<p>✦ Seven days steadfast — a week-long oath.</p>}{total.distance>=30&&<p>✦ A road well travelled — 30 km walked.</p>}</section></>}
- {tab==='Journey'&&<><section className="journey panel"><span className="eyebrow">THE ROAD TO OAKHAVEN</span><Map size={60}/><h2>{total.distance.toFixed(1)} km travelled</h2><p>Complete “Patrol the Realm” after walking 3 km to move along the road. Distance is self-reported; wearable tracking comes later.</p><div className="road">{[{name:'Your keep',km:0},{name:'Old Mill',km:9},{name:'Wayfarer’s Inn',km:21},{name:'Oakhaven',km:30}].map(l=><div key={l.name} className={total.distance>=l.km?'reached':''}><span>◆</span><strong>{l.name}</strong><small>{l.km} km</small></div>)}</div><div className="progress light"><i style={{width:`${Math.min(total.distance/30,1)*100}%`}}/></div><button className="primary" onClick={()=>setTab('Quest Board')}>Take a patrol <ArrowRight size={16}/></button></section></>}
- {tab==='Chronicle'&&<><div className="history-stats">{[{label:'Renown earned',value:total.renown},{label:'Workouts completed',value:state.entries.filter(e=>e.questId==='training').length},{label:'Distance walked',value:`${total.distance} km`},{label:'Quests completed',value:state.entries.length}].map(s=><div className="panel" key={s.label}><span>{s.label}</span><strong>{s.value}</strong></div>)}</div><section className="panel"><div className="section-heading"><h2>The Oath of Temperance</h2><Shield size={22}/></div><div className="history-stats oath-history">{[{label:'Current streak',value:oath.current},{label:'Longest streak',value:oath.longest},{label:'Historical sober days',value:oath.sober},{label:'Last 30 days · logged days only',value:oath.percentage===null?'—':`${oath.percentage}%`}].map(s=><div key={s.label}><strong>{s.value}</strong><span>{s.label}</span></div>)}</div><p className="muted">{oath.logged} days recorded in the last 30 days. Unlogged days are unknown and do not count as alcohol-free.</p></section><section className="panel"><h2>Your chronicle</h2>{!state.entries.length?<div className="empty"><BookOpen size={32}/><h3>A blank page is a beginning.</h3><p>Your completed quests and earned Renown will appear here.</p><button className="text-button" onClick={()=>setTab('Quest Board')}>Write your first entry <ArrowRight size={16}/></button></div>:Object.entries(Object.groupBy([...state.entries].reverse(),e=>e.date)).map(([date,entries])=><div className="history-day" key={date}><div className="section-heading"><h3>{new Date(date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</h3><span>+{entries!.reduce((n,e)=>n+e.renown,0)} Renown</span></div>{entries!.map(e=><div className="history-entry" key={e.questId}><Check size={15}/><span>{quests.find(q=>q.id===e.questId)?.name}</span><strong>+{e.points} {e.attribute}</strong></div>)}{state.oaths[date]===false&&<p className="muted">Oath setback recorded. Earned progress retained.</p>}</div>)}{Object.keys(state.oaths).filter(d=>!state.entries.some(e=>e.date===d)).sort().reverse().map(d=><div className="history-day" key={d}><h3>{d}</h3><p>Oath setback recorded. Your campaign continues.</p></div>)}</section><p className="muted">Weight trends and detailed step counts will be added when those logging tools are available.</p></>}
- </main><nav className="mobile-nav" aria-label="Main navigation">{tabs.map(t=><button key={t.name} className={tab===t.name?'active':''} onClick={()=>setTab(t.name)}><t.icon size={21}/><span>{t.name==='Quest Board'?'Quests':t.name}</span></button>)}</nav></div></div>;
+import { useEffect, useState } from "react";
+import {
+  Castle,
+  ScrollText,
+  Map,
+  Shield,
+  BookOpen,
+  Check,
+  ArrowRight,
+  ChevronRight,
+  Sun,
+  Flame,
+} from "lucide-react";
+import {
+  quests,
+  createKnight,
+  completeQuest,
+  totals,
+  rankProgress,
+  oathStats,
+  dayKey,
+  questDate,
+  canConfirm,
+  progression,
+  ranks,
+  type State,
+  type Reward,
+  type Quest,
+} from "./domain";
+import { load, save } from "./storage";
+import KnightArt from "./KnightArt";
+import {
+  Attributes,
+  OathPanel,
+  HistoricalOath,
+  RewardText,
+  icons,
+} from "./components";
+const tabs = [
+  { name: "Keep", icon: Castle },
+  { name: "Quest Board", icon: ScrollText },
+  { name: "Journey", icon: Map },
+  { name: "Knight", icon: Shield },
+  { name: "Chronicle", icon: BookOpen },
+];
+export default function App() {
+  const [initial] = useState(() => {
+    try {
+      return { state: load(), error: "" };
+    } catch {
+      return {
+        state: null,
+        error:
+          "Your saved chronicle could not be read or migrated. Your original data has been left untouched. Please do not clear browser storage.",
+      };
+    }
+  });
+  const [state, setState] = useState<State | null>(initial.state),
+    [error, setError] = useState(initial.error);
+  const [tab, setTab] = useState("Keep"),
+    [name, setName] = useState(""),
+    [step, setStep] = useState(0);
+  const [notice, setNotice] = useState<{
+    title: string;
+    reward?: Reward;
+    negative?: boolean;
+  } | null>(null);
+  const [migrationVisible, setMigrationVisible] = useState(
+    !!initial.state?.migratedFrom,
+  );
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const refresh = () => setNow(new Date());
+    const timer = setInterval(refresh, 30000);
+    window.addEventListener("focus", refresh);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+    };
+  }, []);
+  function update(next: State) {
+    try {
+      save(next);
+      setState(next);
+      setError("");
+      return true;
+    } catch {
+      setError(
+        "Your progress could not be saved. Check that browser storage is available. This action has not been recorded.",
+      );
+      return false;
+    }
+  }
+  function report(title: string, reward?: Reward, negative?: boolean) {
+    setNotice({ title, reward, negative });
+  }
+  if (!state)
+    return (
+      <main className="welcome">
+        <div className="welcome-card">
+          <div className="brand">
+            <Shield size={30} />
+            <span>
+              OATHBOUND<small>A LIFE WELL FOUGHT</small>
+            </span>
+          </div>
+          <div className="welcome-art">
+            <KnightArt />
+          </div>
+          <span className="eyebrow">YOUR CAMPAIGN BEGINS HERE</span>
+          <h1>
+            {step === 0
+              ? "Build a life worthy of your oath."
+              : "Every knight begins as a squire."}
+          </h1>
+          <p>
+            Small actions. Steady resolve. Train your knight through the things
+            that make your real life better.
+          </p>
+          {error ? (
+            <p role="alert" className="error">
+              {error}
+            </p>
+          ) : step === 0 ? (
+            <>
+              <div className="welcome-features">
+                <span>
+                  <Shield />
+                  Train in the real world
+                </span>
+                <span>
+                  <Shield />
+                  Keep your earned progress
+                </span>
+                <span>
+                  <BookOpen />
+                  Write your own chronicle
+                </span>
+              </div>
+              <button className="primary" onClick={() => setStep(1)}>
+                Begin your campaign <ArrowRight size={18} />
+              </button>
+              <small className="muted">
+                No account needed. Your progress stays in this browser.
+              </small>
+            </>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                update(createKnight(name));
+              }}
+            >
+              <label htmlFor="name">What shall we call you?</label>
+              <input
+                id="name"
+                required
+                maxLength={40}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name or knight’s name"
+                autoFocus
+              />
+              <p className="muted">
+                You start with a clean slate. Small deeds build a lasting
+                campaign.
+              </p>
+              <button className="primary">
+                Take up the shield <ArrowRight size={18} />
+              </button>
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => setStep(0)}
+              >
+                Back
+              </button>
+            </form>
+          )}
+        </div>
+      </main>
+    );
+  const today = dayKey(now),
+    total = totals(state),
+    rank = rankProgress(total.renown),
+    oath = oathStats(state, today);
+  const done = state.entries.filter((e) => e.date === today),
+    oathKept = state.oaths[today]?.status === "kept";
+  const deedsToday = done.length + Number(oathKept);
+  const dailyRenown =
+    done.reduce((n, e) => n + e.reward.renown, 0) +
+    (oathKept ? state.oaths[today].reward!.renown : 0);
+  function finish(q: Quest, date: string) {
+    const next = completeQuest(state!, q.id, date, now);
+    if (next !== state && update(next))
+      report(`${q.name} · deed recorded.`, q.reward);
+  }
+  function questCard(q: Quest, material = false) {
+    const date = questDate(q, now),
+      recorded = state!.entries.find(
+        (e) => e.date === date && e.questId === q.id,
+      ),
+      completed = !!recorded;
+    const allowed = date >= state!.created && canConfirm(date, q.timing, now),
+      Icon = icons[Object.keys(q.reward.xp)[0] as keyof typeof icons];
+    const timing =
+      q.timing === "end-of-day"
+        ? `Confirm after ${String(progression.eveningConfirmationHour).padStart(2, "0")}:00`
+        : q.timing === "retrospective"
+          ? `Previous night · ${date}`
+          : "Record when performed";
+    return (
+      <article
+        className={
+          (material ? "quest parchment-notice " : "quest ") +
+          (completed ? "completed" : "")
+        }
+        key={q.id}
+      >
+        {material && <div className="notice-pin" />}
+        <div
+          className={"quest-icon " + Object.keys(q.reward.xp)[0].toLowerCase()}
+        >
+          <Icon size={22} />
+        </div>
+        <div className="quest-info">
+          <div className="quest-heading">
+            <h3>{q.name}</h3>
+            {material && <span className="difficulty">{q.difficulty}</span>}
+          </div>
+          <p>{q.description}</p>
+          <RewardText reward={recorded?.reward || q.reward} />
+          <small className="quest-timing">
+            {date < state!.created
+              ? "Available after your first night on campaign"
+              : completed
+                ? `Recorded · ${date}`
+                : timing}
+          </small>
+        </div>
+        <button
+          className={"complete-button " + (completed ? "checked" : "")}
+          disabled={completed || !allowed}
+          aria-label={completed ? `${q.name} completed` : `Complete ${q.name}`}
+          onClick={() => finish(q, date)}
+        >
+          {completed ? (
+            <>
+              <Check size={18} />
+              <span>Sealed</span>
+            </>
+          ) : !allowed ? (
+            "Later"
+          ) : q.timing === "immediate" ? (
+            "Complete"
+          ) : (
+            "Confirm"
+          )}
+        </button>
+      </article>
+    );
+  }
+  const switchTab = (name: string) => {
+    setTab(name);
+    setNotice(null);
+  };
+  const historyDates = [
+    ...new Set([
+      ...state.entries.map((e) => e.date),
+      ...Object.keys(state.oaths),
+    ]),
+  ]
+    .sort()
+    .reverse();
+  return (
+    <div className="app">
+      <aside className="sidebar">
+        <div className="brand">
+          <Shield size={30} />
+          <span>
+            OATHBOUND<small>A LIFE WELL FOUGHT</small>
+          </span>
+        </div>
+        <div className="sidebar-rule" />
+        <span className="nav-label">YOUR CAMPAIGN</span>
+        <nav aria-label="Desktop navigation">
+          {tabs.map((t) => (
+            <button
+              key={t.name}
+              className={tab === t.name ? "active" : ""}
+              onClick={() => switchTab(t.name)}
+            >
+              <t.icon size={20} />
+              {t.name}
+              {tab === t.name && <ChevronRight size={15} />}
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-quote">
+          <Shield size={22} />
+          <p>
+            “Great deeds are built
+            <br />
+            from small promises kept.”
+          </p>
+          <span>ONE DAY AT A TIME</span>
+        </div>
+        <div className="sidebar-profile">
+          <div className="avatar">{state.name[0].toUpperCase()}</div>
+          <div>
+            <strong>{state.name}</strong>
+            <small>{rank.rank.name} · A life well fought</small>
+          </div>
+        </div>
+      </aside>
+      <div className="main-shell">
+        <header className="topbar">
+          <span>
+            <Castle size={17} /> Your{" "}
+            {tab === "Keep" ? "keep" : tab.toLowerCase()}
+          </span>
+          <div>
+            <span className="date">
+              {now.toLocaleDateString("en-GB", {
+                weekday: "short",
+                day: "numeric",
+                month: "long",
+              })}
+            </span>
+            <span className="top-renown">
+              <Flame size={16} />
+              {total.renown} <span>Renown</span>
+            </span>
+            <div className="avatar small">{state.name[0].toUpperCase()}</div>
+          </div>
+        </header>
+        <main
+          className={"content " + (tab === "Quest Board" ? "board-page" : "")}
+        >
+          <div className="page-heading">
+            <div>
+              <span className="eyebrow">
+                {tab === "Keep"
+                  ? "A NEW DAY. A WORTHY PURPOSE."
+                  : tab === "Quest Board"
+                    ? "NOTICES FROM YOUR KEEP"
+                    : "YOUR CAMPAIGN, ONE DAY AT A TIME."}
+              </span>
+              <h1>
+                {tab === "Keep"
+                  ? `Welcome to your keep, ${state.name}.`
+                  : tab === "Quest Board"
+                    ? "Small deeds. Lasting change."
+                    : tab === "Journey"
+                      ? "The road ahead."
+                      : tab === "Knight"
+                        ? "The knight you are becoming."
+                        : "Every day is part of the story."}
+              </h1>
+              <p>
+                {tab === "Keep"
+                  ? "Your next chapter is written in the things you do today."
+                  : tab === "Quest Board"
+                    ? "Choose the deeds that serve you today. There is no perfect-day checklist."
+                    : tab === "Journey"
+                      ? "Let your daily walks carry you a little further."
+                      : tab === "Knight"
+                        ? "Earned through consistency. A campaign measured in seasons."
+                        : "A lost skirmish never erases a campaign."}
+              </p>
+            </div>
+            <span className="day-badge">
+              <Sun size={17} /> Day{" "}
+              {Math.max(
+                1,
+                Math.round(
+                  (new Date(today + "T12:00:00").getTime() -
+                    new Date(state.created + "T12:00:00").getTime()) /
+                    86400000,
+                ) + 1,
+              )}
+            </span>
+          </div>
+          {error && (
+            <p role="alert" className="error">
+              {error}
+            </p>
+          )}
+          {migrationVisible && (
+            <div className="migration-note">
+              <BookOpen size={19} />
+              <div>
+                <strong>Your chronicle has been preserved.</strong>
+                <p>
+                  Attribute points are now XP, and ranks follow the slower
+                  campaign curve. Legitimate rewards remain unchanged. Any
+                  reward attached to a previously broken Oath was corrected for
+                  that entry only. An untouched copy of your original save is
+                  retained in this browser.
+                </p>
+              </div>
+              <button
+                aria-label="Dismiss migration explanation"
+                onClick={() => setMigrationVisible(false)}
+              >
+                ×
+              </button>
+            </div>
+          )}
+          {notice && (
+            <div className="notice ceremony" role="status">
+              <div className="ceremony-seal">
+                <Check size={22} />
+              </div>
+              <div>
+                <strong>{notice.title}</strong>
+                {notice.reward && (
+                  <RewardText
+                    reward={notice.reward}
+                    negative={notice.negative}
+                  />
+                )}
+              </div>
+              <button
+                aria-label="Dismiss notification"
+                onClick={() => setNotice(null)}
+              >
+                ×
+              </button>
+            </div>
+          )}
+          {tab === "Keep" && (
+            <>
+              <div className="hero">
+                <div className="hero-copy">
+                  <span className="eyebrow">YOUR KNIGHT</span>
+                  <h2>{state.name}</h2>
+                  <span className="rank-badge">
+                    <Shield size={14} />
+                    {rank.rank.name}
+                  </span>
+                  <p>
+                    The armour may be humble.
+                    <br />
+                    The promise is anything but.
+                  </p>
+                  <div className="renown-label">
+                    <span>RENOWN</span>
+                    <strong>
+                      {total.renown}{" "}
+                      <small>
+                        {rank.next
+                          ? `/ ${rank.next.threshold}`
+                          : "· highest rank"}
+                      </small>
+                    </strong>
+                  </div>
+                  <div
+                    className="progress"
+                    role="progressbar"
+                    aria-label="Knight rank progress"
+                    aria-valuenow={Math.round(rank.progress * 100)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
+                    <i style={{ width: `${rank.progress * 100}%` }} />
+                  </div>
+                  <small className="next-rank">
+                    {rank.next
+                      ? `${rank.next.threshold - total.renown} Renown to ${rank.next.name}`
+                      : "Your highest rank, earned."}
+                  </small>
+                  <button
+                    className="hero-link"
+                    onClick={() => switchTab("Knight")}
+                  >
+                    Meet your knight <ArrowRight size={16} />
+                  </button>
+                </div>
+                <div className="hero-art">
+                  <KnightArt />
+                  <span>STEADY IN PURPOSE</span>
+                </div>
+                <div className="hero-quote">
+                  Your keep is quiet.
+                  <br />
+                  Your story is just beginning.
+                  <div>
+                    EST. {new Date(state.created + "T12:00:00").getFullYear()}
+                  </div>
+                </div>
+              </div>
+              <Attributes state={state} />
+              <div className="dashboard-grid">
+                <section>
+                  <div className="section-heading">
+                    <h2>Deeds for today</h2>
+                    <button
+                      className="text-button"
+                      onClick={() => switchTab("Quest Board")}
+                    >
+                      View board <ArrowRight size={15} />
+                    </button>
+                  </div>
+                  <div className="quest-list">
+                    {quests
+                      .filter((q) => q.timing === "immediate")
+                      .slice(0, 3)
+                      .map((q) => questCard(q))}
+                  </div>
+                  <div className="deeds-summary">
+                    <Check size={16} />
+                    <span>
+                      {deedsToday} {deedsToday === 1 ? "deed" : "deeds"}{" "}
+                      recorded today · {dailyRenown} Renown earned
+                    </span>
+                  </div>
+                  <p className="muted">
+                    A little progress is still progress. Choose what supports
+                    your real life.
+                  </p>
+                </section>
+                <section className="oath-card">
+                  <div className="oath-title">
+                    <Shield size={21} />
+                    <span>THE OATH OF TEMPERANCE</span>
+                  </div>
+                  <h2>
+                    {oath.current}
+                    <small>days steadfast</small>
+                  </h2>
+                  <p>
+                    {oathKept
+                      ? "Today’s Oath is confirmed."
+                      : state.oaths[today]?.status === "taken"
+                        ? "Your Oath is active. Return this evening."
+                        : state.oaths[today]?.status === "broken"
+                          ? "Today is recorded. The campaign continues."
+                          : "One promise. Renewed each day."}
+                  </p>
+                  <div className="oath-summary">
+                    <div>
+                      <strong>{oath.longest}</strong>
+                      <span>Longest oath</span>
+                    </div>
+                    <div>
+                      <strong>{oath.sober}</strong>
+                      <span>Alcohol-free days</span>
+                    </div>
+                  </div>
+                  <blockquote>
+                    A setback is a lost skirmish,
+                    <br />
+                    not a deleted campaign.
+                  </blockquote>
+                  <button
+                    className="text-button"
+                    onClick={() => switchTab("Quest Board")}
+                  >
+                    Attend to your Oath <ArrowRight size={16} />
+                  </button>
+                </section>
+              </div>
+              <div className="footer-note">
+                <span>✦</span> You are training more than a knight. You are
+                building a life.
+              </div>
+            </>
+          )}
+          {tab === "Quest Board" && (
+            <>
+              <div className="board-summary">
+                <ScrollText size={24} />
+                <div>
+                  <strong>
+                    {deedsToday} {deedsToday === 1 ? "deed" : "deeds"} recorded
+                    today
+                  </strong>
+                  <p>
+                    {dailyRenown} Renown earned · self-reported actions · no
+                    daily quota
+                  </p>
+                </div>
+                <span className="board-inscription">BY DEED, NOT WORD</span>
+              </div>
+              <div className="notice-board">
+                <div className="board-plaque">
+                  <span>✦</span> THE QUEST BOARD <span>✦</span>
+                </div>
+                <OathPanel
+                  state={state}
+                  now={now}
+                  update={update}
+                  report={report}
+                />
+                {[
+                  {
+                    id: "duties",
+                    title: "Daily Duties",
+                    subtitle: "Care for the person behind the armour.",
+                  },
+                  {
+                    id: "training",
+                    title: "Training & Study",
+                    subtitle:
+                      "Build strength, travel further, sharpen your mind.",
+                  },
+                ].map((section) => (
+                  <section className="board-section" key={section.id}>
+                    <div className="board-section-heading">
+                      <h2>{section.title}</h2>
+                      <p>{section.subtitle}</p>
+                    </div>
+                    <div className="quest-list">
+                      {quests
+                        .filter((q) => q.category === section.id)
+                        .map((q) => questCard(q, true))}
+                    </div>
+                  </section>
+                ))}
+                <p className="board-bottom">
+                  Take what serves you. Return when the deed is done.
+                </p>
+              </div>
+            </>
+          )}
+          {tab === "Knight" && (
+            <>
+              <div className="knight-profile panel">
+                <div className="profile-art">
+                  <KnightArt />
+                </div>
+                <div>
+                  <span className="eyebrow">YOUR CHARACTER</span>
+                  <h2>{state.name}</h2>
+                  <span className="rank-badge dark">{rank.rank.name}</span>
+                  <p>
+                    {total.renown} Renown earned across{" "}
+                    {state.entries.length +
+                      Object.values(state.oaths).filter(
+                        (o) => o.status === "kept",
+                      ).length}{" "}
+                    recorded deeds.
+                  </p>
+                  <p className="muted">
+                    Starting equipment: steel helm, simple armour, oak shield.
+                    Appearance customisation will come in a later chapter.
+                  </p>
+                </div>
+              </div>
+              <Attributes state={state} />
+              <section className="panel">
+                <h2>The path to knighthood</h2>
+                {ranks.map((r) => (
+                  <div className="rank-row" key={r.name}>
+                    <Shield size={18} />
+                    <strong>{r.name}</strong>
+                    <span>{r.threshold.toLocaleString()} Renown</span>
+                    {total.renown >= r.threshold && <Check size={18} />}
+                  </div>
+                ))}
+              </section>
+              <section className="panel">
+                <h2>Milestones</h2>
+                <p>
+                  {total.renown
+                    ? "✦ First deed — your campaign is underway."
+                    : "Complete your first deed to write the first line of your story."}
+                </p>
+                {oath.longest >= 7 && (
+                  <p>✦ Seven days steadfast — a week-long oath.</p>
+                )}
+                {total.distance >= 30 && (
+                  <p>✦ A road well travelled — 30 km walked.</p>
+                )}
+              </section>
+            </>
+          )}
+          {tab === "Journey" && (
+            <section className="journey panel">
+              <span className="eyebrow">THE ROAD TO OAKHAVEN</span>
+              <Map size={60} />
+              <h2>{total.distance.toFixed(1)} km travelled</h2>
+              <p>
+                Complete “Patrol the Realm” after walking 3 km to move along the
+                road. Distance is self-reported; wearable tracking comes later.
+              </p>
+              <div className="road">
+                {[
+                  { name: "Your keep", km: 0 },
+                  { name: "Old Mill", km: 9 },
+                  { name: "Wayfarer’s Inn", km: 21 },
+                  { name: "Oakhaven", km: 30 },
+                ].map((l) => (
+                  <div
+                    key={l.name}
+                    className={total.distance >= l.km ? "reached" : ""}
+                  >
+                    <span>◆</span>
+                    <strong>{l.name}</strong>
+                    <small>{l.km} km</small>
+                  </div>
+                ))}
+              </div>
+              <div className="progress light">
+                <i
+                  style={{
+                    width: `${Math.min(total.distance / 30, 1) * 100}%`,
+                  }}
+                />
+              </div>
+              <button
+                className="primary"
+                onClick={() => switchTab("Quest Board")}
+              >
+                Take a patrol <ArrowRight size={16} />
+              </button>
+            </section>
+          )}
+          {tab === "Chronicle" && (
+            <>
+              <div className="history-stats">
+                {[
+                  { label: "Renown earned", value: total.renown },
+                  {
+                    label: "Workouts completed",
+                    value: state.entries.filter((e) => e.questId === "training")
+                      .length,
+                  },
+                  { label: "Distance walked", value: `${total.distance} km` },
+                  {
+                    label: "Deeds recorded",
+                    value:
+                      state.entries.length +
+                      Object.values(state.oaths).filter(
+                        (o) => o.status === "kept",
+                      ).length,
+                  },
+                ].map((s) => (
+                  <div className="panel" key={s.label}>
+                    <span>{s.label}</span>
+                    <strong>{s.value}</strong>
+                  </div>
+                ))}
+              </div>
+              <section className="panel">
+                <div className="section-heading">
+                  <h2>The Oath of Temperance</h2>
+                  <Shield size={22} />
+                </div>
+                <div className="history-stats oath-history">
+                  {[
+                    { label: "Current streak", value: oath.current },
+                    { label: "Longest legitimate streak", value: oath.longest },
+                    { label: "Historical sober days", value: oath.sober },
+                    {
+                      label: "Last 30 days · confirmed days only",
+                      value:
+                        oath.percentage === null ? "—" : `${oath.percentage}%`,
+                    },
+                  ].map((s) => (
+                    <div key={s.label}>
+                      <strong>{s.value}</strong>
+                      <span>{s.label}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="muted">
+                  {oath.logged} days confirmed in the last 30 days. Active Oaths
+                  and unlogged days are unknown. Correcting an entry updates its
+                  statistics and only its rewards.
+                </p>
+              </section>
+              <section className="panel">
+                <h2>Your chronicle</h2>
+                {!historyDates.length ? (
+                  <div className="empty">
+                    <BookOpen size={32} />
+                    <h3>A blank page is a beginning.</h3>
+                    <p>Your deeds and Oaths will appear here.</p>
+                    <button
+                      className="text-button"
+                      onClick={() => switchTab("Quest Board")}
+                    >
+                      Write your first entry <ArrowRight size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  historyDates.map((date) => {
+                    const entries = state.entries.filter(
+                        (e) => e.date === date,
+                      ),
+                      dayOath = state.oaths[date],
+                      earned =
+                        entries.reduce((n, e) => n + e.reward.renown, 0) +
+                        (dayOath?.status === "kept"
+                          ? dayOath.reward!.renown
+                          : 0);
+                    return (
+                      <div className="history-day" key={date}>
+                        <div className="section-heading">
+                          <h3>
+                            {new Date(date + "T12:00:00").toLocaleDateString(
+                              "en-GB",
+                              {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              },
+                            )}
+                          </h3>
+                          <span>{earned} Renown</span>
+                        </div>
+                        {entries.map((e) => (
+                          <div className="history-entry" key={e.questId}>
+                            <Check size={15} />
+                            <span>
+                              {quests.find((q) => q.id === e.questId)?.name ||
+                                e.questId}
+                            </span>
+                            <RewardText reward={e.reward} />
+                          </div>
+                        ))}
+                        {dayOath && (
+                          <HistoricalOath
+                            state={state}
+                            date={date}
+                            now={now}
+                            update={update}
+                            report={report}
+                          />
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </section>
+              <p className="muted">
+                Progress stays in this browser. Weight and detailed step logging
+                remain future work.
+              </p>
+            </>
+          )}
+        </main>
+        <nav className="mobile-nav" aria-label="Main navigation">
+          {tabs.map((t) => (
+            <button
+              key={t.name}
+              className={tab === t.name ? "active" : ""}
+              onClick={() => switchTab(t.name)}
+            >
+              <t.icon size={21} />
+              <span>{t.name === "Quest Board" ? "Quests" : t.name}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+    </div>
+  );
 }
