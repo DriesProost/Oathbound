@@ -7,13 +7,16 @@ export default function KnightArt({ renown = 0, xp = {}, weight, today }: {
   renown?: number; xp?: Partial<Record<Attribute, number>>; weight?: State['weight']; today?: string;
 }) {
   const look = knightAppearance(renown, xp, weight, today);
-  const sheet = characterSheet(look.stage, look.beard);
+  const sheet = characterSheet(look.stage, look.beard, look.body);
   const id=useId().replace(/:/g,'');
   function artwork(complexion=false) {
-    const [sourceX, sourceY, sourceWidth, sourceHeight] = sheet.bounds[Number(look.groomed)*3+bodyBuilds.indexOf(look.body)];
-    const scale=Math.min(640/sourceWidth,960/sourceHeight);
+    const column = sheet.largeOnly ? look.beard : bodyBuilds.indexOf(look.body);
+    const [sourceX, sourceY, sourceWidth, sourceHeight, centerX] = sheet.bounds[Number(look.groomed)*3+column];
+    // Keep the person's head/body central while fitting all asymmetric equipment.
+    const reach=Math.max(centerX-sourceX,sourceX+sourceWidth-centerX);
+    const scale=Math.min(320/reach,960/sourceHeight);
     const width=sourceWidth*scale, height=sourceHeight*scale;
-    const left=(640-width)/2, top=(960-height)/2;
+    const left=320-(centerX-sourceX)*scale, top=(960-height)/2;
     const clip=`portrait-${id}-${complexion?'face':'base'}`;
     return <svg className={complexion ? 'knight-complexion' : undefined} viewBox="0 0 640 960" aria-hidden="true"
       style={complexion ? {filter:`brightness(${look.faceBrightness}) saturate(${look.faceSaturation})`} : undefined}>

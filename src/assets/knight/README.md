@@ -6,6 +6,10 @@ The three Squire sheets were redrawn on the same date to make the larger build v
 
 The shipped `sheets/` directory contains fifteen transparent WebP sheets: five equipment ranks × three Wisdom beard stages. Each 900 × 1350 sheet has three columns (large, sturdy, lean) and two rows (untidy, well-kept). Presence selects the grooming row; optional weight-plan appearance selects the build column. Rank equipment and Wisdom beard remain independent.
 
+An additional `squire-large.webp` overrides only the larger Squire build. Its columns are clean-shaven, short beard and full beard; its two rows remain untidy and well-kept. This dedicated atlas gives the belly and double chin room to remain visible at phone size, instead of deriving a heavy build from an athletic illustration. Original generated source: `exec-5d77a260-f95e-4d15-b65f-10cfc6209f07.png`, edited from original project source `exec-ed0a62ce-c56c-4e41-84f3-813365f43172.png`. Other ranks and Squire builds keep their existing artwork.
+
 `characterSheets.ts` imports the sheets. Generated viewport metadata in `characterBounds.ts` fits each complete figure without changing artwork pixels. After replacing assets, regenerate it with `python scripts/character-sheet-bounds.py` (Pillow, NumPy and SciPy required for this optional development step). Vite fingerprints them and the existing service worker precaches all variants for offline use. The original standalone portraits remain here as archived references and are no longer bundled. Source PNG outputs remain in the execution workspace’s `generated_images` directory; WebP conversion only resizes and optimises them.
+
+Each viewport also stores a head-center anchor. The renderer centers the person rather than their asymmetric shield/standard, while fitting all equipment inside the portrait. The Banneret anchor accounts for the banner extending above the helmet.
 
 These are complete illustrations rather than rigged models. Strength adds a bounded silhouette adjustment and Vitality a subtle face-only complexion treatment. Appearance rules never grant progression rewards. See `docs/body-appearance.md` for optional weight-plan semantics.

@@ -33,7 +33,24 @@ for path in sorted((root / 'src/assets/knight/sheets').glob('*.webp')):
             for other in boxes[i+1:]:
                 if min(right, other[2]) > max(left, other[0]) and min(bottom, other[3]) > max(top, other[1]):
                     raise ValueError(f'Overlapping sprite viewports: {path.name}; artwork needs more spacing')
-        regions = [[left, top, right - left, bottom - top] for left, top, right, bottom in boxes]
+        regions = []
+        for left, top, right, bottom in boxes:
+            # Anchor the person by their head rather than the combined shield/body
+            # silhouette. Read pixels only; no source artwork is modified.
+            # Banneret's standard rises above the helmet, so its head is below
+            # the top edge and to the right of the pole. Other ranks have no flag.
+            if path.stem.startswith('knight-banneret'):
+                head_left = left + round((right - left) * 0.40)
+                head = alpha[top + round((bottom - top) * 0.10):top + round((bottom - top) * 0.22),
+                             head_left:left + round((right - left) * 0.85)]
+            else:
+                head_left = left
+                head = alpha[top:top + max(1, round((bottom - top) * 0.10)), left:right]
+            _, head_x = np.nonzero(head > 128)
+            if not len(head_x):
+                raise ValueError(f'Missing head anchor: {path.name}')
+            center = round(head_left + float(np.median(head_x)), 2)
+            regions.append([left, top, right - left, bottom - top, center])
         bounds[path.stem] = regions
 output = '// Generated sprite viewport metadata. Source artwork is unchanged.\n'
 output += 'export const characterBounds: Record<string, number[][]> = {\n'
