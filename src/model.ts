@@ -19,7 +19,7 @@ export type NumericTarget = {
 export type BehaviourTarget = CheckTarget | NumericTarget;
 export type GoalTarget =
   | BehaviourTarget
-  | { metric: "oath" }
+  | { metric: "oath"; schedule?: "daily" | "weekdays" }
   | { metric: "outcome" };
 export type WeeklyTarget = { metric: "sessions"; value: number };
 export type CampaignGoal = {

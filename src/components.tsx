@@ -1,6 +1,6 @@
 import { useAnimatedValue } from "./feedback/Feedback";
 import type { FeedbackIntent } from "./feedback/events";
-import { goalActive } from "./campaign";
+import { goalActive, optionalOathDay, weekdayTemperance, weekdayOathSummary } from "./campaign";
 import { useState } from "react";
 import { formatDay } from "./presentation";
 import {
@@ -169,7 +169,12 @@ export function OathPanel({
           <h2>{oathDefinition.name}</h2>
         </div>
       </div>
-      <p className="oath-promise">“I shall remain steadfast today.”</p>
+      <p className="oath-promise">{optionalOathDay(state, date)
+        ? "Weekend · no Oath required. Swear one only if you choose."
+        : weekdayTemperance(state, date) ? "An alcohol-free weekday. One promise for today." : "“I shall remain steadfast today.”"}</p>
+      {weekdayTemperance(state, today) && <p className="timing-note">
+        This week · {weekdayOathSummary(state, today).kept} of {weekdayOathSummary(state, today).eligible} elapsed campaign weekdays confirmed alcohol-free · {weekdayOathSummary(state, today).unlogged} unlogged. Weekends are optional.
+      </p>}
       <div className="oath-date-switch" aria-label="Oath date">
         {(["today", "yesterday"] as const).map((d) => (
           <button
@@ -235,10 +240,10 @@ export function OathPanel({
                   );
               }}
             >
-              Swear today’s Oath <Shield size={16} />
+              {optionalOathDay(state, date) ? "Swear an optional Oath" : "Swear today’s Oath"} <Shield size={16} />
             </button>
           )}
-          {(!final || editing) && (
+          {(!final || editing) && (!optionalOathDay(state, date) || !!record) && (
             <div className="oath-confirm">
               <span className="confirmation-label">
                 Did you keep your Oath?

@@ -11,7 +11,7 @@ import {
 } from "./config";
 export { attributes, quests, progression, oathDefinition } from "./config";
 export type { Attribute, Reward, Quest } from "./config";
-import { createCampaign, configuredQuests, goalActive } from "./campaign";
+import { createCampaign, configuredQuests, goalActive, optionalOathDay } from "./campaign";
 import { dayKey, previousDay, validDay } from "./calendar";
 import type { State, CampaignGoal } from "./model";
 export { dayKey, previousDay, validDay } from "./calendar";
@@ -134,7 +134,7 @@ export function confirmOath(
     date < state.created ||
     !canConfirm(date, "end-of-day", now) ||
     state.oaths[date]?.status === status ||
-    (!state.oaths[date] && !goalActive(state, "temperance", date))
+    (!state.oaths[date] && (!goalActive(state, "temperance", date) || optionalOathDay(state, date)))
   )
     return state;
   // Replacing this one record reverses only this oath's reward. Other dates and actions remain untouched.

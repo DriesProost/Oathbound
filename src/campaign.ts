@@ -5,6 +5,7 @@ import {
   previousDay,
   weekStart,
   nextWeekStart,
+  addDays,
 } from "./calendar";
 import {
   goalIds,
@@ -38,8 +39,8 @@ export const goalDefinitions: Record<
     defaultTarget: { metric: "outcome" },
   },
   temperance: {
-    name: "Remain alcohol-free",
-    description: "A daily Oath, confirmed honestly each evening",
+    name: "Alcohol / temperance",
+    description: "Remain alcohol-free or choose an alcohol-free weekday plan",
     defaultTarget: { metric: "oath" },
   },
   strength: {
@@ -113,8 +114,11 @@ export function defaultGoals(active = true): CampaignGoal[] {
 export function validTarget(target: unknown): target is GoalTarget {
   if (!target || typeof target !== "object" || !("metric" in target))
     return false;
-  if (target.metric === "outcome" || target.metric === "oath")
-    return Object.keys(target).length === 1;
+  if (target.metric === "outcome") return Object.keys(target).length === 1;
+  if (target.metric === "oath") return (
+    Object.keys(target).every((key) => key === "metric" || key === "schedule") &&
+    (!("schedule" in target) || target.schedule === "daily" || target.schedule === "weekdays")
+  );
   if (target.metric === "check")
     return (
       "criterion" in target &&
@@ -264,7 +268,9 @@ export function targetDescription(target: GoalTarget): string {
     case "check":
       return target.criterion;
     case "oath":
-      return "Swear your Oath, then confirm it this evening";
+      return target.schedule === "weekdays"
+        ? "Keep weekdays alcohol-free · weekends optional"
+        : "Swear your Oath, then confirm it this evening";
     case "outcome":
       return "Outcome tracking · no Renown or attribute XP";
   }
@@ -304,4 +310,22 @@ export function availableQuests(state: State, now = new Date()): Quest[] {
     ),
     ...prior.filter((q) => !current.some((c) => c.id === q.id)),
   ];
+}
+
+// Missing schedule preserves the original abstinence campaign; no save rewrite is needed.
+export function weekdayTemperance(state: State, date = dayKey()) {
+  const goal = campaignGoals(state.campaign, date).find((g) => g.id === "temperance");
+  return !!goal?.active && goal.target.metric === "oath" && goal.target.schedule === "weekdays";
+}
+export function optionalOathDay(state: State, date = dayKey()) {
+  const weekday = new Date(date + "T12:00:00").getDay();
+  return weekdayTemperance(state, date) && (weekday === 0 || weekday === 6);
+}
+export function weekdayOathSummary(state: State, today = dayKey()) {
+  const start = weekStart(today, 1);
+  const dates = Array.from({ length: 5 }, (_, i) => addDays(start, i))
+    .filter((date) => date >= state.created && date <= today && weekdayTemperance(state, date));
+  const kept = dates.filter((date) => state.oaths[date]?.status === "kept").length;
+  const recorded = dates.filter((date) => ["kept", "broken"].includes(state.oaths[date]?.status)).length;
+  return { kept, recorded, eligible: dates.length, unlogged: dates.length - recorded };
 }

@@ -50,6 +50,9 @@ import {
   defaultGoals,
   goalDefinitions,
   goalActive,
+  weekdayTemperance,
+  weekdayOathSummary,
+  optionalOathDay,
 } from "./campaign";
 import type { CampaignGoal } from "./model";
 import KnightArt from "./KnightArt";
@@ -748,8 +751,8 @@ function OathboundApp() {
                       <span>THE OATH OF TEMPERANCE</span>
                     </div>
                     <h2>
-                      {oath.current}
-                      <small>days steadfast</small>
+                      {weekdayTemperance(state, today) ? weekdayOathSummary(state, today).kept : oath.current}
+                      <small>{weekdayTemperance(state, today) ? "weekdays alcohol-free this week" : "days steadfast"}</small>
                     </h2>
                     <p>
                       {oathKept
@@ -758,7 +761,8 @@ function OathboundApp() {
                           ? "Your Oath is active. Return this evening."
                           : state.oaths[today]?.status === "broken"
                             ? "Today is recorded. The campaign continues."
-                            : "One promise. Renewed each day."}
+                            : optionalOathDay(state, today) ? "Weekend · no Oath required."
+                            : weekdayTemperance(state, today) ? "An alcohol-free weekday. Confirm this evening." : "One promise. Renewed each day."}
                     </p>
                     <div className="oath-summary">
                       <div>
@@ -1087,6 +1091,7 @@ function OathboundApp() {
                     <h2>The Oath of Temperance</h2>
                     <Shield size={22} />
                   </div>
+                  {weekdayTemperance(state, today) && <p className="muted">This week: {weekdayOathSummary(state, today).kept} of {weekdayOathSummary(state, today).eligible} elapsed campaign weekdays confirmed alcohol-free. {weekdayOathSummary(state, today).unlogged} unlogged · weekends optional.</p>}
                   <div className="history-stats oath-history">
                     {[
                       { label: "Current streak", value: oath.current },

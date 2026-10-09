@@ -451,10 +451,17 @@ export default function CampaignEditor({
                     </>
                   )}
                   {t.metric === "oath" && (
-                    <p>
-                      Swear the Oath of Temperance, then confirm it this
-                      evening. Intent alone does not earn rewards.
-                    </p>
+                    <>
+                      <label htmlFor="temperance-plan">Your temperance plan</label>
+                      <select id="temperance-plan" value={t.schedule || "daily"}
+                        onChange={(e) => target(goal.id, { metric: "oath", schedule: e.target.value as "daily" | "weekdays" })}>
+                        <option value="daily">Remain alcohol-free · every day</option>
+                        <option value="weekdays">Drink less · alcohol-free weekdays</option>
+                      </select>
+                      <p>{t.schedule === "weekdays"
+                        ? "Monday–Friday alcohol-free. Weekends are optional. An occasional weekday drink can be recorded honestly; earlier progress remains."
+                        : "Swear the Oath of Temperance, then confirm it this evening."} Intent alone earns no rewards.</p>
+                    </>
                   )}
                   {t.metric === "outcome" && (
                     <>
