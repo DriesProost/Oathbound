@@ -15,6 +15,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read # configure-pages reads the existing site; deployment alone needs write access.
     steps:
       - name: Check out Oathbound
         uses: actions/checkout@v4
