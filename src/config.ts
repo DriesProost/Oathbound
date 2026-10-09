@@ -1,3 +1,4 @@
+import type { BehaviourGoalId, BehaviourTarget } from "./model";
 export const attributes = [
   "Strength",
   "Endurance",
@@ -12,6 +13,8 @@ export type Quest = {
   id: string;
   name: string;
   description: string;
+  goalId: BehaviourGoalId;
+  target?: BehaviourTarget;
   category: "duties" | "training";
   difficulty: "light" | "moderate" | "substantial";
   timing: "immediate" | "end-of-day" | "retrospective";
@@ -22,6 +25,7 @@ export const progression = {
   attributeBaseXP: 100,
   attributeIncrementXP: 25,
   eveningConfirmationHour: 18,
+  rewardBudget: { enabled: false, ordinaryRenown: 160, oathRenown: 40 },
   ranks: [
     { name: "Squire", threshold: 0 },
     { name: "Man-at-Arms", threshold: 1000 },
@@ -37,6 +41,7 @@ export const oathDefinition = {
 export const quests: Quest[] = [
   {
     id: "training",
+    goalId: "strength",
     name: "Training Yard",
     description: "Complete a workout",
     category: "training",
@@ -46,6 +51,7 @@ export const quests: Quest[] = [
   },
   {
     id: "patrol",
+    goalId: "walking",
     name: "Patrol the Realm",
     description: "Walk 3 km",
     category: "training",
@@ -56,6 +62,7 @@ export const quests: Quest[] = [
   },
   {
     id: "provisions",
+    goalId: "nutrition",
     name: "Mind Your Provisions",
     description: "Confirm you met your nutrition target",
     category: "duties",
@@ -65,6 +72,7 @@ export const quests: Quest[] = [
   },
   {
     id: "presence",
+    goalId: "care",
     name: "Attend Thy Person",
     description: "Take time for grooming or skincare",
     category: "duties",
@@ -74,6 +82,7 @@ export const quests: Quest[] = [
   },
   {
     id: "study",
+    goalId: "study",
     name: "Scholar’s Hour",
     description: "Read or study for 20 minutes",
     category: "training",
@@ -83,6 +92,7 @@ export const quests: Quest[] = [
   },
   {
     id: "rest",
+    goalId: "recovery",
     name: "Rest for the Road",
     description: "Confirm last night’s sleep met your goal",
     category: "duties",

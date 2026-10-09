@@ -12,7 +12,6 @@ import {
   Flame,
 } from "lucide-react";
 import {
-  quests,
   createKnight,
   completeQuest,
   totals,
@@ -28,6 +27,17 @@ import {
   type Quest,
 } from "./domain";
 import { load, save } from "./storage";
+import CampaignEditor from "./CampaignEditor";
+import {
+  availableQuests,
+  configuredQuests,
+  campaignGoals,
+  configureCampaign,
+  defaultGoals,
+  goalDefinitions,
+  goalActive,
+} from "./campaign";
+import type { CampaignGoal } from "./model";
 import KnightArt from "./KnightArt";
 import { formatDay } from "./presentation";
 import JourneyMap from "./JourneyMap";
@@ -71,6 +81,10 @@ export default function App() {
     !!initial.state?.migratedFrom,
   );
   const [now, setNow] = useState(new Date());
+  const [campaignEditing, setCampaignEditing] = useState(false);
+  const [onboardingGoals, setOnboardingGoals] = useState<CampaignGoal[]>(() =>
+    defaultGoals(false),
+  );
   useEffect(() => {
     const refresh = () => setNow(new Date());
     const timer = setInterval(refresh, 30000);
@@ -96,6 +110,27 @@ export default function App() {
   function report(title: string, reward?: Reward, negative?: boolean) {
     setNotice({ title, reward, negative });
   }
+  if (!state && step === 2)
+    return (
+      <main className="campaign-shell">
+        <div className="campaign-brand">
+          <Shield size={23} />
+          <span>
+            OATHBOUND <small>A LIFE WELL FOUGHT</small>
+          </span>
+        </div>
+        <CampaignEditor
+          mode="onboarding"
+          initialGoals={onboardingGoals}
+          error={error}
+          onCancel={(draft) => {
+            setOnboardingGoals(draft);
+            setStep(1);
+          }}
+          onSave={(goals) => update(createKnight(name, dayKey(now), goals))}
+        />
+      </main>
+    );
   if (!state)
     return (
       <main className="welcome">
@@ -150,7 +185,7 @@ export default function App() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                update(createKnight(name));
+                setStep(2);
               }}
             >
               <label htmlFor="name">What shall we call you?</label>
@@ -186,6 +221,48 @@ export default function App() {
     total = totals(state),
     rank = rankProgress(total.renown),
     oath = oathStats(state, today);
+  const currentGoals = campaignGoals(state.campaign, today);
+  const campaignQuests = availableQuests(state, now);
+  const showOath =
+    goalActive(state, "temperance", today) || !!state.oaths[today];
+  const hasOathHistory = Object.keys(state.oaths).length > 0;
+  const activeGoals = currentGoals.filter((g) => g.active);
+  if (campaignEditing)
+    return (
+      <main className="campaign-shell">
+        <div className="campaign-brand">
+          <Shield size={23} />
+          <span>
+            OATHBOUND <small>YOUR CAMPAIGN</small>
+          </span>
+        </div>
+        <CampaignEditor
+          mode="edit"
+          initialGoals={currentGoals}
+          error={error}
+          onCancel={() => {
+            setCampaignEditing(false);
+            setError("");
+          }}
+          onSave={(goals) => {
+            try {
+              const next = configureCampaign(state, goals, today);
+              if (!update(next)) return false;
+              setCampaignEditing(false);
+              setTab("Quest Board");
+              report("Campaign updated. Your earned history remains yours.");
+              window.scrollTo({ top: 0 });
+              return true;
+            } catch {
+              setError(
+                "Your campaign settings could not be saved. Please check your targets.",
+              );
+              return false;
+            }
+          }}
+        />
+      </main>
+    );
   const done = state.entries.filter((e) => e.date === today),
     oathKept = state.oaths[today]?.status === "kept";
   const deedsToday = done.length + Number(oathKept);
@@ -200,10 +277,13 @@ export default function App() {
   function questCard(q: Quest, material = false) {
     const date = questDate(q, now),
       recorded = state!.entries.find(
-        (e) => e.date === date && e.questId === q.id,
+        (e) => e.date === date && (e.goalId === q.goalId || e.questId === q.id),
       ),
       completed = !!recorded;
-    const allowed = date >= state!.created && canConfirm(date, q.timing, now),
+    const allowed =
+        date >= state!.created &&
+        !!configuredQuests(state!, date).find((p) => p.id === q.id) &&
+        canConfirm(date, q.timing, now),
       Icon = icons[Object.keys(q.reward.xp)[0] as keyof typeof icons];
     const timing =
       q.timing === "end-of-day"
@@ -227,14 +307,15 @@ export default function App() {
         </div>
         <div className="quest-info">
           <div className="quest-heading">
-            <h3>{q.name}</h3>
+            <h3>{recorded?.deed.name || q.name}</h3>
             {material && <span className="difficulty">{q.difficulty}</span>}
           </div>
-          <p>{q.description}</p>
+          <p>{recorded?.deed.description || q.description}</p>
           {!completed && <RewardText reward={q.reward} />}
           <small className="quest-timing" id={`timing-${q.id}`}>
-            {date < state!.created
-              ? "Available after your first night on campaign"
+            {date < state!.created ||
+            !configuredQuests(state!, date).find((p) => p.id === q.id)
+              ? "Available after your first night with this goal"
               : completed
                 ? `Recorded · ${formatDay(date)}`
                 : timing}
@@ -262,7 +343,8 @@ export default function App() {
             onClick={() => finish(q, date)}
           >
             {!allowed
-              ? date < state!.created
+              ? date < state!.created ||
+                !configuredQuests(state!, date).find((p) => p.id === q.id)
                 ? "Confirm after your first night"
                 : "Confirm this evening"
               : q.timing === "immediate"
@@ -414,11 +496,12 @@ export default function App() {
               <div>
                 <strong>Your chronicle has been preserved.</strong>
                 <p>
-                  Attribute points are now XP, and ranks follow the slower
-                  campaign curve. Legitimate rewards remain unchanged. Any
-                  reward attached to a previously broken Oath was corrected for
-                  that entry only. An untouched copy of your original save is
-                  retained in this browser.
+                  Your existing behaviour goals remain active until you choose
+                  changes. Legitimate earned rewards, dates and walking distance
+                  have been preserved. Campaign settings now belong to your own
+                  goals. An untouched original save is retained in this browser.
+                  {state.migratedFrom === 1 &&
+                    " As before, rewards incorrectly attached to a broken legacy Oath are corrected for that entry only."}
                 </p>
               </div>
               <button
@@ -530,10 +613,29 @@ export default function App() {
                     </button>
                   </div>
                   <div className="quest-list">
-                    {quests
-                      .filter((q) => q.timing === "immediate")
+                    {[...campaignQuests]
+                      .sort(
+                        (a, b) =>
+                          Number(a.timing !== "immediate") -
+                          Number(b.timing !== "immediate"),
+                      )
                       .slice(0, 3)
                       .map((q) => questCard(q, true))}
+                    {!campaignQuests.length && (
+                      <div className="campaign-empty">
+                        <ScrollText size={25} />
+                        <p>
+                          No reward-bearing deeds are active. Choose the
+                          behaviours that serve you.
+                        </p>
+                        <button
+                          className="text-button"
+                          onClick={() => setCampaignEditing(true)}
+                        >
+                          Configure campaign <ArrowRight size={15} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div className="deeds-summary">
                     <Check size={16} />
@@ -547,46 +649,75 @@ export default function App() {
                     your real life.
                   </p>
                 </section>
-                <section className="oath-card">
-                  <div className="oath-title">
-                    <Shield size={21} />
-                    <span>THE OATH OF TEMPERANCE</span>
-                  </div>
-                  <h2>
-                    {oath.current}
-                    <small>days steadfast</small>
-                  </h2>
-                  <p>
-                    {oathKept
-                      ? "Today’s Oath is confirmed."
-                      : state.oaths[today]?.status === "taken"
-                        ? "Your Oath is active. Return this evening."
-                        : state.oaths[today]?.status === "broken"
-                          ? "Today is recorded. The campaign continues."
-                          : "One promise. Renewed each day."}
-                  </p>
-                  <div className="oath-summary">
-                    <div>
-                      <strong>{oath.longest}</strong>
-                      <span>Longest oath</span>
+                {showOath ? (
+                  <section className="oath-card">
+                    <div className="oath-title">
+                      <Shield size={21} />
+                      <span>THE OATH OF TEMPERANCE</span>
                     </div>
-                    <div>
-                      <strong>{oath.sober}</strong>
-                      <span>Alcohol-free days</span>
+                    <h2>
+                      {oath.current}
+                      <small>days steadfast</small>
+                    </h2>
+                    <p>
+                      {oathKept
+                        ? "Today’s Oath is confirmed."
+                        : state.oaths[today]?.status === "taken"
+                          ? "Your Oath is active. Return this evening."
+                          : state.oaths[today]?.status === "broken"
+                            ? "Today is recorded. The campaign continues."
+                            : "One promise. Renewed each day."}
+                    </p>
+                    <div className="oath-summary">
+                      <div>
+                        <strong>{oath.longest}</strong>
+                        <span>Longest oath</span>
+                      </div>
+                      <div>
+                        <strong>{oath.sober}</strong>
+                        <span>Alcohol-free days</span>
+                      </div>
                     </div>
-                  </div>
-                  <blockquote>
-                    A setback is a lost skirmish,
-                    <br />
-                    not a deleted campaign.
-                  </blockquote>
-                  <button
-                    className="text-button"
-                    onClick={() => switchTab("Quest Board")}
-                  >
-                    Attend to your Oath <ArrowRight size={16} />
-                  </button>
-                </section>
+                    <blockquote>
+                      A setback is a lost skirmish,
+                      <br />
+                      not a deleted campaign.
+                    </blockquote>
+                    <button
+                      className="text-button"
+                      onClick={() => switchTab("Quest Board")}
+                    >
+                      Attend to your Oath <ArrowRight size={16} />
+                    </button>
+                  </section>
+                ) : (
+                  <section className="panel campaign-summary">
+                    <span className="eyebrow">YOUR CAMPAIGN</span>
+                    <h2>A purpose of your own.</h2>
+                    <p>
+                      {activeGoals.length} active{" "}
+                      {activeGoals.length === 1 ? "goal" : "goals"}. No daily
+                      quota.
+                    </p>
+                    <ul>
+                      {activeGoals.map((g) => (
+                        <li key={g.id}>{goalDefinitions[g.id].name}</li>
+                      ))}
+                    </ul>
+                    {activeGoals.some((g) => g.id === "weight") && (
+                      <p className="target-help">
+                        Weight tracking is coming next. Outcomes do not earn
+                        Renown or XP.
+                      </p>
+                    )}
+                    <button
+                      className="text-button"
+                      onClick={() => setCampaignEditing(true)}
+                    >
+                      Configure campaign <ArrowRight size={15} />
+                    </button>
+                  </section>
+                )}
               </div>
               <div className="footer-note">
                 <span>✦</span> You are training more than a knight. You are
@@ -614,12 +745,31 @@ export default function App() {
                 <div className="board-plaque">
                   <span>✦</span> THE QUEST BOARD <span>✦</span>
                 </div>
-                <OathPanel
-                  state={state}
-                  now={now}
-                  update={update}
-                  report={report}
-                />
+                {showOath && (
+                  <OathPanel
+                    state={state}
+                    now={now}
+                    update={update}
+                    report={report}
+                  />
+                )}
+                {!showOath && !campaignQuests.length && (
+                  <div className="board-empty">
+                    <ScrollText size={30} />
+                    <h2>No deeds posted yet.</h2>
+                    <p>
+                      {activeGoals.some((g) => g.id === "weight")
+                        ? "Your weight-management goal is saved for the upcoming tracker. Add a behaviour goal to earn progress through controllable actions."
+                        : "Choose the goals that serve you. Your earlier campaign remains in the Chronicle."}
+                    </p>
+                    <button
+                      className="secondary"
+                      onClick={() => setCampaignEditing(true)}
+                    >
+                      Configure campaign
+                    </button>
+                  </div>
+                )}
                 {[
                   {
                     id: "duties",
@@ -632,19 +782,23 @@ export default function App() {
                     subtitle:
                       "Build strength, travel further, sharpen your mind.",
                   },
-                ].map((section) => (
-                  <section className="board-section" key={section.id}>
-                    <div className="board-section-heading">
-                      <h2>{section.title}</h2>
-                      <p>{section.subtitle}</p>
-                    </div>
-                    <div className="quest-list">
-                      {quests
-                        .filter((q) => q.category === section.id)
-                        .map((q) => questCard(q, true))}
-                    </div>
-                  </section>
-                ))}
+                ]
+                  .filter((section) =>
+                    campaignQuests.some((q) => q.category === section.id),
+                  )
+                  .map((section) => (
+                    <section className="board-section" key={section.id}>
+                      <div className="board-section-heading">
+                        <h2>{section.title}</h2>
+                        <p>{section.subtitle}</p>
+                      </div>
+                      <div className="quest-list">
+                        {campaignQuests
+                          .filter((q) => q.category === section.id)
+                          .map((q) => questCard(q, true))}
+                      </div>
+                    </section>
+                  ))}
                 <p className="board-bottom">
                   <span className="board-motto">By deed, not word</span>
                   Take what serves you. Return when the deed is done.
@@ -706,6 +860,29 @@ export default function App() {
                   </p>
                 </div>
               </div>
+              <section className="panel campaign-summary">
+                <div className="section-heading">
+                  <h2>Your campaign</h2>
+                  <button
+                    className="text-button"
+                    onClick={() => {
+                      setCampaignEditing(true);
+                      setError("");
+                      window.scrollTo({ top: 0 });
+                    }}
+                  >
+                    Configure campaign <ArrowRight size={15} />
+                  </button>
+                </div>
+                <p>
+                  {activeGoals.length} active{" "}
+                  {activeGoals.length === 1 ? "goal" : "goals"} ·{" "}
+                  {activeGoals
+                    .map((g) => goalDefinitions[g.id].name)
+                    .join(" · ") ||
+                    "Your campaign is paused. History remains intact."}
+                </p>
+              </section>
               <Attributes state={state} />
               <section className="panel">
                 <h2>The path to knighthood</h2>
@@ -750,14 +927,25 @@ export default function App() {
               <h2>{total.distance.toFixed(1)} km travelled</h2>
               <JourneyMap distance={total.distance} />
               <p className="journey-method">
-                Complete “Patrol the Realm” after walking 3 km to move along the
-                road. Distance is self-reported.
+                {campaignQuests.find((q) => q.id === "patrol")?.target
+                  ?.metric === "steps"
+                  ? "Your patrol follows a step target. Steps do not convert automatically into distance; previously confirmed kilometres remain on this map."
+                  : campaignQuests.find((q) => q.id === "patrol")
+                    ? `Complete “Patrol the Realm” after walking your ${campaignQuests.find((q) => q.id === "patrol")!.distance} km target. Confirmed distance is self-reported.`
+                    : "Your earlier travels remain here. Enable a walking goal to continue this route."}
               </p>
               <button
                 className="primary"
-                onClick={() => switchTab("Quest Board")}
+                onClick={() =>
+                  campaignQuests.some((q) => q.id === "patrol")
+                    ? switchTab("Quest Board")
+                    : setCampaignEditing(true)
+                }
               >
-                Take a patrol <ArrowRight size={16} />
+                {campaignQuests.some((q) => q.id === "patrol")
+                  ? "Take a patrol"
+                  : "Configure walking goal"}{" "}
+                <ArrowRight size={16} />
               </button>
             </section>
           )}
@@ -787,34 +975,41 @@ export default function App() {
                   </div>
                 ))}
               </div>
-              <section className="panel">
-                <div className="section-heading">
-                  <h2>The Oath of Temperance</h2>
-                  <Shield size={22} />
-                </div>
-                <div className="history-stats oath-history">
-                  {[
-                    { label: "Current streak", value: oath.current },
-                    { label: "Longest legitimate streak", value: oath.longest },
-                    { label: "Historical sober days", value: oath.sober },
-                    {
-                      label: "Last 30 days · confirmed days only",
-                      value:
-                        oath.percentage === null ? "—" : `${oath.percentage}%`,
-                    },
-                  ].map((s) => (
-                    <div key={s.label}>
-                      <strong>{s.value}</strong>
-                      <span>{s.label}</span>
-                    </div>
-                  ))}
-                </div>
-                <p className="muted">
-                  {oath.logged} days confirmed in the last 30 days. Active Oaths
-                  and unlogged days are unknown. Correcting an entry updates its
-                  statistics and only its rewards.
-                </p>
-              </section>
+              {(showOath || hasOathHistory) && (
+                <section className="panel">
+                  <div className="section-heading">
+                    <h2>The Oath of Temperance</h2>
+                    <Shield size={22} />
+                  </div>
+                  <div className="history-stats oath-history">
+                    {[
+                      { label: "Current streak", value: oath.current },
+                      {
+                        label: "Longest legitimate streak",
+                        value: oath.longest,
+                      },
+                      { label: "Historical sober days", value: oath.sober },
+                      {
+                        label: "Last 30 days · confirmed days only",
+                        value:
+                          oath.percentage === null
+                            ? "—"
+                            : `${oath.percentage}%`,
+                      },
+                    ].map((s) => (
+                      <div key={s.label}>
+                        <strong>{s.value}</strong>
+                        <span>{s.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="muted">
+                    {oath.logged} days confirmed in the last 30 days. Active
+                    Oaths and unlogged days are unknown. Correcting an entry
+                    updates its statistics and only its rewards.
+                  </p>
+                </section>
+              )}
               <section className="panel chronicle-ledger">
                 <div className="ledger-heading">
                   <BookOpen size={22} />
@@ -864,8 +1059,10 @@ export default function App() {
                           <div className="history-entry" key={e.questId}>
                             <Check size={15} />
                             <span>
-                              {quests.find((q) => q.id === e.questId)?.name ||
-                                e.questId}
+                              {e.deed.name}{" "}
+                              <small className="history-criterion">
+                                {e.deed.description}
+                              </small>
                             </span>
                             <RewardText reward={e.reward} />
                           </div>

@@ -1,6 +1,8 @@
 # Stage 2 proposal: a personal campaign
 
-Status: proposed for review. Stage 1 is implemented and tested. None of the changes described below is implemented yet.
+Status: approved with amendments. Stage 2A is implemented and awaiting onboarding/campaign-editor review. Stage 2B, 2C, 2D and custom deeds remain unimplemented.
+
+Approved amendments: retain the centrally configured reward-budget concept but leave it disabled; use per-goal/daily reward slots for now. Outcome data, weigh-ins and target attainment never award progression or create punitive streaks. Campaign editing remains independent of the Knight domain. Stop after 2A for review and stop again before custom deeds.
 
 The campaign should follow the player's real goals. Daily rewards remain immediate, attributes grow through repeated behaviours, and ranks remain long-term milestones. Missing a day or disabling a goal never deletes history.
 
@@ -53,7 +55,7 @@ Suggested tiers remain light 15 Renown / 8 XP, moderate 25 / 15 and substantial 
 
 Default and custom deeds for the same goal share one daily reward slot. An activity can fulfil multiple targets, but its award is unique. Temperance cannot be recreated as a normal immediately completable custom deed.
 
-Recommend a centrally configured ceiling of 160 ordinary-deed Renown per local date, with 40 reserved for the Oath, for a maximum of 200. Before confirming an extra deed that exceeds the remaining budget, explain that it can be recorded without extra game rewards. Never silently clip a promised reward, remove existing awards or apply caps retroactively. The final budget is a review decision, not an implemented rule.
+Recommend a centrally configured ceiling of 160 ordinary-deed Renown per local date, with 40 reserved for the Oath, for a maximum of 200. Before confirming an extra deed that exceeds the remaining budget, explain that it can be recorded without extra game rewards. Never silently clip a promised reward, remove existing awards or apply caps retroactively. Amendment: this ceiling is disabled during this phase. Revisit it when custom deeds are reviewed; do not clip current or historical rewards.
 
 Keep rank thresholds initially. Players with fewer goals will progress more slowly; do not manufacture extra XP to equalise campaigns. Review pacing after observing the new goal mix.
 

@@ -1,0 +1,446 @@
+.campaign-shell {
+  min-height: 100vh;
+  padding: 28px 25px 50px;
+  background: #f7f6f0;
+}
+.campaign-brand {
+  max-width: 920px;
+  margin: 0 auto 27px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #88764b;
+}
+.campaign-brand > span {
+  font:
+    17px Georgia,
+    serif;
+  letter-spacing: 2px;
+}
+.campaign-brand small {
+  display: block;
+  font:
+    8px "DM Sans",
+    sans-serif;
+  letter-spacing: 2px;
+  margin-top: 5px;
+}
+.campaign-editor {
+  max-width: 920px;
+  margin: auto;
+  text-align: left;
+}
+.campaign-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 17px;
+  margin-bottom: 24px;
+}
+.campaign-heading h1 {
+  font-size: 38px;
+}
+.campaign-heading p {
+  color: #7b826e;
+  font-size: 13px;
+  margin-top: 9px;
+}
+.campaign-crest {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 56px;
+  color: #dac48b;
+  background: #314b36;
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+  padding-bottom: 6px;
+}
+.campaign-steps {
+  padding: 13px 0;
+  margin: 0 0 25px;
+  display: flex;
+  list-style: none;
+  border-top: 1px solid #d8caac;
+  border-bottom: 1px solid #d8caac;
+  gap: 28px;
+}
+.campaign-steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a0957d;
+  text-transform: capitalize;
+  font-size: 12px;
+}
+.campaign-steps li > span {
+  border: 1px solid #d2c5a7;
+  border-radius: 50%;
+  height: 24px;
+  width: 24px;
+  display: grid;
+  place-items: center;
+  font:
+    12px Georgia,
+    serif;
+}
+.campaign-steps [aria-current="step"] {
+  color: #526b43;
+}
+.campaign-steps [aria-current="step"] > span {
+  background: #ecead6;
+  border-color: #a69e6e;
+}
+.campaign-goals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+}
+.campaign-goal {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 18px;
+  background: #f8f2e3;
+  border: 1px solid #d8c8a6;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: 1px 2px 5px #43301e0a;
+}
+.campaign-goal.selected {
+  background: #eeeeda;
+  border-color: #9da780;
+}
+.campaign-goal input {
+  accent-color: #425f3b;
+  margin: 4px 0 0;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+.campaign-goal > svg {
+  margin-top: 1px;
+  color: #8a825f;
+}
+.campaign-goal > span {
+  min-width: 0;
+}
+.campaign-goal strong {
+  font:
+    19px "Libre Caslon Display",
+    Georgia,
+    serif;
+  color: #3f553a;
+}
+.campaign-goal small {
+  display: block;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #7e816b;
+  margin-top: 7px;
+}
+.availability-note {
+  display: block;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #997a4d !important;
+  margin-top: 8px;
+}
+.campaign-targets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.campaign-target {
+  background: #f8f2e3;
+  border: 1px solid #d8c8a6;
+  border-radius: 3px;
+  padding: 20px;
+  margin: 0;
+  min-width: 0;
+}
+.campaign-target legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  color: #66734d;
+  font:
+    19px "Libre Caslon Display",
+    Georgia,
+    serif;
+}
+.campaign-target label {
+  display: block;
+  font-size: 12px;
+  color: #6e745b;
+  margin-bottom: 8px;
+}
+.campaign-target input,
+.campaign-target select,
+.campaign-target textarea {
+  width: 100%;
+  border: 1px solid #cbbc97;
+  border-radius: 3px;
+  background: #fffaf0;
+  color: #3f5037;
+  padding: 11px 12px;
+  font:
+    13px "DM Sans",
+    sans-serif;
+  margin-bottom: 10px;
+}
+.campaign-target textarea {
+  min-height: 83px;
+  resize: vertical;
+}
+.campaign-target p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #7a7c65;
+}
+.target-help {
+  color: #8b8168;
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 8px 0;
+}
+.target-presets {
+  display: flex;
+  gap: 9px;
+  margin: 3px 0 12px;
+}
+.target-presets button {
+  border: 1px solid #b6b58e;
+  border-radius: 3px;
+  padding: 8px 17px;
+  color: #778160;
+  font-size: 12px;
+}
+.target-presets button[aria-pressed="true"] {
+  background: #e4e7d2;
+  color: #45613c;
+  border-color: #93a273;
+}
+.campaign-review {
+  background: #f8f2e3;
+  border: 1px solid #d8c8a6;
+  border-left: 5px solid #5a6648;
+  padding: 22px;
+}
+.review-inscription {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #d8c8a6;
+  color: #8d7f56;
+}
+.review-inscription > span {
+  font:
+    10px Georgia,
+    serif;
+  letter-spacing: 1.5px;
+}
+.review-inscription strong {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 400;
+  color: #81886b;
+}
+.review-deed {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 0;
+  border-bottom: 1px solid #d8c8a670;
+}
+.review-deed > svg {
+  margin-top: 3px;
+  color: #8a9572;
+}
+.review-deed .eyebrow {
+  font-size: 8px;
+  margin-bottom: 6px;
+}
+.review-deed h2 {
+  font-size: 25px;
+}
+.review-deed p {
+  font-size: 12px;
+  color: #7d8069;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+}
+.review-deed .rewards {
+  font-size: 11px;
+  margin-top: 10px;
+}
+.campaign-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 25px;
+  border-top: 1px solid #d8caac;
+  padding-top: 18px;
+}
+.campaign-actions .primary {
+  margin: 0;
+  font-size: 12px;
+}
+.campaign-actions .text-button {
+  font-size: 12px;
+  min-height: 40px;
+}
+.campaign-empty {
+  padding: 25px 15px;
+  text-align: center;
+  color: #8a8d72;
+  line-height: 1.7;
+}
+.campaign-empty > p {
+  font-size: 12px;
+  margin: 10px auto;
+  max-width: 420px;
+}
+.campaign-summary {
+  align-self: start;
+}
+.campaign-summary p {
+  font-size: 12px;
+  color: #7b846c;
+}
+.campaign-summary ul {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0;
+}
+.campaign-summary li {
+  padding: 9px 0;
+  border-bottom: 1px solid #d9cba970;
+  font:
+    16px Georgia,
+    serif;
+  color: #627750;
+}
+.campaign-summary .section-heading {
+  flex-wrap: wrap;
+}
+.campaign-summary .section-heading h2 {
+  margin-bottom: 0;
+}
+.board-empty {
+  padding: 30px 22px;
+  text-align: center;
+  background: #f5eedb;
+  color: #66774f;
+  border: 1px solid #d6c49c;
+}
+.board-empty h2 {
+  margin: 14px 0;
+}
+.board-empty p {
+  font-size: 12px;
+  line-height: 1.8;
+  max-width: 550px;
+  margin: auto;
+}
+.history-criterion {
+  display: block;
+  color: #92917a;
+  font-size: 10px;
+  margin-top: 4px;
+  line-height: 1.6;
+}
+.quest-info p {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .campaign-shell {
+    padding: 24px 18px 45px;
+  }
+  .campaign-brand {
+    margin-bottom: 25px;
+  }
+  .campaign-heading {
+    gap: 12px;
+  }
+  .campaign-heading h1 {
+    font-size: 31px;
+    line-height: 1.1;
+  }
+  .campaign-heading .eyebrow {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+  .campaign-heading p {
+    font-size: 12px;
+  }
+  .campaign-crest {
+    width: 36px;
+    height: 43px;
+  }
+  .campaign-crest svg {
+    width: 21px;
+  }
+  .campaign-steps {
+    gap: 19px;
+  }
+  .campaign-steps li {
+    font-size: 11px;
+    gap: 7px;
+  }
+  .campaign-goals {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+  .campaign-goal {
+    padding: 17px 14px;
+  }
+  .campaign-goal strong {
+    font-size: 22px;
+  }
+  .campaign-goal small {
+    font-size: 11px;
+  }
+  .campaign-targets {
+    grid-template-columns: 1fr;
+    gap: 19px;
+  }
+  .campaign-target {
+    padding: 17px;
+  }
+  .campaign-target legend {
+    font-size: 22px;
+  }
+  .campaign-actions {
+    gap: 12px;
+  }
+  .campaign-actions .primary {
+    padding: 13px 16px;
+    font-size: 11px;
+  }
+  .campaign-actions .text-button {
+    font-size: 11px;
+  }
+  .campaign-review {
+    padding: 20px 16px;
+  }
+  .review-inscription {
+    gap: 8px;
+  }
+  .review-inscription > span {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  .campaign-summary .section-heading h2 {
+    font-size: 25px;
+  }
+}
+
+.campaign-editor select:focus-visible,
+.campaign-editor textarea:focus-visible {
+  outline: 3px solid #bc9b52;
+  outline-offset: 3px;
+}

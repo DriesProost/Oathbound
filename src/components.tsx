@@ -1,3 +1,4 @@
+import { goalActive } from "./campaign";
 import { useState } from "react";
 import { formatDay } from "./presentation";
 import {
@@ -109,7 +110,9 @@ export function OathPanel({
   const date = selected === "today" ? today : yesterday,
     record = state.oaths[date];
   const available =
-      date >= state.created && canConfirm(date, "end-of-day", now),
+      date >= state.created &&
+      (goalActive(state, "temperance", date) || !!state.oaths[date]) &&
+      canConfirm(date, "end-of-day", now),
     final = record?.status === "kept" || record?.status === "broken";
   function confirm(status: "kept" | "broken") {
     if (final && record.status !== status && !pending) {
@@ -153,7 +156,12 @@ export function OathPanel({
           <button
             key={d}
             aria-pressed={selected === d}
-            disabled={d === "yesterday" && yesterday < state.created}
+            disabled={
+              d === "yesterday" &&
+              (yesterday < state.created ||
+                (!goalActive(state, "temperance", yesterday) &&
+                  !state.oaths[yesterday]))
+            }
             onClick={() => {
               setSelected(d);
               setEditing(false);

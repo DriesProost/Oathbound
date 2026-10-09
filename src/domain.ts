@@ -9,46 +9,28 @@ import {
 } from "./config";
 export { attributes, quests, progression, oathDefinition } from "./config";
 export type { Attribute, Reward, Quest } from "./config";
-export type Entry = {
-  date: string;
-  questId: string;
-  reward: Reward;
-  distance: number;
-};
-export type OathRecord = {
-  status: "taken" | "kept" | "broken";
-  reward: Reward | null;
-};
-export type State = {
-  version: 2;
-  name: string;
-  created: string;
-  entries: Entry[];
-  oaths: Record<string, OathRecord>;
-  migratedFrom?: 1;
-};
-export function dayKey(date = new Date()) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-}
-export function previousDay(day: string) {
-  const d = new Date(day + "T12:00:00");
-  d.setDate(d.getDate() - 1);
-  return dayKey(d);
-}
-export function createKnight(name: string, date = dayKey()): State {
+import { createCampaign, configuredQuests, goalActive } from "./campaign";
+import { dayKey, previousDay, validDay } from "./calendar";
+import type { State, CampaignGoal } from "./model";
+export { dayKey, previousDay, validDay } from "./calendar";
+export type { State, Entry, OathRecord } from "./model";
+export function createKnight(
+  name: string,
+  date = dayKey(),
+  goals?: CampaignGoal[],
+): State {
   return {
-    version: 2,
+    version: 3,
     name: name.trim() || "The Traveller",
     created: date,
+    campaign: createCampaign(date, goals),
     entries: [],
     oaths: {},
+    weight: {
+      settings: { displayUnit: "kg", baseline: null, targetGrams: null },
+      measurements: [],
+    },
   };
-}
-export function validDay(day: string) {
-  return (
-    /^\d{4}-\d{2}-\d{2}$/.test(day) &&
-    dayKey(new Date(day + "T12:00:00")) === day
-  );
 }
 export function canConfirm(
   date: string,
@@ -74,12 +56,14 @@ export function completeQuest(
   date = dayKey(),
   now = new Date(),
 ): State {
-  const quest = quests.find((q) => q.id === id);
+  const quest = configuredQuests(state, date).find((q) => q.id === id);
   if (
     !quest ||
     date < state.created ||
     !canConfirm(date, quest.timing, now) ||
-    state.entries.some((e) => e.date === date && e.questId === id)
+    state.entries.some(
+      (e) => e.date === date && (e.goalId === quest.goalId || e.questId === id),
+    )
   )
     return state;
   return {
@@ -87,8 +71,18 @@ export function completeQuest(
     entries: [
       ...state.entries,
       {
+        id: `deed:${date}:${quest.goalId}`,
+        activityId: `activity:${date}:${quest.goalId}`,
         date,
         questId: id,
+        goalId: quest.goalId,
+        period: { kind: "day", start: date },
+        deed: {
+          name: quest.name,
+          description: quest.description,
+          timing: quest.timing,
+          target: structuredClone(quest.target),
+        },
         reward: structuredClone(quest.reward),
         distance: quest.distance || 0,
       },
@@ -104,7 +98,8 @@ export function takeOath(
     !validDay(date) ||
     date < state.created ||
     date > dayKey(now) ||
-    state.oaths[date]
+    state.oaths[date] ||
+    !goalActive(state, "temperance", date)
   )
     return state;
   return {
@@ -121,7 +116,8 @@ export function confirmOath(
   if (
     date < state.created ||
     !canConfirm(date, "end-of-day", now) ||
-    state.oaths[date]?.status === status
+    state.oaths[date]?.status === status ||
+    (!state.oaths[date] && !goalActive(state, "temperance", date))
   )
     return state;
   // Replacing this one record reverses only this oath's reward. Other dates and actions remain untouched.
