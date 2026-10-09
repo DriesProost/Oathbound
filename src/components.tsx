@@ -1,3 +1,5 @@
+import { useAnimatedValue } from "./feedback/Feedback";
+import type { FeedbackIntent } from "./feedback/events";
 import { goalActive } from "./campaign";
 import { useState } from "react";
 import { formatDay } from "./presentation";
@@ -12,6 +14,7 @@ import {
   Flame,
 } from "lucide-react";
 import {
+  attributeProgress,
   attributes,
   totals,
   canConfirm,
@@ -57,37 +60,53 @@ export function RewardText({
     </div>
   );
 }
+function AttributeRow({
+  attribute: a,
+  stat,
+}: {
+  attribute: Attribute;
+  stat: ReturnType<typeof attributeProgress>;
+}) {
+  const displayed = attributeProgress(useAnimatedValue(stat.lifetimeXP));
+  const Icon = icons[a];
+  return (
+    <div className="attribute">
+      <Icon size={19} />
+      <span>{a}</span>
+      <strong aria-label={`Level ${stat.level}`}>
+        <span aria-hidden="true">
+          {displayed.level}
+          <small>Level</small>
+        </span>
+      </strong>
+      <div
+        className="progress light"
+        role="progressbar"
+        aria-label={`${a} XP toward level ${stat.level + 1}`}
+        aria-valuemin={0}
+        aria-valuemax={stat.required}
+        aria-valuenow={stat.xp}
+      >
+        <i style={{ width: `${displayed.progress * 100}%` }} />
+      </div>
+      <small
+        className="attribute-xp"
+        aria-label={`${stat.xp} / ${stat.required} XP`}
+      >
+        <span aria-hidden="true">
+          {displayed.xp} / {displayed.required} XP
+        </span>
+      </small>
+    </div>
+  );
+}
 export function Attributes({ state }: { state: State }) {
-  const total = totals(state);
+  const stats = totals(state).stats;
   return (
     <div className="attributes">
-      {attributes.map((a) => {
-        const Icon = icons[a],
-          stat = total.stats[a];
-        return (
-          <div className="attribute" key={a}>
-            <Icon size={19} />
-            <span>{a}</span>
-            <strong>
-              {stat.level}
-              <small>Level</small>
-            </strong>
-            <div
-              className="progress light"
-              role="progressbar"
-              aria-label={`${a} XP toward level ${stat.level + 1}`}
-              aria-valuemin={0}
-              aria-valuemax={stat.required}
-              aria-valuenow={stat.xp}
-            >
-              <i style={{ width: `${stat.progress * 100}%` }} />
-            </div>
-            <small className="attribute-xp">
-              {stat.xp} / {stat.required} XP
-            </small>
-          </div>
-        );
-      })}
+      {attributes.map((a) => (
+        <AttributeRow key={a} attribute={a} stat={stats[a]} />
+      ))}
     </div>
   );
 }
@@ -99,7 +118,7 @@ export function OathPanel({
 }: {
   state: State;
   now: Date;
-  update: (s: State) => boolean;
+  update: (s: State, intent?: FeedbackIntent) => boolean;
   report: (title: string, reward?: Reward, negative?: boolean) => void;
 }) {
   const today = dayKey(now),
@@ -120,7 +139,7 @@ export function OathPanel({
       return;
     }
     const next = confirmOath(state, date, status, now);
-    if (next !== state && update(next)) {
+    if (next !== state && update(next, final ? "correction" : "oath")) {
       report(
         status === "kept"
           ? "Oath kept. A promise honoured."
@@ -288,7 +307,7 @@ export function HistoricalOath({
   state: State;
   date: string;
   now: Date;
-  update: (s: State) => boolean;
+  update: (s: State, intent?: FeedbackIntent) => boolean;
   report: (title: string, reward?: Reward, negative?: boolean) => void;
 }) {
   const [open, setOpen] = useState(false),
@@ -299,7 +318,10 @@ export function HistoricalOath({
       : [record.status === "kept" ? "broken" : "kept"];
   function submit(target: "kept" | "broken") {
     const next = confirmOath(state, date, target, now);
-    if (next !== state && update(next)) {
+    if (
+      next !== state &&
+      update(next, record.status === "taken" ? "oath" : "correction")
+    ) {
       report(
         "Oath history corrected.",
         target === "kept"

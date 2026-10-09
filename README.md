@@ -101,3 +101,11 @@ Disabling the goal retains every measurement and setting in a collapsed read-onl
 The existing v3 schema already supports this tracker: no new save version or migration is needed. Valid pre-existing weight data remains intact, and old empty trackers remain empty until the player records a measurement or explicitly sets a baseline. Existing migration and backup policies continue unchanged.
 
 Stop for review after 2C. Lb support (2D) and custom deeds are not implemented. Audio, accounts, sync, wearables, calorie databases, equipment customisation and keep-building remain deferred. Remote fonts are optional; system and Georgia fallbacks work offline.
+
+## Earned feedback polish
+
+Recording a deed now creates one coordinated receipt with exact Renown and attribute XP, plus any newly earned levels, weekly commission, Journey landmarks or knight rank. The highest milestone leads the ceremony; every consequence remains visible. Renown and XP advance smoothly, while reduced motion shows final values immediately. Reloading or revisiting a notice does not replay ceremonies. Oath corrections show the exact entry adjustment calmly; broken Oaths remain silent. Weight entries stay independent and use only a quiet ledger confirmation.
+
+The persistent **Sound** speaker control manages optional generated effects, volume and independently optional brief haptics. Sound starts **unset** and silent. After the first recorded deed/Oath, a one-time offer lets you enable and preview effects or decline. Your choice is saved separately from the campaign. Even when enabled, sound waits for a user gesture on each visit. There is no background music.
+
+See [feedback design and audio provenance](docs/feedback.md). `npm test` includes event ordering, threshold detection, correction isolation, device failures and preference persistence. The optional `scripts/feedback-smoke.cjs` checks browser behavior against a running Vite server and requires externally supplied Playwright/Chromium; `PLAYWRIGHT_MODULE`, `CHROMIUM_PATH` and `OATHBOUND_URL` can specify those paths and the development server. Stage 2D remains deferred.

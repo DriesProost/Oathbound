@@ -1,9 +1,17 @@
+import {
+  FeedbackProvider,
+  FeedbackSurface,
+  useFeedback,
+  useAnimatedValue,
+  useFeedbackPulse,
+} from "./feedback/Feedback";
+import type { FeedbackIntent } from "./feedback/events";
 import WeightChronicle from "./WeightChronicle";
 import { setWeightSettings } from "./weight";
 import { WeeklyTraining, WeeklyLedger } from "./WeeklyTraining";
 import { ensureWeeklyPeriod, weeklyTarget, currentCommission } from "./weekly";
 import { weekStart, nextWeekStart } from "./calendar";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Castle,
   ScrollText,
@@ -61,6 +69,15 @@ const tabs = [
   { name: "Chronicle", icon: BookOpen },
 ];
 export default function App() {
+  return (
+    <FeedbackProvider>
+      <OathboundApp />
+    </FeedbackProvider>
+  );
+}
+function OathboundApp() {
+  const feedback = useFeedback();
+  const [pulse, clearPulse] = useFeedbackPulse(3200);
   const [initial] = useState(() => {
     try {
       return { state: load(), error: "" };
@@ -72,6 +89,7 @@ export default function App() {
       };
     }
   });
+  const stateRef = useRef<State | null>(initial.state);
   const [state, setState] = useState<State | null>(initial.state),
     [error, setError] = useState(initial.error);
   const [tab, setTab] = useState("Keep"),
@@ -85,6 +103,8 @@ export default function App() {
   const [migrationVisible, setMigrationVisible] = useState(
     !!initial.state?.migratedFrom,
   );
+  const animatedRenown = useAnimatedValue(state ? totals(state).renown : 0);
+  const animatedRank = rankProgress(animatedRenown);
   const [now, setNow] = useState(new Date());
   const [campaignEditing, setCampaignEditing] = useState(false);
   const [onboardingGoals, setOnboardingGoals] = useState<CampaignGoal[]>(() =>
@@ -104,12 +124,20 @@ export default function App() {
     const next = ensureWeeklyPeriod(state, dayKey(now));
     if (next !== state) update(next);
   }, [state, now]);
-  function update(next: State) {
-    return persist(ensureWeeklyPeriod(next, dayKey(now)));
+  function update(next: State, intent: FeedbackIntent = "quiet") {
+    const before = stateRef.current;
+    const ready = ensureWeeklyPeriod(next, dayKey(now));
+    if (!persist(ready)) return false;
+    if (before) {
+      feedback.emit(before, ready, intent);
+      if (intent !== "quiet") setNotice(null);
+    }
+    return true;
   }
   function persist(next: State) {
     try {
       save(next);
+      stateRef.current = next;
       setState(next);
       setError("");
       return true;
@@ -120,7 +148,15 @@ export default function App() {
       return false;
     }
   }
+  function editCampaign() {
+    feedback.dismiss();
+    clearPulse();
+    setCampaignEditing(true);
+  }
   function report(title: string, reward?: Reward, negative?: boolean) {
+    // Reward receipts belong to the coordinated surface, including corrections.
+    if (reward) return;
+    feedback.dismiss();
     setNotice({ title, reward, negative });
   }
   if (!state && step === 2)
@@ -304,9 +340,10 @@ export default function App() {
     done.reduce((n, e) => n + e.reward.renown, 0) +
     (oathKept ? state.oaths[today].reward!.renown : 0);
   function finish(q: Quest, date: string) {
-    const next = completeQuest(state!, q.id, date, now);
-    if (next !== state && update(next))
-      report(`${q.name} · deed recorded.`, q.reward);
+    const current = stateRef.current;
+    if (!current) return;
+    const next = completeQuest(current, q.id, date, now);
+    if (next !== current) update(next, "deed");
   }
   function questCard(q: Quest, material = false) {
     const date = questDate(q, now),
@@ -329,7 +366,10 @@ export default function App() {
       <article
         className={
           (material ? "quest parchment-notice " : "quest ") +
-          (completed ? "completed" : "")
+          (completed ? "completed" : "") +
+          (pulse?.events.some((e) => e.kind === "deed" && e.id === recorded?.id)
+            ? " deed-just-recorded"
+            : "")
         }
         key={q.id}
       >
@@ -390,6 +430,8 @@ export default function App() {
     );
   }
   const switchTab = (name: string) => {
+    feedback.interact("paper");
+    clearPulse();
     setTab(name);
     setNotice(null);
   };
@@ -458,7 +500,10 @@ export default function App() {
             </span>
             <span className="top-renown">
               <Flame size={16} />
-              {total.renown} <span>Renown</span>
+              <span aria-label={`${total.renown} Renown`}>
+                <span aria-hidden="true">{animatedRenown}</span>
+              </span>{" "}
+              <span>Renown</span>
             </span>
             <div className="avatar small">{state.name[0].toUpperCase()}</div>
           </div>
@@ -546,8 +591,9 @@ export default function App() {
               </button>
             </div>
           )}
+          <FeedbackSurface />
           {notice && (
-            <div className="notice ceremony" role="status">
+            <div className="notice" role="status">
               <div className="ceremony-seal">
                 <Check size={22} />
               </div>
@@ -570,7 +616,14 @@ export default function App() {
           )}
           {tab === "Keep" && (
             <>
-              <div className="hero">
+              <div
+                className={
+                  "hero" +
+                  (pulse?.events.some((e) => e.kind === "rank")
+                    ? " knight-just-promoted"
+                    : "")
+                }
+              >
                 <div className="hero-copy">
                   <span className="eyebrow">WITHIN YOUR STRONGHOLD</span>
                   <h2>{state.name}</h2>
@@ -586,7 +639,9 @@ export default function App() {
                   <div className="renown-label">
                     <span>RENOWN</span>
                     <strong>
-                      {total.renown}{" "}
+                      <span aria-label={`${total.renown} Renown`}>
+                        <span aria-hidden="true">{animatedRenown}</span>
+                      </span>{" "}
                       <small>
                         {rank.next
                           ? `/ ${rank.next.threshold}`
@@ -602,7 +657,7 @@ export default function App() {
                     aria-valuemin={0}
                     aria-valuemax={100}
                   >
-                    <i style={{ width: `${rank.progress * 100}%` }} />
+                    <i style={{ width: `${animatedRank.progress * 100}%` }} />
                   </div>
                   <small className="next-rank">
                     {rank.next
@@ -664,7 +719,7 @@ export default function App() {
                         </p>
                         <button
                           className="text-button"
-                          onClick={() => setCampaignEditing(true)}
+                          onClick={() => editCampaign()}
                         >
                           Configure campaign <ArrowRight size={15} />
                         </button>
@@ -746,7 +801,7 @@ export default function App() {
                     )}
                     <button
                       className="text-button"
-                      onClick={() => setCampaignEditing(true)}
+                      onClick={() => editCampaign()}
                     >
                       Configure campaign <ArrowRight size={15} />
                     </button>
@@ -765,6 +820,7 @@ export default function App() {
                 <ScrollText size={24} />
                 <div>
                   <strong>
+                    {deedsToday > 0 && <span>A worthy day. </span>}
                     {deedsToday} {deedsToday === 1 ? "deed" : "deeds"} recorded
                     today
                   </strong>
@@ -798,7 +854,7 @@ export default function App() {
                     </p>
                     <button
                       className="secondary"
-                      onClick={() => setCampaignEditing(true)}
+                      onClick={() => editCampaign()}
                     >
                       Configure campaign
                     </button>
@@ -843,7 +899,14 @@ export default function App() {
           )}
           {tab === "Knight" && (
             <>
-              <div className="knight-profile panel">
+              <div
+                className={
+                  "knight-profile panel" +
+                  (pulse?.events.some((e) => e.kind === "rank")
+                    ? " knight-just-promoted"
+                    : "")
+                }
+              >
                 <div className="profile-art">
                   <span className="heraldic-caption">BY DEED, NOT WORD</span>
                   <KnightArt />
@@ -864,7 +927,11 @@ export default function App() {
                   <div className="character-renown">
                     <div className="record-renown-heading">
                       <span>RENOWN EARNED</span>
-                      <strong>{total.renown.toLocaleString()}</strong>
+                      <strong aria-label={`${total.renown} Renown`}>
+                        <span aria-hidden="true">
+                          {animatedRenown.toLocaleString()}
+                        </span>
+                      </strong>
                     </div>
                     <div
                       className="progress light"
@@ -874,7 +941,7 @@ export default function App() {
                       aria-valuemax={100}
                       aria-valuenow={Math.round(rank.progress * 100)}
                     >
-                      <i style={{ width: `${rank.progress * 100}%` }} />
+                      <i style={{ width: `${animatedRank.progress * 100}%` }} />
                     </div>
                     <p>
                       {rank.next
@@ -901,7 +968,7 @@ export default function App() {
                   <button
                     className="text-button"
                     onClick={() => {
-                      setCampaignEditing(true);
+                      editCampaign();
                       setError("");
                       window.scrollTo({ top: 0 });
                     }}
@@ -974,7 +1041,7 @@ export default function App() {
                 onClick={() =>
                   campaignQuests.some((q) => q.id === "patrol")
                     ? switchTab("Quest Board")
-                    : setCampaignEditing(true)
+                    : editCampaign()
                 }
               >
                 {campaignQuests.some((q) => q.id === "patrol")
@@ -1050,7 +1117,7 @@ export default function App() {
                 today={today}
                 update={persist}
                 configure={() => {
-                  setCampaignEditing(true);
+                  editCampaign();
                   window.scrollTo({ top: 0 });
                 }}
               />

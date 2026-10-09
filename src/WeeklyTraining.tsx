@@ -1,3 +1,4 @@
+import { useFeedbackPulse } from "./feedback/Feedback";
 import { Swords, ShieldCheck } from "lucide-react";
 import { trainingStatus } from "./weekly";
 import { nextWeekStart } from "./calendar";
@@ -12,6 +13,7 @@ export function WeeklyTraining({
   state: State;
   date: string;
 }) {
+  const [pulse] = useFeedbackPulse(1800);
   const status = trainingStatus(state, date);
   if (!status) return null;
   const { count, target, remaining, commission, active, pendingTarget } =
@@ -23,7 +25,17 @@ export function WeeklyTraining({
         ? "The yard awaits. Train on the days that serve you."
         : `${words[count] || count} ${count === 1 ? "visit" : "visits"} to the yard. ${words[remaining] || remaining} ${remaining === 1 ? "remains" : "remain"}.`;
   return (
-    <section className="weekly-commission" aria-label="This week’s training">
+    <section
+      className={
+        "weekly-commission" +
+        (pulse?.events.some(
+          (e) => e.kind === "commission" && e.id === commission.id,
+        )
+          ? " commission-just-fulfilled"
+          : "")
+      }
+      aria-label="This week’s training"
+    >
       <div className="notice-pin" aria-hidden="true" />
       <header>
         <span className="eyebrow">THIS WEEK</span>

@@ -1,54 +1,29 @@
+import { useFeedbackPulse } from "./feedback/Feedback";
 import { useEffect, useRef, useState } from "react";
-import { Castle, Trees, DoorOpen, Wind, Flag } from "lucide-react";
-// Presentation metadata, separate from walking rewards and persisted distance.
-const stops = [
-  {
-    name: "Your Keep",
-    km: 0,
-    x: 70,
-    y: 260,
-    icon: Castle,
-    inscription: "The gate stands behind you. The road lies ahead.",
-  },
-  {
-    name: "Old Mill",
-    km: 9,
-    x: 195,
-    y: 165,
-    icon: Wind,
-    inscription: "The old wheel turns steadily beside the stream.",
-  },
-  {
-    name: "Wayfarer’s Inn",
-    km: 21,
-    x: 425,
-    y: 230,
-    icon: DoorOpen,
-    inscription: "A warm hearth welcomes a weary traveller.",
-  },
-  {
-    name: "Oakhaven",
-    km: 30,
-    x: 560,
-    y: 100,
-    icon: Castle,
-    inscription: "Beyond the oaks, the village gate comes into view.",
-  },
-];
+import { Trees, Flag } from "lucide-react";
+import { landmarks as stops } from "./journey";
 const routes = [
   "M70 260 C60 180 145 260 195 165",
   "M195 165 C255 60 355 290 425 230",
   "M425 230 C485 180 460 70 560 100",
 ];
 export default function JourneyMap({ distance }: { distance: number }) {
+  const [pulse] = useFeedbackPulse(1800);
   const paths = useRef<(SVGPathElement | null)[]>([]);
   const [marker, setMarker] = useState({ x: 70, y: 260 });
-  const travelled = Math.min(Math.max(distance, 0), 30);
+  const routeDistance = stops.at(-1)!.km;
+  const travelled = Math.min(Math.max(distance, 0), routeDistance);
   const currentIndex = stops.findLastIndex((stop) => distance >= stop.km);
   const current = stops[Math.max(0, currentIndex)],
     next = stops[currentIndex + 1];
   useEffect(() => {
-    const index = travelled >= 21 ? 2 : travelled >= 9 ? 1 : 0;
+    const index = Math.max(
+      0,
+      Math.min(
+        stops.length - 2,
+        stops.findLastIndex((stop) => travelled >= stop.km),
+      ),
+    );
     const path = paths.current[index];
     if (path) {
       const t =
@@ -58,13 +33,20 @@ export default function JourneyMap({ distance }: { distance: number }) {
     }
   }, [travelled]);
   return (
-    <div className="journey-atlas">
+    <div
+      className={
+        "journey-atlas" +
+        (pulse?.events.some((e) => e.kind === "landmark")
+          ? " journey-just-reached"
+          : "")
+      }
+    >
       <div className="map-sheet">
         <span className="map-caption">A SURVEY OF THE OAKHAVEN ROAD</span>
         <svg
           viewBox="0 0 640 340"
           role="img"
-          aria-label={`Route from Your Keep through Old Mill and Wayfarer’s Inn to Oakhaven. ${travelled} of 30 km travelled.`}
+          aria-label={`Route from Your Keep through Old Mill and Wayfarer’s Inn to Oakhaven. ${travelled} of ${routeDistance} km travelled.`}
         >
           <path
             d="M0 128Q140 96 214 225T430 318T640 282"
@@ -163,7 +145,7 @@ export default function JourneyMap({ distance }: { distance: number }) {
             <i />
             Your position · {travelled.toFixed(1)} km
           </span>
-          <span>30 km route</span>
+          <span>{routeDistance} km route</span>
         </div>
       </div>
       <ol className="route-landmarks">

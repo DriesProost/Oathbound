@@ -1,3 +1,4 @@
+import { useFeedback } from "./feedback/Feedback";
 import { useEffect, useState } from "react";
 import { Scale, Pencil, Trash2, Settings2 } from "lucide-react";
 import { goalActive } from "./campaign";
@@ -73,8 +74,11 @@ export default function WeightChronicle({
     baselineOffer && !settings.baseline
       ? measurements.find((m) => m.id === baselineOffer)
       : null;
+  const feedback = useFeedback();
   function commit(next: State, text: string) {
     if (update(next)) {
+      if (next.weight.measurements !== state.weight.measurements)
+        feedback.quiet();
       setError("");
       setMessage(text);
       return true;
