@@ -1,3 +1,6 @@
+import { WeeklyTraining, WeeklyLedger } from "./WeeklyTraining";
+import { ensureWeeklyPeriod, weeklyTarget, currentCommission } from "./weekly";
+import { weekStart, nextWeekStart } from "./calendar";
 import { useEffect, useState } from "react";
 import {
   Castle,
@@ -94,10 +97,16 @@ export default function App() {
       window.removeEventListener("focus", refresh);
     };
   }, []);
+  useEffect(() => {
+    if (!state) return;
+    const next = ensureWeeklyPeriod(state, dayKey(now));
+    if (next !== state) update(next);
+  }, [state, now]);
   function update(next: State) {
     try {
-      save(next);
-      setState(next);
+      const ready = ensureWeeklyPeriod(next, dayKey(now));
+      save(ready);
+      setState(ready);
       setError("");
       return true;
     } catch {
@@ -238,6 +247,16 @@ export default function App() {
         </div>
         <CampaignEditor
           mode="edit"
+          weeklyContext={{
+            currentTarget:
+              currentCommission(state, today)?.target.value ??
+              weeklyTarget(
+                state,
+                "strength",
+                weekStart(today, state.weekly.weekStartsOn),
+              ).value,
+            nextStart: nextWeekStart(today, state.weekly.weekStartsOn),
+          }}
           initialGoals={currentGoals}
           error={error}
           onCancel={() => {
@@ -799,6 +818,7 @@ export default function App() {
                       </div>
                     </section>
                   ))}
+                <WeeklyTraining state={state} date={today} />
                 <p className="board-bottom">
                   <span className="board-motto">By deed, not word</span>
                   Take what serves you. Return when the deed is done.
@@ -1010,6 +1030,7 @@ export default function App() {
                   </p>
                 </section>
               )}
+              <WeeklyLedger state={state} date={today} />
               <section className="panel chronicle-ledger">
                 <div className="ledger-heading">
                   <BookOpen size={22} />

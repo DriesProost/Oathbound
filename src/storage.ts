@@ -1,9 +1,17 @@
 import { attributes, quests, type Reward } from "./config";
-import { validDay } from "./calendar";
-import { createCampaign, validGoals, validTarget } from "./campaign";
+import { validDay, dayKey, weekStart, addDays } from "./calendar";
+import {
+  createCampaign,
+  validGoals,
+  validTarget,
+  validWeeklyTarget,
+} from "./campaign";
+import { ensureWeeklyPeriod } from "./weekly";
+import { campaignRules } from "./config";
 import { goalIds, type State, type Entry } from "./model";
 export const storageKeys = {
   current: "oathbound.knight.v3",
+  weeklyBackup: "oathbound.knight.v3.2a.backup",
   previous: "oathbound.knight.v2",
   legacy: "oathbound.knight.v1",
   backup: "oathbound.knight.v1.backup",
@@ -32,9 +40,7 @@ function reward(v: unknown): v is Reward {
     )
   );
 }
-function base(
-  s: unknown,
-): s is ObjectValue & {
+function base(s: unknown): s is ObjectValue & {
   entries: ObjectValue[];
   oaths: Record<string, ObjectValue>;
 } {
@@ -108,7 +114,7 @@ function validWeight(w: unknown) {
     unique(w.measurements.map((m: ObjectValue) => m.date))
   );
 }
-export function validate(s: unknown): State {
+function validateBaseV3(s: unknown): State {
   if (
     !base(s) ||
     s.version !== 3 ||
@@ -161,6 +167,155 @@ export function validate(s: unknown): State {
   )
     return failure();
   return s as State;
+}
+export function validate(source: unknown): State {
+  const s = validateBaseV3(source);
+  if (
+    !object(s.weekly) ||
+    !validDay(s.weekly.trackingSince) ||
+    !Number.isInteger(s.weekly.weekStartsOn) ||
+    s.weekly.weekStartsOn < 0 ||
+    s.weekly.weekStartsOn > 6 ||
+    !Array.isArray(s.weekly.commissions)
+  )
+    return failure();
+  if (
+    !s.campaign.revisions.every(
+      (r) =>
+        validDay(r.weeklyEffectiveFrom) &&
+        r.goals.every(
+          (g) => g.id !== "strength" || validWeeklyTarget(g.weeklyTarget),
+        ),
+    )
+  )
+    return failure();
+  if (
+    !s.entries.every((e) =>
+      e.rewardGrant === null
+        ? e.reward.renown === 0 &&
+          Object.values(e.reward.xp).every((n) => n === 0)
+        : object(e.rewardGrant) &&
+          typeof e.rewardGrant.id === "string" &&
+          e.rewardGrant.id.length > 0 &&
+          e.rewardGrant.activityId === e.activityId &&
+          e.rewardGrant.goalId === e.goalId &&
+          object(e.rewardGrant.period) &&
+          e.rewardGrant.period.kind === "day" &&
+          e.rewardGrant.period.start === e.date,
+    )
+  )
+    return failure();
+  if (
+    !unique(
+      s.entries
+        .filter((e) => e.rewardGrant !== null)
+        .map((e) => e.rewardGrant!.id),
+    )
+  )
+    return failure();
+  const cs = s.weekly.commissions;
+  if (
+    !cs.every(
+      (c) =>
+        object(c) &&
+        typeof c.id === "string" &&
+        c.id === `week:${c.period?.start}:${c.goalId}` &&
+        goalIds.includes(c.goalId) &&
+        !["weight", "temperance"].includes(c.goalId) &&
+        object(c.period) &&
+        c.period.kind === "week" &&
+        validDay(c.period.start) &&
+        validDay(c.period.end) &&
+        Number.isInteger(c.period.weekStartsOn) &&
+        c.period.weekStartsOn >= 0 &&
+        c.period.weekStartsOn <= 6 &&
+        weekStart(c.period.start, c.period.weekStartsOn) === c.period.start &&
+        addDays(c.period.start, 6) === c.period.end &&
+        validWeeklyTarget(c.target) &&
+        Array.isArray(c.activityIds) &&
+        c.activityIds.every(
+          (id) =>
+            typeof id === "string" &&
+            s.entries.some(
+              (e) =>
+                e.activityId === id &&
+                e.goalId === c.goalId &&
+                e.date >= c.period.start &&
+                e.date <= c.period.end &&
+                e.date >= s.weekly.trackingSince,
+            ),
+        ),
+    )
+  )
+    return failure();
+  if (!unique(cs.map((c) => c.id)) || !unique(cs.flatMap((c) => c.activityIds)))
+    return failure();
+  for (const c of cs) {
+    const activities = s.entries.filter(
+      (e) =>
+        e.goalId === c.goalId &&
+        e.date >= c.period.start &&
+        e.date <= c.period.end &&
+        e.date >= s.weekly.trackingSince,
+    );
+    if (
+      !unique(activities.map((e) => e.date)) ||
+      activities.length !== c.activityIds.length ||
+      activities.some((e) => !c.activityIds.includes(e.activityId))
+    )
+      return failure();
+    if (
+      cs.some(
+        (other) =>
+          other.id !== c.id &&
+          other.goalId === c.goalId &&
+          other.period.start <= c.period.end &&
+          other.period.end >= c.period.start,
+      )
+    )
+      return failure();
+  }
+  return s;
+}
+function addWeeklyModel(source: unknown, date: string): State {
+  const s = validateBaseV3(source);
+  if (!validDay(date)) return failure();
+  const start = weekStart(date);
+  const next = {
+    ...structuredClone(s),
+    campaign: {
+      revisions: s.campaign.revisions.map((r) => ({
+        ...structuredClone(r),
+        weeklyEffectiveFrom: start,
+        goals: r.goals.map((g) =>
+          g.id === "strength"
+            ? {
+                ...structuredClone(g),
+                weeklyTarget: {
+                  metric: "sessions" as const,
+                  value: campaignRules.trainingSessions.defaultValue,
+                },
+              }
+            : structuredClone(g),
+        ),
+      })),
+    },
+    entries: s.entries.map((e) => ({
+      ...structuredClone(e),
+      rewardGrant: {
+        id: `award:${e.activityId}`,
+        activityId: e.activityId,
+        goalId: e.goalId,
+        period: { kind: "day" as const, start: e.date },
+      },
+    })),
+    weekly: {
+      weekStartsOn: campaignRules.weekStartsOn,
+      trackingSince: start < s.created ? s.created : start,
+      commissions: [],
+    },
+  };
+  return validate(ensureWeeklyPeriod(next, date));
 }
 function validateV2(s: unknown) {
   if (
@@ -228,9 +383,20 @@ function v1ToV2(s: unknown) {
     oaths,
   });
 }
-export function migrate(source: unknown): State {
+export function migrate(source: unknown, date = dayKey()): State {
   if (!object(source)) return failure();
-  if (source.version === 3) return validate(source);
+  if (source.version === 3) {
+    if (source.weekly !== undefined) return validate(source);
+    // A partial newer schema must not masquerade as an old save.
+    if (
+      source.entries?.some((e: ObjectValue) => e.rewardGrant !== undefined) ||
+      source.campaign?.revisions?.some(
+        (r: ObjectValue) => r.weeklyEffectiveFrom !== undefined,
+      )
+    )
+      return failure();
+    return addWeeklyModel(source, date);
+  }
   const old = source.version === 1 ? v1ToV2(source) : validateV2(source);
   const entries: Entry[] = old.entries.map((e) => {
     const template = quests.find((q) => q.id === e.questId);
@@ -251,28 +417,46 @@ export function migrate(source: unknown): State {
       },
     } as Entry;
   });
-  return validate({
-    version: 3,
-    name: old.name,
-    created: old.created,
-    entries,
-    oaths: structuredClone(old.oaths),
-    campaign: createCampaign(old.created),
-    weight: {
-      settings: { displayUnit: "kg", baseline: null, targetGrams: null },
-      measurements: [],
+  return addWeeklyModel(
+    {
+      version: 3,
+      name: old.name,
+      created: old.created,
+      entries,
+      oaths: structuredClone(old.oaths),
+      campaign: createCampaign(old.created),
+      weight: {
+        settings: { displayUnit: "kg", baseline: null, targetGrams: null },
+        measurements: [],
+      },
+      migratedFrom: source.version,
     },
-    migratedFrom: source.version,
-  });
+    date,
+  );
 }
-export function load(store: Store = localStorage): State | null {
+export function load(
+  store: Store = localStorage,
+  date = dayKey(),
+): State | null {
   const current = store.getItem(storageKeys.current);
-  if (current !== null) return validate(JSON.parse(current));
+  if (current !== null) {
+    const source = JSON.parse(current);
+    const migrated = migrate(source, date);
+    const next = validate(ensureWeeklyPeriod(migrated, date));
+    if (
+      source.weekly === undefined &&
+      store.getItem(storageKeys.weeklyBackup) === null
+    )
+      store.setItem(storageKeys.weeklyBackup, current);
+    if (source.weekly === undefined || next !== migrated)
+      store.setItem(storageKeys.current, JSON.stringify(next));
+    return next;
+  }
   // An invalid newer source must never silently fall back to older history.
   const v2 = store.getItem(storageKeys.previous),
     source = v2 ?? store.getItem(storageKeys.legacy);
   if (source === null) return null;
-  const next = migrate(JSON.parse(source));
+  const next = migrate(JSON.parse(source), date);
   const backupKey =
     v2 !== null ? storageKeys.previousBackup : storageKeys.backup;
   if (store.getItem(backupKey) === null) store.setItem(backupKey, source);

@@ -1,5 +1,11 @@
-import { quests, type Quest } from "./config";
-import { dayKey, validDay, previousDay } from "./calendar";
+import { quests, campaignRules, type Quest } from "./config";
+import {
+  dayKey,
+  validDay,
+  previousDay,
+  weekStart,
+  nextWeekStart,
+} from "./calendar";
 import {
   goalIds,
   type CampaignGoal,
@@ -94,6 +100,14 @@ export function defaultGoals(active = true): CampaignGoal[] {
     id,
     active: active && id !== "weight",
     target: structuredClone(goalDefinitions[id].defaultTarget),
+    ...(id === "strength"
+      ? {
+          weeklyTarget: {
+            metric: "sessions" as const,
+            value: campaignRules.trainingSessions.defaultValue,
+          },
+        }
+      : {}),
   }));
 }
 export function validTarget(target: unknown): target is GoalTarget {
@@ -124,6 +138,21 @@ export function validTarget(target: unknown): target is GoalTarget {
       Number.isInteger(target.value))
   );
 }
+export function validWeeklyTarget(
+  target: unknown,
+): target is import("./model").WeeklyTarget {
+  return (
+    !!target &&
+    typeof target === "object" &&
+    "metric" in target &&
+    target.metric === "sessions" &&
+    "value" in target &&
+    typeof target.value === "number" &&
+    Number.isInteger(target.value) &&
+    target.value >= campaignRules.trainingSessions.min &&
+    target.value <= campaignRules.trainingSessions.max
+  );
+}
 export function validGoals(goals: unknown): goals is CampaignGoal[] {
   return (
     Array.isArray(goals) &&
@@ -135,7 +164,9 @@ export function validGoals(goals: unknown): goals is CampaignGoal[] {
         goalIds.includes(g.id) &&
         typeof g.active === "boolean" &&
         validTarget(g.target) &&
-        allowedMetrics[g.id as GoalId].includes(g.target.metric),
+        allowedMetrics[g.id as GoalId].includes(g.target.metric) &&
+        (g.weeklyTarget === undefined ||
+          (g.id === "strength" && validWeeklyTarget(g.weeklyTarget))),
     )
   );
 }
@@ -144,7 +175,24 @@ export function createCampaign(date: string, goals = defaultGoals()): Campaign {
     throw Error("Invalid campaign configuration.");
   return {
     revisions: [
-      { id: "campaign-1", effectiveDate: date, goals: structuredClone(goals) },
+      {
+        id: "campaign-1",
+        effectiveDate: date,
+        weeklyEffectiveFrom: weekStart(date),
+        goals: structuredClone(
+          goals.map((g) =>
+            g.id === "strength" && !g.weeklyTarget
+              ? {
+                  ...g,
+                  weeklyTarget: {
+                    metric: "sessions",
+                    value: campaignRules.trainingSessions.defaultValue,
+                  },
+                }
+              : g,
+          ),
+        ),
+      },
     ],
   };
 }
@@ -169,11 +217,22 @@ export function configureCampaign(
   const last = state.campaign.revisions.at(-1)!;
   if (!validDay(date) || date < last.effectiveDate || !validGoals(goals))
     throw Error("Invalid campaign configuration.");
-  const normalized = goals.map((g) =>
-    g.target.metric === "check"
-      ? { ...g, target: { ...g.target, criterion: g.target.criterion.trim() } }
-      : g,
-  );
+  const normalized = goals.map((g) => ({
+    ...g,
+    target:
+      g.target.metric === "check"
+        ? { ...g.target, criterion: g.target.criterion.trim() }
+        : g.target,
+    ...(g.id === "strength"
+      ? {
+          weeklyTarget: g.weeklyTarget ||
+            last.goals.find((p) => p.id === "strength")?.weeklyTarget || {
+              metric: "sessions" as const,
+              value: campaignRules.trainingSessions.defaultValue,
+            },
+        }
+      : {}),
+  }));
   if (JSON.stringify(normalized) === JSON.stringify(last.goals)) return state;
   return {
     ...state,
@@ -183,6 +242,7 @@ export function configureCampaign(
         {
           id: `campaign-${state.campaign.revisions.length + 1}`,
           effectiveDate: date,
+          weeklyEffectiveFrom: nextWeekStart(date, state.weekly.weekStartsOn),
           goals: structuredClone(normalized),
         },
       ],

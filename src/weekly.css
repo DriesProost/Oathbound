@@ -1,0 +1,156 @@
+.weekly-commission {
+  position: relative;
+  margin: 22px 0 0;
+  padding: 20px 24px 17px;
+  color: #40563b;
+  background: linear-gradient(100deg, #ede6d0, #f7f0de 45%, #f2e9d1);
+  border: 1px solid #c8b891;
+  border-left: 4px solid #7c8965;
+  border-radius: 2px;
+  box-shadow: 2px 4px 7px #20140928;
+}
+.weekly-commission > header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #cdbb9660;
+}
+.weekly-commission .eyebrow {
+  font:
+    10px Georgia,
+    serif;
+  letter-spacing: 1.6px;
+  color: #8b7950;
+}
+.weekly-commission time {
+  font-size: 10px;
+  color: #8a7f63;
+}
+.weekly-order {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 15px 0 12px;
+}
+.weekly-order > svg {
+  color: #87906b;
+}
+.weekly-order > div {
+  flex: 1;
+  min-width: 0;
+}
+.weekly-order h2 {
+  font-size: 26px;
+}
+.weekly-order p {
+  font-size: 11px;
+  color: #777d62;
+  margin-top: 5px;
+}
+.weekly-order > strong {
+  flex-shrink: 0;
+  text-align: center;
+  font:
+    28px Georgia,
+    serif;
+  color: #536b44;
+}
+.weekly-order small {
+  display: block;
+  font:
+    9px "DM Sans",
+    sans-serif;
+  color: #858269;
+  margin-top: 5px;
+}
+.weekly-marks {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 13px 37px;
+}
+.weekly-marks > span {
+  width: 21px;
+  height: 9px;
+  background: #ddd5bd;
+  border: 1px solid #c1b68e;
+  border-radius: 1px;
+}
+.weekly-marks > span.visited {
+  background: #657b4b;
+  border-color: #516c3e;
+}
+.weekly-commission > footer {
+  border-top: 1px solid #cdbb9660;
+  padding-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 10px;
+  color: #89816a;
+}
+.weekly-ledger article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid #d7caaa;
+}
+.weekly-ledger article:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.weekly-ledger article h3 {
+  font:
+    20px "Libre Caslon Display",
+    Georgia,
+    serif;
+  color: #49623e;
+}
+.weekly-ledger article small {
+  display: block;
+  color: #989077;
+  font-size: 10px;
+  margin-top: 5px;
+}
+.weekly-ledger article strong {
+  font-size: 12px;
+  color: #738260;
+  font-weight: 500;
+}
+.weekly-review {
+  font-size: 11px !important;
+}
+@media (max-width: 600px) {
+  .weekly-commission {
+    padding: 18px 16px 14px;
+  }
+  .weekly-order {
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .weekly-order > svg {
+    margin-top: 4px;
+    width: 20px;
+  }
+  .weekly-order h2 {
+    font-size: 25px;
+  }
+  .weekly-order > strong {
+    font-size: 24px;
+  }
+  .weekly-marks {
+    margin-left: 30px;
+  }
+  .weekly-fulfilled {
+    display: none;
+  }
+  .weekly-ledger article {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+}

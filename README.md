@@ -13,14 +13,16 @@ npm run dev
 
 On Windows, open the folder containing `package.json`, type `cmd` in File Explorer's address bar, and run these commands. Open the Local address printed by Vite. Keep that window open while using the app.
 
-Run `npm test` for campaign goals, targets, reward slots, progression, action timing, Oath correction and persistence/migration tests. Run `npm run build` for TypeScript checking and the production build.
+Run `npm test` for campaign goals, targets, weekly boundaries/snapshots, reward slots, progression, action timing, Oath correction and persistence/migration tests. Run `npm run build` for TypeScript checking and the production build.
 
 ## Structure
 
 - `src/config.ts`: central quest definitions, difficulty, reward snapshots, action timing, rank thresholds and attribute XP curve.
 - `src/model.ts`: v3 save, campaign, activity and separate outcome types.
 - `src/campaign.ts`: goal catalogue, target validation, dated configuration revisions and goal-driven deeds.
-- `src/calendar.ts`: local calendar keys and date validation.
+- `src/calendar.ts`: local calendar keys, validation and configurable week boundaries.
+- `src/weekly.ts`: weekly commission snapshots, prospective targets and unique activity links.
+- `src/WeeklyTraining.tsx` / `src/weekly.css`: pinned weekly commission and Chronicle ledger.
 - `src/domain.ts`: pure progression and confirmation rules; no browser storage or UI dependencies.
 - `src/CampaignEditor.tsx`: independent goal → target → review flow, shared by onboarding and campaign editing.
 - `src/campaign.css`: campaign parchment, form and responsive presentation.
@@ -59,7 +61,7 @@ Legitimate historical reward amounts, XP, dates, Oaths and walking distances rem
 
 New players enter a knight name, choose goals, configure targets and review the deeds before saving. No goals are preselected. Existing players use **Knight → Configure campaign**. The editor is a standalone component; its settings belong to the campaign, separate from the knight profile. Cancel discards the draft. Goals can be changed or paused without erasing earned history.
 
-Only selected behaviours produce default deeds. Walking supports 3/5 km presets, custom kilometres or steps; study supports minutes/pages; sleep supports a personal criterion or hours. Training, nutrition and personal care use editable completion criteria. Weekly workout targets are reserved for 2B. These are self-reported confirmations of meeting a criterion, not automatic tracking or incremental quantity logging.
+Only selected behaviours produce default deeds. Walking supports 3/5 km presets, custom kilometres or steps; study supports minutes/pages; sleep supports a personal criterion or hours. Training, nutrition and personal care use editable completion criteria. Strength also has a weekly target of 1–7 sessions. These are self-reported confirmations of meeting a criterion, not automatic tracking or incremental quantity logging.
 
 Rewards are fixed per template and remain unchanged by larger targets. Each goal shares one reward slot per local date, so changing targets or templates cannot award again that day. Completed deeds snapshot their criterion and reward. Dated campaign revisions preserve previous-day sleep criteria; sleep starts after the first night with that goal. Disabling temperance blocks new current-day Oaths while corrections to existing recorded Oaths remain available.
 
@@ -67,4 +69,16 @@ A confirmed kilometre patrol records its selected distance on Journey. Steps nev
 
 `progression.rewardBudget` centrally retains the possible future ordinary/Oath budget, with `enabled: false`. No global reward ceiling is enforced. Outcome settings and records are independent of reward-bearing deeds; body-weight data never contributes to Renown, attribute XP or Oath streaks. Selecting weight management currently saves that goal and clearly explains that tracker UI arrives in 2C. No measurements are fabricated.
 
-Stop for review after 2A. Weekly periods/training targets (2B), kg weight tracking (2C), lb support (2D) and custom deeds are not implemented. Audio, accounts, sync, wearables, calorie databases, equipment customisation and keep-building remain deferred. Remote fonts are optional; system and Georgia fallbacks work offline.
+## Weekly commissions — Stage 2B
+
+Strength training supports a configurable 1–7 sessions/week target, defaulting to 3. **Knight → Configure campaign → Targets** edits it. The daily Training Yard deed remains available on chosen training days. At most one training completion per local date advances both the daily deed and weekly commission. Completing a commission grants no extra Renown or attribute XP; additional training days retain only their ordinary daily reward.
+
+Local weeks run Monday–Sunday. `campaignRules.weekStartsOn` centrally configures the default start rule. Campaigns retain their chosen rule so changing a future default cannot regroup existing periods. Each commission stores a stable ID, period kind/start/end/week-rule snapshot, target snapshot and unique activity IDs. Each activity has a separate daily reward receipt/slot; totals use daily receipts and kept Oaths, never weekly commissions. Historical criteria, rewards and periods remain unchanged.
+
+Weekly target edits take effect from the **following Monday**, including edits made on a Monday. Daily goal activation and criteria still take effect immediately. The editor and board explain the current target and pending target. There is no “apply to this week” override. Pausing strength preserves the current commission and earlier records; inactive future weeks receive no new commission. Re-enabling opens the current period prospectively using its applicable target. Only actual recorded training days count.
+
+Quest Board shows a compact pinned **This Week** notice. Chronicle lists closed commissions, including incomplete results, without failure labels or penalties. Opening/revisiting the app creates the applicable active commission; week rollover also refreshes on focus or the usual clock tick. Unvisited weeks are not fabricated as empty results.
+
+Existing 2A saves receive an additive v3 upgrade. Before changing the current save, its exact bytes are retained at `oathbound.knight.v3.2a.backup`; existing backups are never overwritten. Rewards, goal choices, criteria, Oaths, distance and outcome data are preserved. The new default weekly target begins in the current local week, counting existing actual training days in that week. Earlier closed weeks have no invented targets or results. Invalid/partial newer schemas and failed backup writes leave the source untouched.
+
+Stop for review after 2B. Kg weight tracking (2C), lb support (2D) and custom deeds are not implemented. Audio, accounts, sync, wearables, calorie databases, equipment customisation and keep-building remain deferred. Remote fonts are optional; system and Georgia fallbacks work offline.

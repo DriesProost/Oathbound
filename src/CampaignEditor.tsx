@@ -1,3 +1,4 @@
+import { formatDay } from "./presentation";
 import { useState } from "react";
 import {
   Shield,
@@ -21,7 +22,7 @@ import {
   targetRules,
   validTarget,
 } from "./campaign";
-import { quests, oathDefinition } from "./config";
+import { quests, oathDefinition, campaignRules } from "./config";
 import { RewardText } from "./components";
 import "./campaign.css";
 const goalIcons = {
@@ -41,12 +42,14 @@ export default function CampaignEditor({
   onSave,
   onCancel,
   error = "",
+  weeklyContext,
 }: {
   initialGoals?: CampaignGoal[];
   mode: "onboarding" | "edit";
   onSave: (goals: CampaignGoal[]) => boolean;
   onCancel: (draft: CampaignGoal[]) => void;
   error?: string;
+  weeklyContext?: { currentTarget: number; nextStart: string };
 }) {
   const [goals, setGoals] = useState(() =>
     structuredClone(initialGoals || defaultGoals(false)),
@@ -158,6 +161,23 @@ export default function CampaignEditor({
                             ? {
                                 ...g,
                                 active: e.target.checked,
+                                ...(g.id === "strength" &&
+                                !e.target.checked &&
+                                (!g.weeklyTarget ||
+                                  g.weeklyTarget.value <
+                                    campaignRules.trainingSessions.min ||
+                                  g.weeklyTarget.value >
+                                    campaignRules.trainingSessions.max ||
+                                  !Number.isInteger(g.weeklyTarget.value))
+                                  ? {
+                                      weeklyTarget: {
+                                        metric: "sessions" as const,
+                                        value:
+                                          campaignRules.trainingSessions
+                                            .defaultValue,
+                                      },
+                                    }
+                                  : {}),
                                 target:
                                   !e.target.checked && !validTarget(g.target)
                                     ? structuredClone(
@@ -197,6 +217,53 @@ export default function CampaignEditor({
                     <Icon size={18} />
                     {goalDefinitions[goal.id].name}
                   </legend>
+                  {goal.id === "strength" && (
+                    <>
+                      <label htmlFor="target-strength-weekly">
+                        Training sessions per week
+                      </label>
+                      <input
+                        id="target-strength-weekly"
+                        type="number"
+                        required
+                        min={campaignRules.trainingSessions.min}
+                        max={campaignRules.trainingSessions.max}
+                        step={1}
+                        value={goal.weeklyTarget?.value || ""}
+                        onChange={(e) =>
+                          setGoals((gs) =>
+                            gs.map((g) =>
+                              g.id === "strength"
+                                ? {
+                                    ...g,
+                                    weeklyTarget: {
+                                      metric: "sessions",
+                                      value: Number(e.target.value),
+                                    },
+                                  }
+                                : g,
+                            ),
+                          )
+                        }
+                      />
+                      <p className="target-help">
+                        One training day counts once. Weekly progress earns no
+                        additional Renown or XP.
+                      </p>
+                      {mode === "edit" && weeklyContext ? (
+                        <p className="target-help">
+                          This week’s target stays at{" "}
+                          {weeklyContext.currentTarget} sessions. Target changes
+                          begin {formatDay(weeklyContext.nextStart)}.
+                        </p>
+                      ) : (
+                        <p className="target-help">
+                          Your first weekly commission begins with your
+                          campaign. Train on the days that serve you.
+                        </p>
+                      )}
+                    </>
+                  )}
                   {goal.id === "walking" && (
                     <>
                       <label htmlFor="target-walking-metric">
@@ -385,6 +452,20 @@ export default function CampaignEditor({
                           : "Weight management")}
                     </h2>
                     <p>{targetDescription(goal.target)}</p>
+                    {goal.id === "strength" && (
+                      <p className="weekly-review">
+                        Train {goal.weeklyTarget?.value} times per week · no
+                        weekly reward bonus.
+                        {mode === "edit" && weeklyContext && (
+                          <>
+                            {" "}
+                            Target changes begin{" "}
+                            {formatDay(weeklyContext.nextStart)}; this week
+                            stays at {weeklyContext.currentTarget}.
+                          </>
+                        )}
+                      </p>
+                    )}
                     {quest && <RewardText reward={quest.reward} />}{" "}
                     {goal.id === "temperance" && (
                       <RewardText reward={oathDefinition.reward} />

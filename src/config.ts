@@ -21,6 +21,10 @@ export type Quest = {
   reward: Reward;
   distance?: number;
 };
+export const campaignRules = {
+  weekStartsOn: 1, // JavaScript weekday: Monday. Stored periods retain this snapshot.
+  trainingSessions: { min: 1, max: 7, defaultValue: 3 },
+};
 export const progression = {
   attributeBaseXP: 100,
   attributeIncrementXP: 25,

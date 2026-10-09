@@ -1,8 +1,8 @@
 # Stage 2 proposal: a personal campaign
 
-Status: approved with amendments. Stage 2A is implemented and awaiting onboarding/campaign-editor review. Stage 2B, 2C, 2D and custom deeds remain unimplemented.
+Status: approved with amendments. Stages 2A and 2B are implemented. Stage 2B is awaiting weekly-goal review; 2C, 2D and custom deeds remain unimplemented.
 
-Approved amendments: retain the centrally configured reward-budget concept but leave it disabled; use per-goal/daily reward slots for now. Outcome data, weigh-ins and target attainment never award progression or create punitive streaks. Campaign editing remains independent of the Knight domain. Stop after 2A for review and stop again before custom deeds.
+Approved amendments: retain the centrally configured reward-budget concept but leave it disabled; use per-goal/daily reward slots for now. Outcome data, weigh-ins and target attainment never award progression or create punitive streaks. Campaign editing remains independent of the Knight domain. Stage 2A has been approved. Stop after 2B for review and stop again before custom deeds.
 
 The campaign should follow the player's real goals. Daily rewards remain immediate, attributes grow through repeated behaviours, and ranks remain long-term milestones. Missing a day or disabling a goal never deletes history.
 
@@ -23,13 +23,13 @@ Active goals determine available default deeds. Weight management enables its tr
 
 Keep knight creation, then add a short goal-selection step and a review of applicable targets. Allow sensible behaviour defaults and defer optional weight details. Avoid a long health questionnaire.
 
-Existing players can configure their campaign from Knight, using the same compact editor. Preview which deeds will appear before saving. Changes apply prospectively; editing or disabling a goal never reinterprets historical rewards. Current weekly targets stay fixed until the next week unless the player explicitly chooses to revise the active week.
+Existing players can configure their campaign from Knight, using the same compact editor. Preview which deeds will appear before saving. Changes apply prospectively; editing or disabling a goal never reinterprets historical rewards. Current weekly targets stay fixed until the next week. The explicit active-week override is deferred; edits start the following Monday.
 
 ## 3. Daily deeds and weekly goals
 
 Keep today's opportunities separate from a small “This week” section. Daily habits can be confirmed once per local date; a weekly target such as three workouts accumulates completed sessions throughout the week. The workout action remains available on days the player chooses to train, without making every untrained day a failure.
 
-One activity can advance the daily record and weekly target, but receives one reward award. Do not add a weekly completion bonus initially. Additional genuine workout sessions may be recorded toward the weekly count, while the daily reward limit remains clear. Use Monday–Sunday local calendar weeks by default, configured centrally, and snapshot each record's period start so later settings changes do not regroup history.
+One activity can advance the daily record and weekly target, but receives one reward award. Do not add a weekly completion bonus initially. Stage 2B amendment: at most one training completion per local date advances the weekly target. Multiple same-day sessions are deferred. Use Monday–Sunday local calendar weeks by default, configured centrally, and snapshot each record's period start so later settings changes do not regroup history.
 
 Unlogged days remain unknown. An unmet weekly target is simply recorded as progress made, not a penalty or broken streak.
 

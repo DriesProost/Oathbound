@@ -21,13 +21,40 @@ export type GoalTarget =
   | BehaviourTarget
   | { metric: "oath" }
   | { metric: "outcome" };
-export type CampaignGoal = { id: GoalId; active: boolean; target: GoalTarget };
+export type WeeklyTarget = { metric: "sessions"; value: number };
+export type CampaignGoal = {
+  id: GoalId;
+  active: boolean;
+  target: GoalTarget;
+  weeklyTarget?: WeeklyTarget;
+};
 export type CampaignRevision = {
   id: string;
   effectiveDate: string;
+  weeklyEffectiveFrom: string;
   goals: CampaignGoal[];
 };
 export type Campaign = { revisions: CampaignRevision[] };
+export type DayPeriod = { kind: "day"; start: string };
+// Activity identity and the daily award receipt are distinct. Weekly progress links only activities.
+export type RewardGrant = {
+  id: string;
+  activityId: string;
+  goalId: BehaviourGoalId | null;
+  period: DayPeriod;
+};
+export type WeeklyCommission = {
+  id: string;
+  goalId: BehaviourGoalId;
+  period: { kind: "week"; start: string; end: string; weekStartsOn: number };
+  target: WeeklyTarget;
+  activityIds: string[];
+};
+export type WeeklyCampaign = {
+  weekStartsOn: number;
+  trackingSince: string;
+  commissions: WeeklyCommission[];
+};
 export type Entry = {
   id: string;
   activityId: string;
@@ -35,7 +62,8 @@ export type Entry = {
   questId: string;
   goalId: BehaviourGoalId | null;
   period: { kind: "day"; start: string };
-  reward: Reward;
+  rewardGrant: RewardGrant | null;
+  reward: Reward; // Amounts snapshotted with the daily receipt; never granted by a commission.
   distance: number;
   deed: {
     name: string;
@@ -66,6 +94,7 @@ export type State = {
   name: string;
   created: string;
   campaign: Campaign;
+  weekly: WeeklyCampaign;
   entries: Entry[];
   oaths: Record<string, OathRecord>;
   weight: { settings: WeightSettings; measurements: WeighIn[] };

@@ -1,4 +1,6 @@
+import { ensureWeeklyPeriod, recordWeeklyActivity } from "./weekly";
 import {
+  campaignRules,
   attributes,
   progression,
   quests,
@@ -19,18 +21,26 @@ export function createKnight(
   date = dayKey(),
   goals?: CampaignGoal[],
 ): State {
-  return {
-    version: 3,
-    name: name.trim() || "The Traveller",
-    created: date,
-    campaign: createCampaign(date, goals),
-    entries: [],
-    oaths: {},
-    weight: {
-      settings: { displayUnit: "kg", baseline: null, targetGrams: null },
-      measurements: [],
+  return ensureWeeklyPeriod(
+    {
+      version: 3,
+      name: name.trim() || "The Traveller",
+      created: date,
+      campaign: createCampaign(date, goals),
+      weekly: {
+        weekStartsOn: campaignRules.weekStartsOn,
+        trackingSince: date,
+        commissions: [],
+      },
+      entries: [],
+      oaths: {},
+      weight: {
+        settings: { displayUnit: "kg", baseline: null, targetGrams: null },
+        measurements: [],
+      },
     },
-  };
+    date,
+  );
 }
 export function canConfirm(
   date: string,
@@ -66,7 +76,7 @@ export function completeQuest(
     )
   )
     return state;
-  return {
+  const next: State = {
     ...state,
     entries: [
       ...state.entries,
@@ -83,11 +93,18 @@ export function completeQuest(
           timing: quest.timing,
           target: structuredClone(quest.target),
         },
+        rewardGrant: {
+          id: `award:${date}:${quest.goalId}`,
+          activityId: `activity:${date}:${quest.goalId}`,
+          goalId: quest.goalId,
+          period: { kind: "day", start: date },
+        },
         reward: structuredClone(quest.reward),
         distance: quest.distance || 0,
       },
     ],
   };
+  return recordWeeklyActivity(next, `activity:${date}:${quest.goalId}`);
 }
 export function takeOath(
   state: State,
@@ -154,7 +171,7 @@ export function attributeProgress(xp: number) {
 }
 export function totals(state: State) {
   const rewards = [
-    ...state.entries.map((e) => e.reward),
+    ...state.entries.filter((e) => e.rewardGrant !== null).map((e) => e.reward),
     ...Object.values(state.oaths)
       .filter((o) => o.status === "kept")
       .map((o) => o.reward!),
