@@ -78,6 +78,7 @@ export function completeQuest(
     return state;
   const next: State = {
     ...state,
+    deedNotes: state.deedNotes?.filter((n) => !(n.date === date && n.questId === id)),
     entries: [
       ...state.entries,
       {
@@ -247,4 +248,15 @@ export function oathStats(state: State, today = dayKey()) {
         )
       : null,
   };
+}
+
+export function recordDeedStatus(state: State, id: string, date: string,
+  status: "not-completed" | "not-planned" | "unlogged", now = new Date()): State {
+  const quest = configuredQuests(state, date).find((q) => q.id === id);
+  if (!quest || !validDay(date) || date < state.created || date > dayKey(now) ||
+      state.entries.some((e) => e.date === date && (e.questId === id || e.goalId === quest.goalId)) ||
+      !["not-completed", "not-planned", "unlogged"].includes(status) ||
+      (status === "not-completed" && !canConfirm(date, quest.timing, now))) return state;
+  const notes = (state.deedNotes || []).filter((n) => !(n.date === date && n.questId === id));
+  return { ...state, deedNotes: status === "unlogged" ? notes : [...notes, {date, questId:id, name:quest.name, status}] };
 }

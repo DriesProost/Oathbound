@@ -96,6 +96,8 @@ export type State = {
   campaign: Campaign;
   weekly: WeeklyCampaign;
   entries: Entry[];
+  // Non-completion notes are not activities or reward receipts. Absent means unlogged.
+  deedNotes?: { date: string; questId: string; name: string; status: "not-completed" | "not-planned" }[];
   oaths: Record<string, OathRecord>;
   weight: { settings: WeightSettings; measurements: WeighIn[] };
   migratedFrom?: 1 | 2;

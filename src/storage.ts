@@ -138,6 +138,14 @@ function validateBaseV3(s: unknown): State {
 }
 export function validate(source: unknown): State {
   const s = validateBaseV3(source);
+  if (s.deedNotes !== undefined && (
+    !Array.isArray(s.deedNotes) ||
+    !s.deedNotes.every((n) => object(n) && validDay(n.date) && n.date >= s.created &&
+      quests.some((q) => q.id === n.questId) && typeof n.name === "string" && n.name.length > 0 &&
+      ["not-completed", "not-planned"].includes(n.status) &&
+      !s.entries.some((e) => e.date === n.date && e.questId === n.questId)) ||
+    !unique(s.deedNotes.map((n) => `${n.date}:${n.questId}`))
+  )) return failure();
   if (
     !object(s.weekly) ||
     !validDay(s.weekly.trackingSince) ||

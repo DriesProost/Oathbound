@@ -28,6 +28,7 @@ import {
 import {
   createKnight,
   completeQuest,
+  recordDeedStatus,
   totals,
   rankProgress,
   oathStats,
@@ -390,6 +391,18 @@ function OathboundApp() {
           </div>
           <p>{recorded?.deed.description || q.description}</p>
           {!completed && <RewardText reward={q.reward} />}
+          {!completed && <details className="deed-status-options">
+            <summary>{state!.deedNotes?.find((n) => n.date === date && n.questId === q.id)?.status === "not-planned"
+              ? "Not planned · change" : state!.deedNotes?.find((n) => n.date === date && n.questId === q.id)?.status === "not-completed"
+                ? "Not completed · change" : "Other options"}</summary>
+            <p>No reward or penalty. You can still complete this deed later.</p>
+            <button type="button" className="text-button" disabled={!allowed}
+              onClick={() => persist(recordDeedStatus(state!, q.id, date, "not-completed", now))}>Not completed</button>
+            <button type="button" className="text-button" disabled={date < state!.created || !configuredQuests(state!, date).some((p) => p.id === q.id)}
+              onClick={() => persist(recordDeedStatus(state!, q.id, date, "not-planned", now))}>Not planned</button>
+            <button type="button" className="text-button"
+              onClick={() => persist(recordDeedStatus(state!, q.id, date, "unlogged", now))}>Leave unlogged</button>
+          </details>}
           <small className="quest-timing" id={`timing-${q.id}`}>
             {date < state!.created ||
             !configuredQuests(state!, date).find((p) => p.id === q.id)
@@ -443,6 +456,7 @@ function OathboundApp() {
     ...new Set([
       ...state.entries.map((e) => e.date),
       ...Object.keys(state.oaths),
+      ...(state.deedNotes || []).map((n) => n.date),
     ]),
   ]
     .sort()
@@ -1186,6 +1200,11 @@ function OathboundApp() {
                               </small>
                             </span>
                             <RewardText reward={e.reward} />
+                          </div>
+                        ))}
+                        {(state.deedNotes || []).filter((n) => n.date === date).map((n) => (
+                          <div className="history-entry" key={`note-${n.questId}`}>
+                            <span>{n.name}</span><span>{n.status === "not-planned" ? "Not planned" : "Not completed"} · no reward or penalty</span>
                           </div>
                         ))}
                         {dayOath && (

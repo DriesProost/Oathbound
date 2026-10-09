@@ -270,3 +270,8 @@ html[data-keyboard="open"] .sound-offer {
     border-radius: 6px;
   }
 }
+
+.deed-status-options { margin-top: .5rem; font-size: .85rem; }
+.deed-status-options summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; text-decoration: underline; text-underline-offset: 3px; }
+.deed-status-options p { margin: .25rem 0; }
+.deed-status-options button { display: block; }
