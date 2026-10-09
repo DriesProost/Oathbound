@@ -77,10 +77,14 @@ export type OathRecord = {
   reward: Reward | null;
 };
 // Outcome storage is separate from reward-bearing activity records. Measurements and settings never produce progression rewards.
+export const bodyBuilds = ["large", "sturdy", "lean"] as const;
+export type BodyBuild = (typeof bodyBuilds)[number];
+export type WeightAppearance = { enabled: boolean; startingBuild: BodyBuild; targetBuild: BodyBuild };
 export type WeightSettings = {
   displayUnit: "kg" | "lb";
   baseline: { date: string; grams: number } | null;
   targetGrams: number | null;
+  appearance?: WeightAppearance;
 };
 export type WeighIn = {
   id: string;

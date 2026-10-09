@@ -564,6 +564,11 @@ export default function CampaignEditor({
                           : "No target set."}
                       </p>
                     )}
+                    {goal.id === "weight" && configureWeight && (
+                      <p>{weightDraft.appearanceEnabled
+                        ? `Character build: ${weightDraft.startingBuild} → ${weightDraft.targetBuild}, following the weight trend. Grooming follows Presence. No Renown or XP.`
+                        : "Weight-linked character appearance is off."}</p>
+                    )}
                     {goal.id === "weight" && (
                       <small className="availability-note">
                         Enter measurements in Chronicle when ready. No

@@ -1,5 +1,5 @@
 import { addDays, dayKey, validDay } from "./calendar";
-import type { State, WeighIn, WeightSettings } from "./model";
+import { bodyBuilds, type State, type WeighIn, type WeightSettings } from "./model";
 // These limits guide entry forms only. The outcome domain accepts every positive safe gram value.
 export const weightUiRules = { minGrams: 100, maxGrams: 1_000_000 };
 export function positiveGrams(value: unknown): value is number {
@@ -39,7 +39,11 @@ export function validWeightSettings(value: unknown): value is WeightSettings {
       (object(value.baseline) &&
         validDay(value.baseline.date) &&
         positiveGrams(value.baseline.grams))) &&
-    (value.targetGrams === null || positiveGrams(value.targetGrams))
+    (value.targetGrams === null || positiveGrams(value.targetGrams)) &&
+    (value.appearance === undefined || (object(value.appearance) &&
+      typeof value.appearance.enabled === "boolean" &&
+      bodyBuilds.includes(value.appearance.startingBuild) &&
+      bodyBuilds.includes(value.appearance.targetBuild)))
   );
 }
 export function validWeightData(value: unknown): value is State["weight"] {

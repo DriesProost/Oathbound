@@ -489,7 +489,8 @@ export default function WeightChronicle({
     if (
       !measurements.length &&
       !settings.baseline &&
-      settings.targetGrams === null
+      settings.targetGrams === null &&
+      !settings.appearance?.enabled
     )
       return null;
     return (

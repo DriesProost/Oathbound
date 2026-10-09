@@ -694,7 +694,7 @@ function OathboundApp() {
                 </div>
                 <div className="hero-art">
                   <div className="stronghold-arch" aria-hidden="true" />
-                  <KnightArt renown={total.renown} xp={total.xp} />
+                  <KnightArt renown={total.renown} xp={total.xp} weight={state.weight} today={today} />
                   <span>STEADY IN PURPOSE</span>
                 </div>
                 <div className="hero-quote">
@@ -932,7 +932,7 @@ function OathboundApp() {
               >
                 <div className="profile-art">
                   <span className="heraldic-caption">BY DEED, NOT WORD</span>
-                  <KnightArt renown={total.renown} xp={total.xp} />
+                  <KnightArt renown={total.renown} xp={total.xp} weight={state.weight} today={today} />
                   <div
                     className="rank-insignia"
                     aria-label={`${rank.rank.name} insignia`}
@@ -981,9 +981,9 @@ function OathboundApp() {
                     recorded deeds.
                   </p>
                   <p className="muted">
-                    {knightAppearance(total.renown, total.xp).description}
+                    {knightAppearance(total.renown, total.xp, state.weight, today).description}
                   </p>
-                  <p className="muted">{knightAppearance(total.renown, total.xp).message}</p>
+                  <p className="muted">{knightAppearance(total.renown, total.xp, state.weight, today).message}</p>
                 </div>
               </div>
               <section className="panel campaign-summary">
