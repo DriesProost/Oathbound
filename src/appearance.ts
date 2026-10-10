@@ -32,11 +32,14 @@ export function knightAppearance(renown = 0, xp: Partial<Record<Attribute, numbe
     'Plate harness · gold-edged heraldry · cream-lined mantle',
     'Distinguished harness · oak banner · gold-edged shield',
   ];
+  const beards = portrait === 'tied-hair' ? ['short brown stubble', 'fuller brown beard', 'long brown beard'] :
+    portrait === 'personal' ? ['short brown beard', 'fuller brown beard', 'long brown beard'] :
+    ['clean-shaven', 'short brown beard', 'full brown beard'];
   return {stage, rank: rank.name, beard, strength, vitality, groomed, body: body.build, bodyProgress: body.progress, bodyLinked: body.linked,
     buildScale: 1 + strength * (appearanceRules.maximumBuildScale - 1),
     faceBrightness: 1 + vitality * (appearanceRules.maximumFaceBrightness - 1),
     faceSaturation: 1 + vitality * (appearanceRules.maximumFaceSaturation - 1),
-    description: descriptions[stage] + ' · ' + (portrait === 'personal' ? ['short brown beard', 'fuller brown beard', 'long brown beard'][beard] : ['clean-shaven', 'short brown beard', 'full brown beard'][beard]) + (strength > 0 ? ' · broader build' : '') + (vitality > 0 ? ' · rested complexion' : '') + (body.linked ? ` · ${body.build} build` : '') + (groomed ? ' · well-kept' : ' · untidy hair and clothing'),
+    description: descriptions[stage] + ' · ' + beards[beard] + (portrait === 'tied-hair' ? ' · tied-back brown hair' : '') + (strength > 0 ? ' · broader build' : '') + (vitality > 0 ? ' · rested complexion' : '') + (body.linked ? ` · ${body.build} build` : '') + (groomed ? ' · well-kept' : ' · untidy hair and clothing'),
     message: stage === 0 ? 'Every knight begins by learning the weight of a promise.' : 'Your service is written in what you carry.'};
 }
 

@@ -1,4 +1,6 @@
 import type { Reward, Quest } from "./config";
+export const portraitIds = ['classic', 'personal', 'tied-hair'] as const;
+export type PortraitId = (typeof portraitIds)[number];
 export const goalIds = [
   "weight",
   "temperance",
@@ -97,7 +99,7 @@ export type State = {
   version: 3;
   name: string;
   // Cosmetic selection only; absent on existing saves means the original set.
-  portrait?: 'classic' | 'personal';
+  portrait?: PortraitId;
   created: string;
   campaign: Campaign;
   weekly: WeeklyCampaign;

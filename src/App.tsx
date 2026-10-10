@@ -959,8 +959,9 @@ function OathboundApp() {
                       onChange={e => update({...state, portrait: e.target.value as State['portrait']})}>
                       <option value="classic">Original knight</option>
                       <option value="personal">Curly-haired knight</option>
+                      <option value="tied-hair">Ponytailed knight</option>
                     </select>
-                    <p className="muted">Appearance only. Both portraits develop with your campaign; changing portraits preserves all progress.</p>
+                    <p className="muted">Appearance only. Each portrait develops with your campaign; changing portraits preserves all progress.</p>
                   </div>
                   <div className="character-renown">
                     <div className="record-renown-heading">

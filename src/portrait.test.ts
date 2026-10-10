@@ -5,11 +5,11 @@ import {detectFeedback} from './feedback/events';
 import {validate, save, load} from './storage';
 
 describe('optional character likeness', () => {
-  it('preserves existing saves and changes only the selected portrait', () => {
+  it.each(['personal', 'tied-hair'] as const)('preserves saves and changes only the %s portrait', (portrait) => {
     const before=createKnight('Rowan','2026-10-10');
     expect(validate(before)).toEqual(before);
     expect(before.portrait).toBeUndefined();
-    const next={...before,portrait:'personal' as const};
+    const next={...before,portrait};
     expect(validate(next)).toEqual(next);
     expect(totals(next)).toEqual(totals(before));
     expect(detectFeedback(before,next,'quiet')).toEqual([]);
@@ -19,7 +19,7 @@ describe('optional character likeness', () => {
     const values=new Map<string,string>();
     const store={getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>{values.set(key,value)}};
     save(next,store);
-    expect(load(store,'2026-10-10')?.portrait).toBe('personal');
+    expect(load(store,'2026-10-10')?.portrait).toBe(portrait);
     expect(()=>validate({...next,portrait:'unknown'})).toThrow();
     expect(validate({...next,portrait:'classic'}).portrait).toBe('classic');
   });
@@ -32,5 +32,10 @@ describe('optional character likeness', () => {
     expect(a).toContain('full brown beard');
     expect(b).toContain('long brown beard');
     expect(knightAppearance(0,{},undefined,'2026-10-10','personal').description).toContain('short brown beard');
+    const {description: tiedDescription, ...tiedAppearance}=knightAppearance(7500,{Wisdom:750,Presence:225,Strength:750,Vitality:750},undefined,'2026-10-10','tied-hair');
+    expect(tiedAppearance).toEqual(baseA);
+    expect(tiedDescription).toContain('long brown beard');
+    expect(tiedDescription).toContain('tied-back brown hair');
+    expect(knightAppearance(0,{},undefined,'2026-10-10','tied-hair').description).toContain('short brown stubble');
   });
 });

@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
 import KnightArt from './KnightArt';
 import {characterSheet} from './characterSheets';
-import {bodyBuilds, type State} from './model';
+import {bodyBuilds, portraitIds, type State} from './model';
 import {progression} from './config';
 
 describe('character portrait framing', () => {
@@ -14,8 +14,8 @@ describe('character portrait framing', () => {
     expect(characterSheet(1, 0, 'large').src).toContain('man-at-arms-0');
   });
 
-  it('centers the person and fits their complete equipment for all 180 variants', () => {
-    for (const portrait of ['classic', 'personal'] as const) progression.ranks.forEach((rank, stage) => {
+  it('centers the person and fits their complete equipment for all 270 variants', () => {
+    for (const portrait of portraitIds) progression.ranks.forEach((rank, stage) => {
       for (const [beard, wisdom] of [0, 225, 750].entries()) {
         for (const body of bodyBuilds) for (const groomed of [false, true]) {
           const weight: State['weight'] = {
@@ -24,8 +24,8 @@ describe('character portrait framing', () => {
             measurements: [],
           };
           const sheet = characterSheet(stage, beard, body, portrait);
-          if (portrait === 'personal') {
-            expect(sheet.src).toContain('personal-');
+          if (portrait !== 'classic') {
+            expect(sheet.src).toContain(`${portrait}-`);
             expect(sheet.clips?.length).toBe(6);
             expect(sheet.clips?.every(path => path.startsWith('M') && path.endsWith('Z'))).toBe(true);
           }

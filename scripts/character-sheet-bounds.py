@@ -84,7 +84,7 @@ for path in sorted((root / 'src/assets/knight/sheets').glob('*.webp')):
             identities[boxes[-1]] = int(index)
         boxes.sort(key=lambda b: (b[1] + b[3]) / 2)
         boxes = sorted(boxes[:3], key=lambda b: b[0]) + sorted(boxes[3:], key=lambda b: b[0])
-        if path.stem.startswith('personal-'):
+        if path.stem.startswith(('personal-', 'tied-hair-')):
             # A carried standard/weapon can be disconnected by transparent air.
             # Group significant components within their atlas cell, preserving
             # that equipment instead of clipping to only the largest body blob.
@@ -107,9 +107,9 @@ for path in sorted((root / 'src/assets/knight/sheets').glob('*.webp')):
         for i, (left, top, right, bottom) in enumerate(boxes):
             for other in boxes[i+1:]:
                 if min(right, other[2]) > max(left, other[0]) and min(bottom, other[3]) > max(top, other[1]):
-                    if not path.stem.startswith('personal-'):
+                    if not path.stem.startswith(('personal-', 'tied-hair-')):
                         raise ValueError(f'Overlapping sprite viewports: {path.name}; artwork needs more spacing')
-        if path.stem.startswith('personal-'):
+        if path.stem.startswith(('personal-', 'tied-hair-')):
             # Equipment can interleave bounding rectangles without touching.
             # A component clip prevents neighbours leaking into the portrait.
             clips[path.stem] = [silhouette_path(binary_dilation(

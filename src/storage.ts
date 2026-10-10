@@ -9,7 +9,7 @@ import {
 } from "./campaign";
 import { ensureWeeklyPeriod } from "./weekly";
 import { campaignRules } from "./config";
-import { goalIds, type State, type Entry } from "./model";
+import { goalIds, portraitIds, type State, type Entry } from "./model";
 export const storageKeys = {
   current: "oathbound.knight.v3",
   weeklyBackup: "oathbound.knight.v3.2a.backup",
@@ -138,7 +138,7 @@ function validateBaseV3(s: unknown): State {
 }
 export function validate(source: unknown): State {
   const s = validateBaseV3(source);
-  if (s.portrait !== undefined && !['classic', 'personal'].includes(s.portrait)) return failure();
+  if (s.portrait !== undefined && !portraitIds.some(id => id === s.portrait)) return failure();
   if (s.deedNotes !== undefined && (
     !Array.isArray(s.deedNotes) ||
     !s.deedNotes.every((n) => object(n) && validDay(n.date) && n.date >= s.created &&
