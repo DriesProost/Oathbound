@@ -34,5 +34,11 @@ PNG sources remain in the execution workspace's `generated_images` directory. Sh
 
 ## Validation
 
+### Squire proportion refinement
+
+The three personal Squire atlases were edited with OpenAI image generation to reduce head size slightly while retaining the likeness, build and grooming variants. Updated sources: `exec-b86621bf-fb22-40bb-a6a1-016d450787bc.png` (beard 0), `exec-51b32164-da58-4ba0-9d6e-62bc8134bebf.png` (beard 1), and `exec-779446a0-279e-485c-8e88-58d47a1a5650.png` (beard 2). Transparency is preserved; conversion only resizes/optimises. Bounds and silhouette metadata were regenerated.
+
+Keep passes an explicit presentation placement to constrain the SVG to its allocated arch, including when a legacy fixed-width theme rule is present. Knight screen framing is unchanged. Neither change affects campaign state or progression.
+
 Run `npm test` and `npm run build -- --base=/Oathbound/`. With the dev server running, `scripts/personal-portrait-smoke.cjs` checks the real selector, save/reload, both app portrait locations, narrow layouts, all ninety new combinations, production Pages base path, and all fifteen images plus portrait switching offline. It uses isolated browser fixtures.
 

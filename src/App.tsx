@@ -700,7 +700,7 @@ function OathboundApp() {
                 </div>
                 <div className="hero-art">
                   <div className="stronghold-arch" aria-hidden="true" />
-                  <KnightArt renown={total.renown} xp={total.xp} weight={state.weight} today={today} portrait={state.portrait} />
+                  <KnightArt renown={total.renown} xp={total.xp} weight={state.weight} today={today} portrait={state.portrait} placement="keep" />
                   <span>STEADY IN PURPOSE</span>
                 </div>
                 <div className="hero-quote">

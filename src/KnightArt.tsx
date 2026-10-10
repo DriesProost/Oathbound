@@ -3,8 +3,9 @@ import { knightAppearance } from './appearance';
 import { characterSheet } from './characterSheets';
 import {bodyBuilds, type State} from './model';
 import type { Attribute } from './config';
-export default function KnightArt({ renown = 0, xp = {}, weight, today, portrait = 'classic' }: {
+export default function KnightArt({ renown = 0, xp = {}, weight, today, portrait = 'classic', placement }: {
   renown?: number; xp?: Partial<Record<Attribute, number>>; weight?: State['weight']; today?: string; portrait?: State['portrait'];
+  placement?: 'keep';
 }) {
   const look = knightAppearance(renown, xp, weight, today, portrait);
   const sheet = characterSheet(look.stage, look.beard, look.body, portrait);
@@ -20,7 +21,8 @@ export default function KnightArt({ renown = 0, xp = {}, weight, today, portrait
     const left=320-(centerX-sourceX)*scale, top=(960-height)/2;
     const clip=`portrait-${id}-${complexion?'face':'base'}`;
     return <svg className={complexion ? 'knight-complexion' : undefined} viewBox="0 0 640 960" aria-hidden="true"
-      style={complexion ? {filter:`brightness(${look.faceBrightness}) saturate(${look.faceSaturation})`} : undefined}>
+      style={{...(placement === 'keep' ? {position:'absolute', inset:0, display:'block', width:'100%', height:'100%', maxWidth:'100%', margin:0} as const : {}),
+        ...(complexion ? {filter:`brightness(${look.faceBrightness}) saturate(${look.faceSaturation})`} : {})}}>
       <defs><clipPath id={clip}>{sheet.clips?.[index]
         ? <path d={sheet.clips[index]} transform={`translate(${left-sourceX*scale} ${top-sourceY*scale}) scale(${scale})`} />
         : <rect x={left} y={top} width={width} height={height} />}</clipPath></defs>
@@ -30,6 +32,7 @@ export default function KnightArt({ renown = 0, xp = {}, weight, today, portrait
     </svg>;
   }
   return <div className="knight-illustration" role="img" aria-label={`${look.rank}: ${look.description}`}
+    style={placement === 'keep' ? {width:'calc(100% - 16px)', maxWidth:203, height:'auto', maxHeight:'none', aspectRatio:'2 / 3', flexShrink:0} : undefined}
     data-portrait={portrait}
     data-body-build={look.body} data-grooming={look.groomed?'well-kept':'untidy'} data-beard={look.beard}>
     <div className="knight-figure" style={{transform:`scaleX(${look.buildScale})`}}>
