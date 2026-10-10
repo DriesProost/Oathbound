@@ -11,7 +11,7 @@ export function useJournalSwipe(turn:(direction:-1|1)=>void) {
       stroke.current=null;
       if(e.touches.length!==1 || !(e.target instanceof Element) ||
         e.target.closest('form,label,input,textarea,select,button,a,summary,[contenteditable],[data-no-page-swipe],[role="slider"]') ||
-        document.activeElement?.matches('input,textarea,select,[contenteditable]') || window.getSelection()?.toString()) return;
+        document.documentElement.dataset.keyboard === 'open' || window.getSelection()?.toString()) return;
       const t=e.touches[0];
       if(t.clientX<24 || t.clientX>window.innerWidth-24) return;
       stroke.current={x:t.clientX,y:t.clientY,time:performance.now(),cancelled:false};

@@ -23,6 +23,10 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
    const touch=(x)=>new Touch({identifier:1,target:el,clientX:x,clientY:250});
    el.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,touches:[touch(280)]}));el.dispatchEvent(new TouchEvent('touchend',{bubbles:true,changedTouches:[touch(90)]}));
   });assert.equal(await active(),'Knight');
+  // Android can leave a closed native dropdown focused without a keyboard.
+  await page.getByLabel('Character portrait').evaluate(el=>el.focus({preventScroll:true}));
+  await page.evaluate(()=>{document.documentElement.dataset.keyboard='closed';});
+  await nativeSwipe(-180);assert.equal(await active(),'Chronicle');
   await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Chronicle',exact:true}).click();await nativeSwipe(-180);assert.equal(await active(),'Chronicle');
   assert.equal(await page.evaluate(()=>localStorage.getItem('oathbound.knight.v3')),before);
   await page.emulateMedia({reducedMotion:'reduce'});await nativeSwipe(180);assert.equal(await active(),'Knight');assert.equal(await page.locator('.journal-turn').evaluate(el=>getComputedStyle(el).display),'none');
