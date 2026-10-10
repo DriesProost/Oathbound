@@ -21,6 +21,15 @@ const http=require('node:http'), fs=require('node:fs'), path=require('node:path'
   const saved=await read();assert.deepEqual(saved,{...fixture,portrait:'personal'});
   assert.equal(await page.locator('.reward-feedback').count(),0);
   await go('Keep');await page.locator('.hero-art [data-portrait="personal"]').waitFor();
+  // Keep art must be centred inside its own arch, not clipped by the hero card.
+  for(const width of [320,360,390,430,768,1440]){
+   await page.setViewportSize({width,height:900});
+   const fits=await page.locator('.hero-art').evaluate(el=>{
+    const arch=el.getBoundingClientRect(), figure=el.querySelector('.knight-figure svg').getBoundingClientRect();
+    return figure.left>=arch.left && figure.right<=arch.right && figure.top>=arch.top && figure.bottom<=arch.bottom && Math.abs((figure.left+figure.right)-(arch.left+arch.right))<1;
+   });assert.equal(fits,true,`Keep portrait fits and centres at ${width}px`);
+  }
+  await page.setViewportSize({width:390,height:844});
   await page.reload();await go('Knight');assert.equal(await page.getByLabel('Character portrait').inputValue(),'personal');
   for(const width of [320,390,1440]){await page.setViewportSize({width,height:900});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:'/tmp/oathbound-personal-phone.png',fullPage:true});
