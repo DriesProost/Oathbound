@@ -32,7 +32,7 @@ export default function KnightArt({ renown = 0, xp = {}, weight, today, portrait
     </svg>;
   }
   return <div className="knight-illustration" role="img" aria-label={`${look.rank}: ${look.description}`}
-    style={placement === 'keep' ? {width:'calc(100% - 16px)', maxWidth:203, height:'auto', maxHeight:'none', aspectRatio:'2 / 3', flexShrink:0} : undefined}
+    style={placement === 'keep' ? {width:'calc(100% - 16px)', maxWidth:225, height:'auto', maxHeight:'none', aspectRatio:'2 / 3', flexShrink:0} : undefined}
     data-portrait={portrait}
     data-body-build={look.body} data-grooming={look.groomed?'well-kept':'untidy'} data-beard={look.beard}>
     <div className="knight-figure" style={{transform:`scaleX(${look.buildScale})`}}>
