@@ -2,6 +2,12 @@
 
 The journal is presentation only: parchment washes, original SVG foliage confined to margins, compact headings, bookmark navigation and a non-blocking 420 ms page-leaf overlay. The overlay is removed under reduced motion. Navigation still begins at the heading; form/completion rerenders do not replay page turns. Existing optional paper feedback marks navigation only when sound effects are enabled.
 
+The stronger parchment treatment uses an original procedural SVG fibre texture, warm edge washes, binding shadows and stacked page edges, with darker supporting text. No reference photographs or commercial textures are bundled. A folio inscription labels each section.
+
+Horizontal touch swipes turn between the five sections in navigation order, without wrapping at the ends. The leaf animation matches forward/backward travel. Vertical scrolling and pinch zoom remain native; short nudges, diagonal/vertical gestures, prolonged touches, multiple fingers, selected text, active editing, controls and browser-edge starts do not trigger a turn. Buttons remain available for keyboard and assistive navigation. No form, save or progression logic depends on a gesture or animation. Reduced motion retains swipe navigation with the animation removed.
+
+`scripts/journal-swipe-smoke.cjs` exercises native Chromium touch swipes in both directions, vertical intent, controls/end boundaries, unchanged saves, narrow layouts and reduced motion. These are browser checks; a real Android field test remains useful for device-specific gesture behaviour.
+
 Keep attributes expand from a labelled summary; their exact levels/XP remain accessible there and on Knight. No campaign progression or reward values change.
 
 ## Original optional ambience

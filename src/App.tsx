@@ -57,6 +57,7 @@ import {
 } from "./campaign";
 import type { CampaignGoal } from "./model";
 import {kmToSteps, routeSteps} from './walking';
+import {useJournalSwipe} from './journalSwipe';
 import KnightArt from "./KnightArt";
 import { bodyAppearanceExplanation, knightAppearance, knightlyName } from "./appearance";
 import { formatDay } from "./presentation";
@@ -102,6 +103,11 @@ function OathboundApp() {
   const [tab, setTab] = useState("Keep"),
     [name, setName] = useState(""),
     [step, setStep] = useState(0);
+  const [turnDirection,setTurnDirection]=useState<'forward'|'backward'>('forward');
+  const swipe=useJournalSwipe(direction=>{
+    const index=tabs.findIndex(t=>t.name===tab),next=tabs[index+direction];
+    if(next)switchTab(next.name);
+  });
   // Each area opens at its heading; recording deeds does not move the page.
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -454,6 +460,7 @@ function OathboundApp() {
     );
   }
   const switchTab = (name: string) => {
+    setTurnDirection(tabs.findIndex(t=>t.name===name)<tabs.findIndex(t=>t.name===tab)?'backward':'forward');
     if (name === tab) window.scrollTo({ top: 0, behavior: "instant" });
     feedback.interact("paper");
     clearPulse();
@@ -536,6 +543,8 @@ function OathboundApp() {
           </div>
         </header>
         <main
+          {...swipe}
+          data-turn-direction={turnDirection}
           className={
             "content " +
             ({
@@ -626,6 +635,11 @@ function OathboundApp() {
             </div>
           )}
           <AppUpdate />
+          <div className="journal-folio" aria-label="Journal section">
+            <span>{tab === 'Quest Board' ? 'Deeds' : tab}</span>
+            <span className="swipe-hint">Swipe to turn the page</span>
+            <span>Folio {['I','II','III','IV','V'][tabs.findIndex(t=>t.name===tab)]}</span>
+          </div>
           <FeedbackSurface onReadJourney={() => {
             feedback.dismiss();
             switchTab("Journey");
