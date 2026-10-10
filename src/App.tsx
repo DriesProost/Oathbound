@@ -56,6 +56,7 @@ import {
   optionalOathDay,
 } from "./campaign";
 import type { CampaignGoal } from "./model";
+import {kmToSteps, routeSteps} from './walking';
 import KnightArt from "./KnightArt";
 import { bodyAppearanceExplanation, knightAppearance, knightlyName } from "./appearance";
 import { formatDay } from "./presentation";
@@ -547,6 +548,13 @@ function OathboundApp() {
           }
         >
           <div className="page-heading">
+            <span key={tab} className="journal-turn" aria-hidden="true" />
+            <svg className="journal-flourish" viewBox="0 0 100 100" aria-hidden="true">
+              <path d="M8 88Q12 22 88 12M17 72Q42 62 37 39M44 28Q60 50 78 35" fill="none" stroke="currentColor"/>
+              <path d="M20 60Q5 38 24 32Q38 40 20 60M47 25Q50 4 66 10Q72 23 47 25M67 18Q77 9 86 20Q79 34 67 18" fill="#546b4a"/>
+              <circle cx="37" cy="39" r="5" fill="#8b493e"/><circle cx="78" cy="35" r="4" fill="#8b493e"/>
+              <circle cx="88" cy="12" r="3" fill="#9b804b"/>
+            </svg>
             <div>
               <span className="eyebrow">
                 {tab === "Keep"
@@ -663,11 +671,6 @@ function OathboundApp() {
                     <Shield size={14} />
                     {rank.rank.name}
                   </span>
-                  <p>
-                    The armour may be humble.
-                    <br />
-                    The promise is anything but.
-                  </p>
                   <div className="renown-label">
                     <span>RENOWN</span>
                     <strong>
@@ -721,7 +724,10 @@ function OathboundApp() {
                   </div>
                 </div>
               </div>
-              <Attributes state={state} />
+              <details className="journal-attributes">
+                <summary><Shield size={17} /> Knight attributes <span>Six disciplines</span></summary>
+                <Attributes state={state} />
+              </details>
               <div className="dashboard-grid">
                 <section>
                   <div className="section-heading">
@@ -1064,7 +1070,7 @@ function OathboundApp() {
                   <p>✦ Seven days steadfast — a week-long oath.</p>
                 )}
                 {total.distance >= 30 && (
-                  <p>✦ A road well travelled — 30 km walked.</p>
+                  <p>✦ A road well travelled — the Oakhaven route completed.</p>
                 )}
               </section>
             </>
@@ -1072,16 +1078,20 @@ function OathboundApp() {
           {tab === "Journey" && (
             <section className="journey panel">
               <span className="eyebrow">THE ROAD TO OAKHAVEN</span>
-              <h2>{total.distance.toFixed(1)} km travelled</h2>
+              <h2>{routeSteps(total.distance)} route steps</h2>
               <JourneyMap distance={total.distance} />
               <p className="journey-method">
                 {campaignQuests.find((q) => q.id === "patrol")?.target
                   ?.metric === "steps"
-                  ? "Your patrol follows a step target. Steps do not convert automatically into distance; previously confirmed kilometres remain on this map."
+                  ? "Confirm your patrol after reaching your step target. Route progress estimates 0.75 metres per step; no automatic step tracking. Earlier distance is preserved as equivalent route steps."
                   : campaignQuests.find((q) => q.id === "patrol")
-                    ? `Complete “Patrol the Realm” after walking your ${campaignQuests.find((q) => q.id === "patrol")!.distance} km target. Confirmed distance is self-reported.`
+                    ? "Your earlier distance remains preserved. Switch your patrol to steps below, then adjust the target in Campaign settings. Route steps are an estimate, not a measured step count."
                     : "Your earlier travels remain here. Enable a walking goal to continue this route."}
               </p>
+              {currentGoals.find(g => g.id === 'walking')?.target.metric === 'km' && <button className="secondary" onClick={() => {
+                const goals = currentGoals.map(g => g.id === 'walking' && g.target.metric === 'km' ? {...g,target:{metric:'steps' as const,value:Math.max(100,Math.min(100000,kmToSteps(g.target.value)))}} : g);
+                update(configureCampaign(state,goals,today));
+              }}>Use steps for patrols</button>}
               <button
                 className="primary"
                 onClick={() =>
@@ -1107,7 +1117,7 @@ function OathboundApp() {
                     value: state.entries.filter((e) => e.questId === "training")
                       .length,
                   },
-                  { label: "Distance walked", value: `${total.distance} km` },
+                  { label: "Route steps (estimated)", value: routeSteps(total.distance) },
                   {
                     label: "Deeds recorded",
                     value:

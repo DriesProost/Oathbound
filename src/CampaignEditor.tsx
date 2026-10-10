@@ -322,9 +322,10 @@ export default function CampaignEditor({
                           )
                         }
                       >
-                        <option value="km">Distance in kilometres</option>
                         <option value="steps">Steps</option>
+                        {t.metric === 'km' && <option value="km">Existing kilometre target</option>}
                       </select>
+                      {t.metric === 'steps' && <p className="muted">Manually confirm your step target. Each patrol advances the route using an estimate of 0.75 metres per step.</p>}
                       {t.metric === "km" && (
                         <div className="target-presets">
                           {[3, 5].map((value) => (
@@ -342,8 +343,8 @@ export default function CampaignEditor({
                         </div>
                       )}
                       <p className="target-help">
-                        A confirmed distance deed records the selected
-                        kilometres on Journey. Steps do not imply a distance.
+                        Confirm once after reaching your target. Route progress is self-reported;
+                        it never reads your phone’s step counter.
                       </p>
                     </>
                   )}

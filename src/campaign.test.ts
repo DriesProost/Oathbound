@@ -117,7 +117,7 @@ describe("personal campaign configuration", () => {
       "2026-10-10",
       new Date("2026-10-10T19:00:00"),
     );
-    expect(next.entries[1].distance).toBe(0);
+    expect(next.entries[1].distance).toBe(6);
     expect(next.entries[1].reward).toEqual(entry.reward);
     const alias = {
       ...quests.find((q) => q.id === "patrol")!,

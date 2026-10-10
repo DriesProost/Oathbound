@@ -7,6 +7,8 @@ import {
   type ReactNode,
 } from "react";
 import { ShieldCheck, Volume2, VolumeX, X } from "lucide-react";
+import AmbienceControl from '../AmbienceControl';
+import {routeSteps} from '../walking';
 import { totals, type State } from "../domain";
 import { formatDay } from "../presentation";
 import {
@@ -221,10 +223,9 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
           )}
           <span>Sound</span>
         </button>
-        {settingsOpen && (
-          <section className="sound-settings" aria-label="Feedback settings">
+          <section className="sound-settings" aria-label="Feedback settings" hidden={!settingsOpen}>
             <strong>Sounds of the keep</strong>
-            <p>Quiet sound effects. No background music.</p>
+            <p>Page turns and quiet sound effects.</p>
             <button
               className="secondary"
               onClick={() =>
@@ -272,8 +273,8 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                 save it.
               </p>
             )}
+            <AmbienceControl />
           </section>
-        )}
       </div>
       {offer && (
         <section className="sound-offer" aria-label="Optional sound effects">
@@ -480,7 +481,7 @@ export function FeedbackSurface({ onReadJourney }: { onReadJourney?: () => void 
           <div className="feedback-arrival" data-arrival={arrival.id}>
             {landmarkScene(arrival.id) && <img src={landmarkScene(arrival.id)}
               alt={arrival.sceneAlt} width={1440} height={810} />}
-            <div><strong>{arrival.name}</strong><span>{arrival.km} km from the Keep</span></div>
+            <div><strong>{arrival.name}</strong><span>{routeSteps(arrival.km)} route steps from the Keep</span></div>
             {onReadJourney && <button className="text-button" onClick={onReadJourney}>
               Read {arrival.name}’s chapter
             </button>}

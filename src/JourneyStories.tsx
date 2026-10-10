@@ -2,6 +2,7 @@ import { ChevronDown, LockKeyhole, MapPin } from "lucide-react";
 import { landmarks } from "./journey";
 import "./journey-scenes.css";
 import { landmarkScene } from "./journeyArt";
+import {routeSteps} from './walking';
 
 type Landmark = (typeof landmarks)[number];
 
@@ -21,7 +22,7 @@ function Scene({ stop, reached }: { stop: Landmark; reached: boolean }) {
 function Caption({ stop, interactive = false }: { stop: Landmark; interactive?: boolean }) {
   return (
     <div className="postcard-caption">
-      <div><h3>{stop.name}</h3><p>{stop.km} km from the Keep</p></div>
+      <div><h3>{stop.name}</h3><p>{routeSteps(stop.km)} route steps from the Keep</p></div>
       {interactive && <span className="postcard-action">
         <span className="when-closed">Read chapter</span>
         <span className="when-open">Close chapter</span>
@@ -58,7 +59,7 @@ export default function JourneyStories({ distance }: { distance: number }) {
             data-landmark={stop.id} aria-label={`${stop.name}, unreached`}>
             <Caption stop={stop} />
             <Scene stop={stop} reached={false} />
-            <p className="unrevealed-note">Its chapter will be revealed at {stop.km} km.</p>
+            <p className="unrevealed-note">Its chapter will be revealed at {routeSteps(stop.km)} route steps.</p>
           </article>
         ))}
       </div>

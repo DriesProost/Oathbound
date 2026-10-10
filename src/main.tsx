@@ -4,6 +4,7 @@ import App from "./App";
 import "./style.css";
 import "./materials.css";
 import "./mobile.css";
+import "./journal.css";
 import { startPwa } from "./pwa";
 startPwa();
 import { startMobileViewport } from "./mobile";

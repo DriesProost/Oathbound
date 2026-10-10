@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Trees, Flag } from "lucide-react";
 import { landmarks as stops } from "./journey";
 import JourneyStories from "./JourneyStories";
+import {routeSteps} from './walking';
 const routes = [
   "M70 260 C60 180 145 260 195 165",
   "M195 165 C255 60 355 290 425 230",
@@ -47,7 +48,7 @@ export default function JourneyMap({ distance }: { distance: number }) {
         <svg
           viewBox="0 0 640 340"
           role="img"
-          aria-label={`Route from Your Keep through Old Mill and Wayfarer’s Inn to Oakhaven. ${travelled} of ${routeDistance} km travelled.`}
+          aria-label={`Route from Your Keep through Old Mill and Wayfarer’s Inn to Oakhaven. ${routeSteps(travelled)} of ${routeSteps(routeDistance)} estimated route steps.`}
         >
           <path
             d="M0 128Q140 96 214 225T430 318T640 282"
@@ -144,9 +145,9 @@ export default function JourneyMap({ distance }: { distance: number }) {
         <div className="map-key">
           <span>
             <i />
-            Your position · {travelled.toFixed(1)} km
+            Your position · {routeSteps(travelled)} steps
           </span>
-          <span>{routeDistance} km route</span>
+          <span>{routeSteps(routeDistance)} step route</span>
         </div>
       </div>
       <ol className="route-landmarks">
@@ -165,7 +166,7 @@ export default function JourneyMap({ distance }: { distance: number }) {
               <Icon size={19} />
               <strong>{stop.name}</strong>
               <span>
-                {stop.km} km ·{" "}
+                {routeSteps(stop.km)} steps ·{" "}
                 {reached
                   ? "Reached"
                   : stop.name === next?.name
@@ -184,7 +185,7 @@ export default function JourneyMap({ distance }: { distance: number }) {
           </span>
           <strong>
             {next
-              ? `${(next.km - distance).toFixed(1)} km to ${next.name}`
+              ? `${routeSteps(next.km - distance)} steps to ${next.name}`
               : "Oakhaven reached"}
           </strong>
           <p>{current.inscription}</p>

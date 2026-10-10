@@ -1,4 +1,5 @@
 import { quests, campaignRules, type Quest } from "./config";
+import {stepsToKm, walkingRules} from './walking';
 import {
   dayKey,
   validDay,
@@ -51,7 +52,7 @@ export const goalDefinitions: Record<
   walking: {
     name: "Walking / cardio",
     description: "Build endurance, one real-world patrol at a time",
-    defaultTarget: { metric: "km", value: targetRules.km.defaultValue },
+    defaultTarget: { metric: "steps", value: walkingRules.defaultSteps },
   },
   nutrition: {
     name: "Nutrition",
@@ -293,7 +294,7 @@ export function configuredQuests(
         ...template,
         target: structuredClone(goal.target),
         description: targetDescription(goal.target),
-        distance: goal.target.metric === "km" ? goal.target.value : 0,
+        distance: goal.target.metric === "km" ? goal.target.value : goal.target.metric === "steps" ? stepsToKm(goal.target.value) : 0,
       },
     ];
   });
