@@ -1,7 +1,7 @@
 import {afterEach,describe,expect,it,vi} from 'vitest';
 import {KeepAmbience,readAmbience,writeAmbience} from './ambience';
 afterEach(()=>vi.unstubAllGlobals());
-describe('optional original ambience',()=>{
+describe('optional supplied ambience',()=>{
   it('defaults to off and tolerates unavailable preference storage',()=>{
     vi.stubGlobal('localStorage',{getItem:()=>{throw Error();},setItem:()=>{throw Error();}});
     expect(readAmbience()).toEqual({enabled:false,volume:.25});
@@ -24,5 +24,20 @@ describe('optional original ambience',()=>{
     vi.stubGlobal('AudioContext',class {state='running';resume=()=>new Promise<void>(resolve=>{resume=resolve;});createBuffer=createBuffer;close=()=>Promise.resolve();});
     const audio=new KeepAmbience();const start=audio.start(.25);audio.stop();resume();
     expect(await start).toBe(false);expect(createBuffer).not.toHaveBeenCalled();audio.dispose();
+  });
+  it('cannot play after being muted during music loading',async()=>{
+    let resolve!: (response: Response)=>void;
+    vi.stubGlobal('fetch',()=>new Promise<Response>(r=>{resolve=r;}));
+    const createBufferSource=vi.fn();
+    vi.stubGlobal('AudioContext',class {state='running';resume=()=>Promise.resolve();decodeAudioData=()=>Promise.resolve({});createBufferSource=createBufferSource;close=()=>Promise.resolve();});
+    const audio=new KeepAmbience();const start=audio.start(.25);
+    await Promise.resolve();audio.stop();resolve(new Response(new Uint8Array([1,2])));
+    expect(await start).toBe(false);expect(createBufferSource).not.toHaveBeenCalled();audio.dispose();
+  });
+  it('a failed recording request fails quietly and can be retried',async()=>{
+    vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response('',{status:404})));
+    vi.stubGlobal('AudioContext',class {state='running';resume=()=>Promise.resolve();close=()=>Promise.resolve();});
+    const audio=new KeepAmbience();expect(await audio.start(.25)).toBe(false);
+    expect(await audio.start(.25)).toBe(false);expect(fetch).toHaveBeenCalledTimes(2);audio.dispose();
   });
 });

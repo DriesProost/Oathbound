@@ -18,8 +18,8 @@ export default function AmbienceControl() {
   return <>
     {playing && createPortal(<button className="ambience-mute" aria-label="Pause background music" title="Pause background music" onClick={() => {audio.current?.stop();setPlaying(false);save({...preference,enabled:false});}}><Music2 size={17}/></button>,document.body)}
     <section className="ambience-settings" aria-label="Keep ambience">
-    <strong>Beside the hearth</strong>
-    <p>A quiet, original lute-inspired loop. Separate from deed sounds. Pauses when you leave the app.</p>
+    <strong>The Bard’s Tale</strong>
+    <p>A quiet looping soundtrack. Separate from deed sounds. Pauses when you leave the app.</p>
     <button className="secondary" aria-pressed={playing} onClick={async () => {
       if (playing) { audio.current?.stop(); setPlaying(false); save({...preference, enabled:false}); }
       else { audio.current ??= new KeepAmbience(); const started = await audio.current.start(preference.volume); setPlaying(started); if (started) save({...preference, enabled:true}); else setMessage('Audio is unavailable here. Your campaign is unaffected.'); }

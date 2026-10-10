@@ -10,9 +10,11 @@ Horizontal touch swipes turn between the five sections in navigation order, with
 
 Keep attributes expand from a labelled summary; their exact levels/XP remain accessible there and on Knight. No campaign progression or reward values change.
 
-## Original optional ambience
+## Optional supplied ambience
 
-The Sound button opens independent effects and ambience controls. Beside the hearth is an original deterministic 32-second plucked-string loop, synthesized by the code in `ambience.ts` using a damped delay line. No commercial recordings, samples or external music were sourced. It is a lute-inspired synthesized placeholder, not a recording of a historical instrument.
+The Sound button opens independent effects and ambience controls. The user supplied `Loop_The_Bards_Tale.wav` on 10 October 2026 for use as the soundtrack. The complete 57.73-second stereo recording replaces the synthesized placeholder. Its bundled derivative, `src/assets/audio/the-bards-tale.m4a`, uses AAC at 160 kbit/s and 44.1 kHz, reducing the 10.2 MB WAV to approximately 1.2 MB. Conversion removes file metadata and keeps the full track; no other recording was sourced. Original upload SHA-256: `6d0852a758dc41a763cd33b0693fa878e36d7f1d0149f7674bc82241a7a90de1`.
+
+Vite fingerprints the URL and the existing worker precaches the file for offline use. After an explicit gesture, Web Audio fetches/decodes the bundled recording and loops its audio buffer; decoded audio is reused for subsequent starts. Loading or decoding failure cannot affect the campaign. Muting or hiding the page while audio is loading prevents that pending start from subsequently playing.
 
 The independent `oathbound.ambience.v1` preference remembers choice and volume. Playback requires an explicit Play/Resume gesture on each visit and never starts on reload. Closing settings leaves playback running; hiding the page pauses it, and resuming requires an explicit gesture. Mute stops the sources; pending starts are cancelled. Unsupported audio/storage fails without touching campaign data. Deed sound preference and reduced motion remain independent.
 
