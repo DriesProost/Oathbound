@@ -14,8 +14,8 @@ describe('character portrait framing', () => {
     expect(characterSheet(1, 0, 'large').src).toContain('man-at-arms-0');
   });
 
-  it('centers the person and fits their complete equipment for all 90 variants', () => {
-    progression.ranks.forEach((rank, stage) => {
+  it('centers the person and fits their complete equipment for all 180 variants', () => {
+    for (const portrait of ['classic', 'personal'] as const) progression.ranks.forEach((rank, stage) => {
       for (const [beard, wisdom] of [0, 225, 750].entries()) {
         for (const body of bodyBuilds) for (const groomed of [false, true]) {
           const weight: State['weight'] = {
@@ -23,13 +23,18 @@ describe('character portrait framing', () => {
               appearance: {enabled: true, startingBuild: body, targetBuild: body}},
             measurements: [],
           };
-          const sheet = characterSheet(stage, beard, body);
+          const sheet = characterSheet(stage, beard, body, portrait);
+          if (portrait === 'personal') {
+            expect(sheet.src).toContain('personal-');
+            expect(sheet.clips?.length).toBe(6);
+            expect(sheet.clips?.every(path => path.startsWith('M') && path.endsWith('Z'))).toBe(true);
+          }
           const index = Number(groomed) * 3 + (sheet.largeOnly ? beard : bodyBuilds.indexOf(body));
           const [sourceX, sourceY, sourceWidth, sourceHeight, center] = sheet.bounds[index];
           expect(center).toBeGreaterThan(sourceX);
           expect(center).toBeLessThan(sourceX + sourceWidth);
           const markup = renderToStaticMarkup(<KnightArt renown={rank.threshold}
-            xp={{Wisdom: wisdom, Presence: groomed ? 225 : 0}} weight={weight} />);
+            xp={{Wisdom: wisdom, Presence: groomed ? 225 : 0}} weight={weight} portrait={portrait} />);
           const image = markup.match(/<image[^>]* x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"/);
           expect(image).not.toBeNull();
           const [, imageX, imageY, imageWidth] = image!.map(Number);

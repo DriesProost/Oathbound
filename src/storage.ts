@@ -138,6 +138,7 @@ function validateBaseV3(s: unknown): State {
 }
 export function validate(source: unknown): State {
   const s = validateBaseV3(source);
+  if (s.portrait !== undefined && !['classic', 'personal'].includes(s.portrait)) return failure();
   if (s.deedNotes !== undefined && (
     !Array.isArray(s.deedNotes) ||
     !s.deedNotes.every((n) => object(n) && validDay(n.date) && n.date >= s.created &&

@@ -15,7 +15,7 @@ export const appearanceRules = {
   maximumFaceBrightness: 1.06,
   maximumFaceSaturation: 1.08,
 };
-export function knightAppearance(renown = 0, xp: Partial<Record<Attribute, number>> = {}, weight?: State['weight'], today = dayKey()) {
+export function knightAppearance(renown = 0, xp: Partial<Record<Attribute, number>> = {}, weight?: State['weight'], today = dayKey(), portrait: State['portrait'] = 'classic') {
   const rank = rankProgress(renown).rank;
   const stage = ranks.indexOf(rank);
   const level = (attribute: Attribute) => attributeProgress(xp[attribute] || 0).level;
@@ -36,7 +36,7 @@ export function knightAppearance(renown = 0, xp: Partial<Record<Attribute, numbe
     buildScale: 1 + strength * (appearanceRules.maximumBuildScale - 1),
     faceBrightness: 1 + vitality * (appearanceRules.maximumFaceBrightness - 1),
     faceSaturation: 1 + vitality * (appearanceRules.maximumFaceSaturation - 1),
-    description: descriptions[stage] + (beard === 2 ? ' · full brown beard' : beard === 1 ? ' · short brown beard' : ' · clean-shaven') + (strength > 0 ? ' · broader build' : '') + (vitality > 0 ? ' · rested complexion' : '') + (body.linked ? ` · ${body.build} build` : '') + (groomed ? ' · well-kept' : ' · untidy hair and clothing'),
+    description: descriptions[stage] + ' · ' + (portrait === 'personal' ? ['short brown beard', 'fuller brown beard', 'long brown beard'][beard] : ['clean-shaven', 'short brown beard', 'full brown beard'][beard]) + (strength > 0 ? ' · broader build' : '') + (vitality > 0 ? ' · rested complexion' : '') + (body.linked ? ` · ${body.build} build` : '') + (groomed ? ' · well-kept' : ' · untidy hair and clothing'),
     message: stage === 0 ? 'Every knight begins by learning the weight of a promise.' : 'Your service is written in what you carry.'};
 }
 

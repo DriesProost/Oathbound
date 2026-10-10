@@ -96,6 +96,8 @@ export type WeighIn = {
 export type State = {
   version: 3;
   name: string;
+  // Cosmetic selection only; absent on existing saves means the original set.
+  portrait?: 'classic' | 'personal';
   created: string;
   campaign: Campaign;
   weekly: WeeklyCampaign;

@@ -700,7 +700,7 @@ function OathboundApp() {
                 </div>
                 <div className="hero-art">
                   <div className="stronghold-arch" aria-hidden="true" />
-                  <KnightArt renown={total.renown} xp={total.xp} weight={state.weight} today={today} />
+                  <KnightArt renown={total.renown} xp={total.xp} weight={state.weight} today={today} portrait={state.portrait} />
                   <span>STEADY IN PURPOSE</span>
                 </div>
                 <div className="hero-quote">
@@ -938,7 +938,7 @@ function OathboundApp() {
               >
                 <div className="profile-art">
                   <span className="heraldic-caption">BY DEED, NOT WORD</span>
-                  <KnightArt renown={total.renown} xp={total.xp} weight={state.weight} today={today} />
+                  <KnightArt renown={total.renown} xp={total.xp} weight={state.weight} today={today} portrait={state.portrait} />
                   <div
                     className="rank-insignia"
                     aria-label={`${rank.rank.name} insignia`}
@@ -953,6 +953,15 @@ function OathboundApp() {
                   <span className="eyebrow">A HERALDIC RECORD</span>
                   <h2>{displayName}</h2>
                   <span className="rank-badge dark">{rank.rank.name}</span>
+                  <div className="portrait-choice">
+                    <label htmlFor="knight-portrait">Character portrait</label>
+                    <select id="knight-portrait" value={state.portrait || 'classic'}
+                      onChange={e => update({...state, portrait: e.target.value as State['portrait']})}>
+                      <option value="classic">Original knight</option>
+                      <option value="personal">Curly-haired knight</option>
+                    </select>
+                    <p className="muted">Appearance only. Both portraits develop with your campaign; changing portraits preserves all progress.</p>
+                  </div>
                   <div className="character-renown">
                     <div className="record-renown-heading">
                       <span>RENOWN EARNED</span>
@@ -987,9 +996,9 @@ function OathboundApp() {
                     recorded deeds.
                   </p>
                   <p className="muted">
-                    {knightAppearance(total.renown, total.xp, state.weight, today).description}
+                    {knightAppearance(total.renown, total.xp, state.weight, today, state.portrait).description}
                   </p>
-                  <p className="muted">{knightAppearance(total.renown, total.xp, state.weight, today).message}</p>
+                  <p className="muted">{knightAppearance(total.renown, total.xp, state.weight, today, state.portrait).message}</p>
                   {bodyAppearanceExplanation(state.weight, today) && <p className="muted appearance-status">{bodyAppearanceExplanation(state.weight, today)}</p>}
                 </div>
               </div>
