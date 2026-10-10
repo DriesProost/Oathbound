@@ -22,4 +22,6 @@ Each of the existing five ranks has three Wisdom/beard sheets. Each sheet has th
 
 SVG viewport clipping uses generated alpha-bound metadata to frame one complete cell without altering the source artwork. Assets are original generated illustrations, optimised locally and included in the normal fingerprinted offline shell. No runtime image generation or image hosting is needed. All builds are dignified and capable.
 
-The larger Squire uses a dedicated six-figure atlas (three beard stages × two grooming states) with a visibly rounded belly and double chin. Its selection follows the same optional saved weight-plan rules; it never replaces a user's selected lean/sturdy build. Portrait framing centers the person's head/body while preserving their equipment, using generated anchor metadata for each illustration.
+The larger Squire uses a dedicated six-figure atlas (three beard stages × two grooming states) with a visibly rounded belly and softer chin. Its selection follows the same optional saved weight-plan rules; it never replaces a user's selected lean/sturdy build. Portrait framing centers the person's torso while preserving their equipment, using generated anchor metadata for each illustration.
+
+Knight explains when appearance is waiting for a starting weight/target or enough real observations. A single measurement at the target does not bypass the three-measurement trend requirement. Equal starting/target weights retain the selected starting build; the explanation does not alter saved measurements or progression.

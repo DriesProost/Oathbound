@@ -61,6 +61,18 @@ export function bodyAppearance(weight?: State['weight'], today = dayKey()): {
   return {build: bodyBuilds[index], progress, linked: true, hasTrend: true};
 }
 
+export function bodyAppearanceExplanation(weight: State['weight'], today = dayKey()): string | null {
+  if (!weight.settings.appearance?.enabled) return null;
+  const {baseline, targetGrams} = weight.settings;
+  if (!baseline || targetGrams === null)
+    return 'Starting build shown. Set a starting weight and target in Chronicle to link future build changes.';
+  if (baseline.grams === targetGrams)
+    return 'Starting weight and target are equal, so the selected starting build stays in place.';
+  if (!bodyAppearance(weight, today).hasTrend)
+    return 'Starting build shown. Appearance waits for a seven-day trend with at least three dated measurements on or after your starting date; one weigh-in does not change it.';
+  return 'Build follows your recorded weight trend, changing at visual stages rather than with each weigh-in. Your desired build appears when the trend reaches the target; reached stages remain through fluctuations.';
+}
+
 // Display-only honour: a player's saved personal name is never rewritten.
 export function knightlyName(name: string, renown: number) {
   const stage = ranks.indexOf(rankProgress(renown).rank);

@@ -10,6 +10,8 @@ An additional `squire-large.webp` overrides only the larger Squire build. Its co
 
 `characterSheets.ts` imports the sheets. Generated viewport metadata in `characterBounds.ts` fits each complete figure without changing artwork pixels. After replacing assets, regenerate it with `python scripts/character-sheet-bounds.py` (Pillow, NumPy and SciPy required for this optional development step). Vite fingerprints them and the existing service worker precaches all variants for offline use. The original standalone portraits remain here as archived references and are no longer bundled. Source PNG outputs remain in the execution workspace’s `generated_images` directory; WebP conversion only resizes and optimises them.
 
-Each viewport also stores a head-center anchor. The renderer centers the person rather than their asymmetric shield/standard, while fitting all equipment inside the portrait. The Banneret anchor accounts for the banner extending above the helmet.
+Each viewport also stores a person-center anchor. The renderer centers the torso rather than a turned head or asymmetric shield, while fitting all equipment inside the portrait. The Banneret anchor accounts for the banner extending above the helmet.
+
+On 10 October 2026 the larger Squire was toned down to a moderately rounded belly and softer chin, preserving all six beard/grooming combinations. Current original source: `exec-a3ac192f-beb8-43a8-a3bd-9195d9d759d0.png`, a spacing refinement of `exec-8e369761-d983-4511-b765-2b6e4ee8a036.png`. The appearance remains opt-in and uses the unchanged recorded-trend rules.
 
 These are complete illustrations rather than rigged models. Strength adds a bounded silhouette adjustment and Vitality a subtle face-only complexion treatment. Appearance rules never grant progression rewards. See `docs/body-appearance.md` for optional weight-plan semantics.

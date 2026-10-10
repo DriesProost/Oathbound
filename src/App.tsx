@@ -57,7 +57,7 @@ import {
 } from "./campaign";
 import type { CampaignGoal } from "./model";
 import KnightArt from "./KnightArt";
-import { knightAppearance, knightlyName } from "./appearance";
+import { bodyAppearanceExplanation, knightAppearance, knightlyName } from "./appearance";
 import { formatDay } from "./presentation";
 import JourneyMap from "./JourneyMap";
 import {
@@ -990,6 +990,7 @@ function OathboundApp() {
                     {knightAppearance(total.renown, total.xp, state.weight, today).description}
                   </p>
                   <p className="muted">{knightAppearance(total.renown, total.xp, state.weight, today).message}</p>
+                  {bodyAppearanceExplanation(state.weight, today) && <p className="muted appearance-status">{bodyAppearanceExplanation(state.weight, today)}</p>}
                 </div>
               </div>
               <section className="panel campaign-summary">

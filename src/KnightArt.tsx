@@ -12,7 +12,7 @@ export default function KnightArt({ renown = 0, xp = {}, weight, today }: {
   function artwork(complexion=false) {
     const column = sheet.largeOnly ? look.beard : bodyBuilds.indexOf(look.body);
     const [sourceX, sourceY, sourceWidth, sourceHeight, centerX] = sheet.bounds[Number(look.groomed)*3+column];
-    // Keep the person's head/body central while fitting all asymmetric equipment.
+    // Keep the person's torso central while fitting all asymmetric equipment.
     const reach=Math.max(centerX-sourceX,sourceX+sourceWidth-centerX);
     const scale=Math.min(320/reach,960/sourceHeight);
     const width=sourceWidth*scale, height=sourceHeight*scale;

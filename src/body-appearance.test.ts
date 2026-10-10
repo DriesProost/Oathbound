@@ -1,6 +1,6 @@
 import { detectFeedback } from './feedback/events';
 import { describe, it, expect } from 'vitest';
-import { bodyAppearance, knightAppearance } from './appearance';
+import { bodyAppearance, bodyAppearanceExplanation, knightAppearance } from './appearance';
 import { createKnight, totals, completeQuest, confirmOath, oathStats } from './domain';
 import { addWeighIn, setWeightSettings, deleteWeighIn, editWeighIn, validWeightSettings } from './weight';
 import { defaultGoals, configureCampaign } from './campaign';
@@ -17,6 +17,14 @@ function measure(s: ReturnType<typeof start>, date: string, grams: number) {
   return addWeighIn(s,date,grams,{id:date,now});
 }
 describe('optional outcome appearance', () => {
+  it('explains a single target-weight observation without inventing trend progress', () => {
+    const s=measure(start(),'2026-10-09',80000);
+    expect(bodyAppearance(s.weight,'2026-10-09').build).toBe('large');
+    expect(bodyAppearanceExplanation(s.weight,'2026-10-09')).toContain('one weigh-in does not change it');
+    expect(bodyAppearanceExplanation({...s.weight,settings:{...s.weight.settings,baseline:null}},'2026-10-09')).toContain('Set a starting weight and target');
+    expect(bodyAppearanceExplanation({...s.weight,settings:{...s.weight.settings,targetGrams:100000}},'2026-10-09')).toContain('equal');
+    expect(bodyAppearanceExplanation(createKnight('Ada','2026-10-01').weight,'2026-10-09')).toBeNull();
+  });
   it('keeps legacy saves unlinked; valid explicit choices round-trip without version churn', () => {
     const legacy=createKnight('Ada','2026-10-01');
     expect(bodyAppearance(legacy.weight,'2026-10-09').linked).toBe(false);
