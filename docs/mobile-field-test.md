@@ -4,6 +4,8 @@ This pass improves presentation and installation only. Progression, campaign sav
 
 ## Phone ergonomics
 
+Switching between the five areas starts at the top of the new page. Tapping the current navigation item returns to its heading too. This is immediate, including with reduced motion; logging a deed does not reset scrolling. Journey postcard illustrations load as they approach the viewport, retaining their fixed dimensions to avoid shifting the ledger. The existing offline shell still includes all illustrations.
+
 The five-area bottom navigation remains on portrait phones and now also replaces the sidebar on short landscape phone screens. Interactive targets are at least 44 px; common deed/Oath actions are 48 px. Text/decimal/date fields use 16 px type to avoid iOS input zoom, with decimal keyboards for kg/km/hours and numeric keyboards for integer targets. Safe-area expressions protect navigation, content and feedback controls. Short viewports render ceremonies inline, and best-effort visual-viewport handling scrolls obscured focused fields without modifying values. Chart/map labels are larger on phones.
 
 ## Install and offline use

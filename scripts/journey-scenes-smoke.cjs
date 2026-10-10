@@ -41,6 +41,8 @@ const path = require('node:path');
       for (let index = 0; index < keys.length; index++) {
         const card = page.locator(`[data-landmark="${keys[index]}"]`), img = card.locator('img');
         assert.equal(await img.count(), 1);
+        await img.scrollIntoViewIfNeeded();
+        assert.equal(await img.getAttribute('loading'), 'lazy');
         await img.evaluate(async el => {
           if (!el.complete) await new Promise((resolve, reject) => { el.onload = resolve; el.onerror = reject; });
           if (!el.naturalWidth || el.naturalWidth / el.naturalHeight !== 16 / 9) throw Error('Missing or incorrectly sized landmark scene');
@@ -115,6 +117,7 @@ const path = require('node:path');
     await context.setOffline(true); await offline.reload();
     await offline.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Journey', exact: true }).click();
     for (const key of keys) {
+      await offline.locator(`[data-landmark="${key}"] img`).scrollIntoViewIfNeeded();
       await offline.locator(`[data-landmark="${key}"] img`).evaluate(el => el.decode());
       assert.equal(await offline.locator(`[data-landmark="${key}"] .postcard-body > p`).count(), 3);
     }

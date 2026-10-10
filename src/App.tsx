@@ -12,7 +12,7 @@ import { setWeightSettings } from "./weight";
 import { WeeklyTraining, WeeklyLedger } from "./WeeklyTraining";
 import { ensureWeeklyPeriod, weeklyTarget, currentCommission } from "./weekly";
 import { weekStart, nextWeekStart } from "./calendar";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Castle,
   ScrollText,
@@ -101,6 +101,10 @@ function OathboundApp() {
   const [tab, setTab] = useState("Keep"),
     [name, setName] = useState(""),
     [step, setStep] = useState(0);
+  // Each area opens at its heading; recording deeds does not move the page.
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [tab]);
   const [notice, setNotice] = useState<{
     title: string;
     reward?: Reward;
@@ -449,6 +453,7 @@ function OathboundApp() {
     );
   }
   const switchTab = (name: string) => {
+    if (name === tab) window.scrollTo({ top: 0, behavior: "instant" });
     feedback.interact("paper");
     clearPulse();
     setTab(name);

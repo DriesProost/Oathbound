@@ -10,7 +10,7 @@ function Scene({ stop, reached }: { stop: Landmark; reached: boolean }) {
   return (
     <div className={"postcard-scene" + (reached ? "" : " scene-unrevealed")}>
       {src && <img src={src} alt={reached ? stop.sceneAlt : ""}
-        aria-hidden={!reached} width={1440} height={810} decoding="async" />}
+        aria-hidden={!reached} width={1440} height={810} decoding="async" loading="lazy" />}
       <span className="scene-status">
         {reached ? <MapPin size={14} aria-hidden="true" /> : <LockKeyhole size={14} aria-hidden="true" />}
         {reached ? "Reached" : "Yet to be revealed"}
