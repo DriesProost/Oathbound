@@ -40,4 +40,15 @@ describe('optional supplied ambience',()=>{
     const audio=new KeepAmbience();expect(await audio.start(.25)).toBe(false);
     expect(await audio.start(.25)).toBe(false);expect(fetch).toHaveBeenCalledTimes(2);audio.dispose();
   });
+  it('applies a volume change made while the recording is decoding',async()=>{
+    let finish!: (buffer: unknown)=>void;
+    const decode=vi.fn(()=>new Promise(resolve=>{finish=resolve;}));
+    const gain={gain:{value:0,setTargetAtTime:vi.fn()},connect:vi.fn(),disconnect:vi.fn()};
+    const source={buffer:null,loop:false,connect:vi.fn(),start:vi.fn(),stop:vi.fn(),disconnect:vi.fn()};
+    vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(new Uint8Array([1,2]))));
+    vi.stubGlobal('AudioContext',class {state='running';currentTime=0;destination={};resume=()=>Promise.resolve();decodeAudioData=decode;createGain=()=>gain;createBufferSource=()=>source;close=()=>Promise.resolve();});
+    const audio=new KeepAmbience();const start=audio.start(.25);
+    await vi.waitFor(()=>expect(decode).toHaveBeenCalled());audio.setVolume(.8);finish({});
+    expect(await start).toBe(true);expect(gain.gain.value).toBe(.8);audio.dispose();
+  });
 });

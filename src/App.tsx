@@ -58,6 +58,7 @@ import {
 import type { CampaignGoal } from "./model";
 import {kmToSteps, routeSteps} from './walking';
 import {useJournalSwipe} from './journalSwipe';
+import WeeklyReview from './WeeklyReview';
 import KnightArt from "./KnightArt";
 import { bodyAppearanceExplanation, knightAppearance, knightlyName } from "./appearance";
 import { formatDay } from "./presentation";
@@ -407,10 +408,10 @@ function OathboundApp() {
           {!completed && <details className="deed-status-options">
             <summary>{state!.deedNotes?.find((n) => n.date === date && n.questId === q.id)?.status === "not-planned"
               ? "Not planned · change" : state!.deedNotes?.find((n) => n.date === date && n.questId === q.id)?.status === "not-completed"
-                ? "Not completed · change" : "Other options"}</summary>
+                ? "Failed · change" : "Other options"}</summary>
             <p>No reward or penalty. You can still complete this deed later.</p>
             <button type="button" className="text-button" disabled={!allowed}
-              onClick={() => persist(recordDeedStatus(state!, q.id, date, "not-completed", now))}>Not completed</button>
+              onClick={() => persist(recordDeedStatus(state!, q.id, date, "not-completed", now))}>Mark failed</button>
             <button type="button" className="text-button" disabled={date < state!.created || !configuredQuests(state!, date).some((p) => p.id === q.id)}
               onClick={() => persist(recordDeedStatus(state!, q.id, date, "not-planned", now))}>Not planned</button>
             <button type="button" className="text-button"
@@ -439,7 +440,7 @@ function OathboundApp() {
             </div>
           </div>
         ) : (
-          <button
+          <div className="quest-actions"><button
             className="complete-button"
             disabled={!allowed}
             aria-label={`Complete ${q.name}`}
@@ -455,6 +456,13 @@ function OathboundApp() {
                 ? "Complete"
                 : "Confirm"}
           </button>
+          <button className="failed-button" data-recorded={state!.deedNotes?.some(n=>n.date===date&&n.questId===q.id&&n.status==='not-completed')||undefined} disabled={!allowed} aria-label={`Mark ${q.name} failed`}
+            aria-describedby={`timing-${q.id}`}
+            onClick={() => {
+              const before=stateRef.current!;
+              const next=recordDeedStatus(before,q.id,date,'not-completed',now);
+              if(next!==before && persist(next))report('Deed marked failed. No reward earned; earlier progress is preserved.');
+            }}>Failed</button></div>
         )}
       </article>
     );
@@ -1193,6 +1201,7 @@ function OathboundApp() {
                 }}
               />
               <WeeklyLedger state={state} date={today} />
+              <WeeklyReview state={state} now={now} />
               <section className="panel chronicle-ledger">
                 <div className="ledger-heading">
                   <BookOpen size={22} />
@@ -1252,7 +1261,7 @@ function OathboundApp() {
                         ))}
                         {(state.deedNotes || []).filter((n) => n.date === date).map((n) => (
                           <div className="history-entry" key={`note-${n.questId}`}>
-                            <span>{n.name}</span><span>{n.status === "not-planned" ? "Not planned" : "Not completed"} · no reward or penalty</span>
+                            <span>{n.name}</span><span>{n.status === "not-planned" ? "Not planned" : "Failed"} · no reward or penalty</span>
                           </div>
                         ))}
                         {dayOath && (

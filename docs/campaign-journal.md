@@ -16,7 +16,7 @@ The Sound button opens independent effects and ambience controls. The user suppl
 
 Vite fingerprints the URL and the existing worker precaches the file for offline use. After an explicit gesture, Web Audio fetches/decodes the bundled recording and loops its audio buffer; decoded audio is reused for subsequent starts. Loading or decoding failure cannot affect the campaign. Muting or hiding the page while audio is loading prevents that pending start from subsequently playing.
 
-The independent `oathbound.ambience.v1` preference remembers choice and volume. Playback requires an explicit Play/Resume gesture on each visit and never starts on reload. Closing settings leaves playback running; hiding the page pauses it, and resuming requires an explicit gesture. Mute stops the sources; pending starts are cancelled. Unsupported audio/storage fails without touching campaign data. Deed sound preference and reduced motion remain independent.
+The independent `oathbound.ambience.v1` preference remembers choice and volume in this browser profile. Music defaults to disabled for a new browser. When enabled, the app attempts to resume on reopening or returning to the visible page. If browser autoplay policy blocks it, the next pointer/key gesture unlocks it without changing the saved choice; a visible Resume music button also remains available. Mute persists disabled and prevents automatic or gesture-based resumption. Hiding the page pauses sound without muting the saved preference. Closing settings leaves playback running. Attempt identities prevent stale async starts from updating the controls after mute or unmount. Unsupported audio/storage fails without touching campaign data. Deed sound preference and reduced motion remain independent.
 
 ## Step patrols and safe existing campaigns
 
@@ -26,4 +26,12 @@ Completing a step target snapshots that target and writes its estimated route di
 
 ## Checks
 
-`npm test` covers independent preferences, unavailable audio/storage, pending-start cancellation, step estimates and once-only route/reward accounting, alongside existing save/migration/progression tests. With Vite running, `scripts/journal-smoke.cjs` checks narrow/wide layouts, expandable attributes, actual Web Audio startup after a gesture, controls, reload without autoplay, prospective step conversion and reduced motion. `scripts/journey-scenes-smoke.cjs` checks stories, arrival feedback, mobile layout and offline artwork/history.
+`npm test` covers independent preferences, unavailable audio/storage, pending-start cancellation, step estimates and once-only route/reward accounting, alongside existing save/migration/progression tests. With Vite running, `scripts/journal-smoke.cjs` checks narrow/wide layouts, expandable attributes, actual Web Audio startup after a gesture, enabled resumption and muted reload, prospective step conversion and reduced motion. `scripts/journey-scenes-smoke.cjs` checks stories, arrival feedback, mobile layout and offline artwork/history.
+
+## Explicit failures and weekly review
+
+Each ordinary deed has a visible Failed action alongside completion, with the same confirmation timing. Failure is stored using the existing `not-completed` note value, so existing saves need no migration. Notes can be cleared via Leave unlogged or replaced by a later completion; existing completed receipts cannot be overwritten by failure. No past rewards are deducted. Feedback is factual and quiet, with no failure buzzer or flashing animation.
+
+Chronicle's week review derives completed, explicitly failed, not-planned/rest and unlogged counts from recorded history and date-specific campaign revisions. Future/not-yet-confirmable days are excluded. Missing observations never become failures. Training remains governed by its weekly target, not a mandatory seven-day schedule. Confirmed kept/broken Oaths are summarised separately. Weight measurements are excluded from this behaviour review. Previous weeks are browsable, with no new reward, score or penalty. The view writes no campaign history.
+
+Unit and browser checks cover failure persistence, later once-only completion, isolated progress/weight/Oath history, historical configuration, calendar boundaries, unlogged separation and phone layouts. Run `scripts/weekly-review-smoke.cjs` with the development server available.

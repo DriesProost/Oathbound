@@ -16,10 +16,12 @@ export class KeepAmbience {
   private source: AudioBufferSourceNode | null = null;
   private gain: GainNode | null = null;
   private generation = 0;
+  private volume = .25;
   private buffer: AudioBuffer | null = null;
   private loading: Promise<AudioBuffer> | null = null;
   async start(volume: number) {
     this.stop();
+    this.volume = Math.max(0, Math.min(1, volume));
     const generation = this.generation;
     try {
       this.context ??= new AudioContext();
@@ -35,14 +37,15 @@ export class KeepAmbience {
         try { this.buffer = await this.loading; } finally { this.loading = null; }
       }
       if (generation !== this.generation || ctx.state !== 'running') return false;
-      this.gain = ctx.createGain(); this.gain.gain.value = Math.max(0, Math.min(1, volume));
+      this.gain = ctx.createGain(); this.gain.gain.value = this.volume;
       this.source = ctx.createBufferSource(); this.source.buffer = this.buffer; this.source.loop = true;
       this.source.connect(this.gain); this.gain.connect(ctx.destination); this.source.start();
       return true;
     } catch { if (generation === this.generation) this.stop(); return false; }
   }
   setVolume(volume: number) {
-    try { this.gain?.gain.setTargetAtTime(Math.max(0, Math.min(1, volume)), this.context!.currentTime, .1); } catch { /* best effort */ }
+    this.volume = Math.max(0, Math.min(1, volume));
+    try { this.gain?.gain.setTargetAtTime(this.volume, this.context!.currentTime, .1); } catch { /* best effort */ }
   }
   stop() {
     this.generation++;

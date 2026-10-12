@@ -38,6 +38,18 @@
 .journal-attributes summary:focus-visible { outline:2px solid #8c794e; outline-offset:2px; }
 .attribute { padding:12px; box-shadow:none; background:#f5edd9; }
 .panel { box-shadow:none; }
+.quest-actions { display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
+.failed-button { min-height:44px; border:1px solid #a58264; border-radius:3px; background:#efe1bf; color:#794936; padding:8px 12px; font-size:12px; }
+.failed-button:disabled { opacity:.5; cursor:default; }
+.failed-button[data-recorded] { background:#e1c6a1; border-color:#825b43; font-weight:600; }
+.weekly-review { margin:20px 0; padding:20px; }
+.weekly-review h2 { display:flex; gap:8px; align-items:center; }
+.review-navigation { display:flex; gap:5px; }
+.weekly-review table { width:100%; border-collapse:collapse; font-size:12px; }
+.weekly-review th,.weekly-review td { padding:10px 4px; border-bottom:1px solid #b7a47c; text-align:center; }
+.weekly-review th:first-child { text-align:left; }
+.review-failed { color:#874b36; font-weight:600; }
+@media(max-width:760px) { .quest-actions { flex-direction:row; flex-wrap:wrap; flex-basis:100%; } .quest-actions .complete-button { margin:0; } .weekly-review { padding:12px; } .weekly-review table { font-size:10px; } }
 .keep-page .hero { padding:0; margin-bottom:14px; }
 .keep-page .hero-copy { padding:20px; }
 .keep-page .hero-copy .eyebrow { font-size:8px; margin-bottom:8px; }
