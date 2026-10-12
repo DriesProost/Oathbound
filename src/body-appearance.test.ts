@@ -17,10 +17,11 @@ function measure(s: ReturnType<typeof start>, date: string, grams: number) {
   return addWeighIn(s,date,grams,{id:date,now});
 }
 describe('optional outcome appearance', () => {
-  it('explains a single target-weight observation without inventing trend progress', () => {
+  it('uses a confirmed target observation for the cosmetic stage without inventing trend data', () => {
     const s=measure(start(),'2026-10-09',80000);
-    expect(bodyAppearance(s.weight,'2026-10-09').build).toBe('large');
-    expect(bodyAppearanceExplanation(s.weight,'2026-10-09')).toContain('one weigh-in does not change it');
+    expect(bodyAppearance(s.weight,'2026-10-09').build).toBe('lean');
+    expect(bodyAppearance(s.weight,'2026-10-09').hasTrend).toBe(false);
+    expect(bodyAppearanceExplanation(s.weight,'2026-10-09')).toContain('recorded weigh-ins');
     expect(bodyAppearanceExplanation({...s.weight,settings:{...s.weight.settings,baseline:null}},'2026-10-09')).toContain('Set a starting weight and target');
     expect(bodyAppearanceExplanation({...s.weight,settings:{...s.weight.settings,targetGrams:100000}},'2026-10-09')).toContain('equal');
     expect(bodyAppearanceExplanation(createKnight('Ada','2026-10-01').weight,'2026-10-09')).toBeNull();
@@ -39,17 +40,17 @@ describe('optional outcome appearance', () => {
     expect(load(store,'2026-10-09')?.weight).toEqual(s.weight);
     expect(s.version).toBe(3);
   });
-  it('leaves explicit starting build in place without baseline, target or sufficient observations', () => {
+  it('leaves explicit starting build in place without baseline, target or any observations', () => {
     let s=start();
     expect(bodyAppearance(s.weight,'2026-10-09').build).toBe('large');
     s=measure(s,'2026-10-01',80000);
     s=measure(s,'2026-10-02',80000);
-    expect(bodyAppearance(s.weight,'2026-10-09').build).toBe('large');
+    expect(bodyAppearance(s.weight,'2026-10-09').build).toBe('lean');
     expect(bodyAppearance({...s.weight,settings:{...s.weight.settings,baseline:null}},'2026-10-09').progress).toBeNull();
     expect(bodyAppearance({...s.weight,settings:{...s.weight.settings,targetGrams:null}},'2026-10-09').progress).toBeNull();
     expect(bodyAppearance({...s.weight,settings:{...s.weight.settings,targetGrams:100000}},'2026-10-09').build).toBe('large');
   });
-  it('uses actual seven-day trends for staged loss and gain plans', () => {
+  it('uses confirmed measurements for staged loss and gain plans', () => {
     let loss=start();
     for(const d of ['2026-10-01','2026-10-02','2026-10-03']) loss=measure(loss,d,90000);
     expect(bodyAppearance(loss.weight,'2026-10-09').build).toBe('sturdy');
@@ -59,7 +60,7 @@ describe('optional outcome appearance', () => {
     for(const d of ['2026-10-07','2026-10-08','2026-10-09']) gain=measure(gain,d,90000);
     expect(bodyAppearance(gain.weight,'2026-10-09').build).toBe('large');
     expect(gain.weight.measurements).toHaveLength(6);
-    expect(bodyAppearance(gain.weight,'2026-10-02').build).toBe('lean');
+    expect(bodyAppearance(gain.weight,'2026-10-02').build).toBe('sturdy');
   });
   it('retains a reached visual stage through fluctuations, without storing a weight achievement', () => {
     let s=start();
@@ -76,14 +77,16 @@ describe('optional outcome appearance', () => {
     let s=start();
     for(const d of ['2026-10-01','2026-10-02','2026-10-03']) s=measure(s,d,80000);
     s=editWeighIn(s,'2026-10-03','2026-10-03',110000,now);
-    expect(bodyAppearance(s.weight,'2026-10-09').build).toBe('sturdy');
+    expect(bodyAppearance(s.weight,'2026-10-09').build).toBe('lean');
     s=deleteWeighIn(s,'2026-10-02');
+    expect(bodyAppearance(s.weight,'2026-10-09').build).toBe('lean');
+    s=deleteWeighIn(s,'2026-10-01');
     expect(bodyAppearance(s.weight,'2026-10-09').build).toBe('large');
     let sparse=start();
     for(const d of ['2026-10-01','2026-10-05','2026-10-09']) sparse=measure(sparse,d,80000);
     expect(bodyAppearance(sparse.weight,'2026-10-09').hasTrend).toBe(false);
     expect(sparse.weight.measurements).toHaveLength(3);
-    const shifted={...sparse.weight,settings:{...sparse.weight.settings,baseline:{date:'2026-10-09',grams:100000}}};
+    const shifted={...sparse.weight,settings:{...sparse.weight.settings,baseline:{date:'2026-10-10',grams:100000}}};
     expect(bodyAppearance(shifted,'2026-10-09').build).toBe('large');
   });
   it('never changes rewards, attributes, ranks, Oaths, commissions or Journey; disabling preserves data', () => {

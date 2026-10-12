@@ -382,7 +382,7 @@ export function eventText(event: FeedbackEvent): string {
     case "landmark":
       return `Reached ${event.name} · ${event.inscription}`;
     case "commission":
-      return `Commission fulfilled · Training Yard · ${event.count} / ${event.target} sessions. No additional reward.`;
+      return `Commission fulfilled · Training Yard · ${event.count} / ${event.target} sessions.${event.bonus ? ` Includes weekly bonus: ${event.bonus.renown} Renown · ${event.bonus.xp.Strength} Strength XP.` : ''}`;
     case "level":
       return `${event.attribute} ${roman(event.to)} · level ${event.from} → ${event.to}`;
     case "oath":

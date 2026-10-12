@@ -53,15 +53,16 @@ export function bodyAppearance(weight?: State['weight'], today = dayKey()): {
   const {baseline, targetGrams} = weight.settings;
   if (!baseline || targetGrams === null || baseline.grams === targetGrams)
     return {build: plan.startingBuild, progress: null, linked: true, hasTrend: false};
-  const trends = weightTrend(weight.measurements.filter(m => m.date >= baseline.date && m.date <= today));
-  if (!trends.length) return {build: plan.startingBuild, progress: null, linked: true, hasTrend: false};
+  const observations = weight.measurements.filter(m => m.date >= baseline.date && m.date <= today);
+  const hasTrend=weightTrend(observations).length>0;
+  if (!observations.length) return {build: plan.startingBuild, progress: null, linked: true, hasTrend};
   const span = targetGrams - baseline.grams;
   // Fluctuations do not take back a reached visual stage. No measurements are fabricated.
-  const progress = trends.reduce((best, point) => Math.max(best, Math.max(0, Math.min(1, (point.meanGrams - baseline.grams) / span))), 0);
+  const progress = observations.reduce((best, point) => Math.max(best, Math.max(0, Math.min(1, (point.grams - baseline.grams) / span))), 0);
   const start = bodyBuilds.indexOf(plan.startingBuild), target = bodyBuilds.indexOf(plan.targetBuild);
   const index = progress >= appearanceRules.bodyTargetProgress ? target :
     Math.abs(target - start) === 2 && progress >= appearanceRules.bodyMiddleProgress ? 1 : start;
-  return {build: bodyBuilds[index], progress, linked: true, hasTrend: true};
+  return {build: bodyBuilds[index], progress, linked: true, hasTrend};
 }
 
 export function bodyAppearanceExplanation(weight: State['weight'], today = dayKey()): string | null {
@@ -71,9 +72,9 @@ export function bodyAppearanceExplanation(weight: State['weight'], today = dayKe
     return 'Starting build shown. Set a starting weight and target in Chronicle to link future build changes.';
   if (baseline.grams === targetGrams)
     return 'Starting weight and target are equal, so the selected starting build stays in place.';
-  if (!bodyAppearance(weight, today).hasTrend)
-    return 'Starting build shown. Appearance waits for a seven-day trend with at least three dated measurements on or after your starting date; one weigh-in does not change it.';
-  return 'Build follows your recorded weight trend, changing at visual stages rather than with each weigh-in. Your desired build appears when the trend reaches the target; reached stages remain through fluctuations.';
+  if (bodyAppearance(weight, today).progress===null)
+    return 'Starting build shown. Record a weigh-in on or after your starting date to begin.';
+  return 'Build follows recorded weigh-ins: larger to sturdy at halfway, then lean at the target for the standard plan. Reached visual stages remain through fluctuations; the chart still shows the seven-day trend.';
 }
 
 // Display-only honour: a player's saved personal name is never rewritten.

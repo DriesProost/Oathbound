@@ -1,4 +1,4 @@
-import { ensureWeeklyPeriod, recordWeeklyActivity } from "./weekly";
+import { ensureWeeklyPeriod, recordWeeklyActivity,grantWeeklyBonuses } from "./weekly";
 import {
   campaignRules,
   attributes,
@@ -105,7 +105,7 @@ export function completeQuest(
       },
     ],
   };
-  return recordWeeklyActivity(next, `activity:${date}:${quest.goalId}`);
+  return grantWeeklyBonuses(state,recordWeeklyActivity(next, `activity:${date}:${quest.goalId}`));
 }
 export function takeOath(
   state: State,
@@ -172,6 +172,7 @@ export function attributeProgress(xp: number) {
 }
 export function totals(state: State) {
   const rewards = [
+    ...state.weekly.commissions.filter(c=>c.bonus).map(c=>c.bonus!.reward),
     ...state.entries.filter((e) => e.rewardGrant !== null).map((e) => e.reward),
     ...Object.values(state.oaths)
       .filter((o) => o.status === "kept")

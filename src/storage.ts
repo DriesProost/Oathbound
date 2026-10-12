@@ -228,6 +228,7 @@ export function validate(source: unknown): State {
   if (!unique(cs.map((c) => c.id)) || !unique(cs.flatMap((c) => c.activityIds)))
     return failure();
   for (const c of cs) {
+    if(c.bonus!==undefined && (!object(c.bonus)||c.bonus.id!==`bonus:${c.id}`||c.goalId!=='strength'||!reward(c.bonus.reward)||!c.activityIds.includes(c.bonus.activityId)||c.activityIds.indexOf(c.bonus.activityId)<c.target.value-1))return failure();
     const activities = s.entries.filter(
       (e) =>
         e.goalId === c.goalId &&

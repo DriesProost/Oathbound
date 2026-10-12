@@ -36,7 +36,7 @@ describe("user-action feedback", () => {
     });
     expect(leadCue(events)).toBe("steel");
   });
-  it("detects only a newly fulfilled snapshotted commission, without a bonus", () => {
+  it("detects only a newly fulfilled snapshotted commission, with its once-only bonus", () => {
     let s = create();
     s = train(s, "2026-10-05");
     s = train(s, "2026-10-06");
@@ -46,7 +46,7 @@ describe("user-action feedback", () => {
       count: 3,
       target: 3,
     });
-    expect(totals(next).renown - totals(s).renown).toBe(35);
+    expect(totals(next).renown - totals(s).renown).toBe(55);
     expect(
       detectFeedback(next, train(next, "2026-10-08"), "deed").some(
         (e) => e.kind === "commission",
@@ -85,7 +85,7 @@ describe("user-action feedback", () => {
     ]);
     expect(timeline.at(-1)!.event.kind).toBe("reward");
     expect(events.map(eventText).join(" ")).toContain(
-      "+35 Renown · +20 Strength XP",
+      "+55 Renown · +30 Strength XP",
     );
     expect(events.filter((e) => e.kind === "landmark")).toHaveLength(3);
   });

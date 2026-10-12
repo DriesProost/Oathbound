@@ -258,10 +258,10 @@ const assert = require("node:assert/strict");
   const result = await mf.locator(".feedback-result").allTextContents();
   assert.deepEqual(result, [
     "Squire → Man-at-Arms",
-    "Commission fulfilled · Training Yard · 3 / 3 sessions. No additional reward.",
+    "Commission fulfilled · Training Yard · 3 / 3 sessions. Includes weekly bonus: 20 Renown · 10 Strength XP.",
     "Strength II · level 1 → 2",
     "Training Yard",
-    "+35 Renown · +20 Strength XP",
+    "+55 Renown · +30 Strength XP",
   ]);
   assert.equal(await mf.count(), 1);
   assert.equal((await m.read()).entries.length, 3);

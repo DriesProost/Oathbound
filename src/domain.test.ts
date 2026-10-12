@@ -21,12 +21,12 @@ describe("campaign progression", () => {
       s = completeQuest(s, "training", `2026-10-0${i}`, evening());
     expect(totals(s).stats.Strength).toMatchObject({
       level: 2,
-      xp: 0,
+      xp: 10,
       required: 125,
-      lifetimeXP: 100,
+      lifetimeXP: 110,
     });
     expect(completeQuest(s, "training", "2026-10-05", evening())).toBe(s);
-    expect(totals(s).renown).toBe(175);
+    expect(totals(s).renown).toBe(195);
     expect(attributeProgress(225)).toMatchObject({
       level: 3,
       xp: 0,

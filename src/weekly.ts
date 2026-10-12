@@ -126,3 +126,18 @@ export function trainingStatus(state: State, date = dayKey()) {
       requested && requested.value !== target ? requested.value : null,
   };
 }
+export function grantWeeklyBonuses(before:State,after:State):State {
+ const commissions=after.weekly.commissions.map(c=>{
+  if(c.goalId!=='strength'||c.bonus||c.activityIds.length<c.target.value)return c;
+  const previous=before.weekly.commissions.find(p=>p.id===c.id);
+  const oldCount=previous?.activityIds.length ?? before.entries.filter(e=>e.goalId===c.goalId&&e.date>=c.period.start&&e.date<=c.period.end&&e.date>=before.weekly.trackingSince).length;
+  if(oldCount>=c.target.value)return c;
+  const activityId=c.activityIds.find(id=>!before.entries.some(e=>e.activityId===id));
+  if(!activityId)return c;
+  return {...c,bonus:{id:`bonus:${c.id}`,activityId,reward:structuredClone(campaignRules.weeklyTrainingBonus)}};
+ });
+ return commissions.some((c,i)=>c!==after.weekly.commissions[i])?{...after,weekly:{...after.weekly,commissions}}:after;
+}
+export function weeklyRewardsOn(state:State,date:string) {
+ return state.weekly.commissions.filter(c=>c.bonus&&state.entries.some(e=>e.activityId===c.bonus!.activityId&&e.date===date)).map(c=>c.bonus!.reward);
+}

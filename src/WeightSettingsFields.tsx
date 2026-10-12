@@ -108,6 +108,7 @@ export function WeightSettingsFields({
           Let my knight’s build follow this weight plan
         </label>
         {draft.appearanceEnabled && <>
+          <button type="button" className="text-button" onClick={()=>onChange({...draft,startingBuild:'large',targetBuild:'lean'})}>Use larger → sturdy → lean</button>
           <label htmlFor={prefix + "-starting-build"}>Starting build</label>
           <select id={prefix + "-starting-build"} value={draft.startingBuild}
             onChange={(e) => onChange({...draft, startingBuild: e.target.value as BodyBuild})}>
@@ -118,7 +119,7 @@ export function WeightSettingsFields({
             onChange={(e) => onChange({...draft, targetBuild: e.target.value as BodyBuild})}>
             {bodyBuilds.map(build => <option key={build} value={build}>{build === "large" ? "Larger" : build === "sturdy" ? "Sturdy" : "Lean"}</option>)}
           </select>
-          <p className="target-help">A personal illustration, not a prediction of your body. Add an explicit starting weight and target when ready. Build changes use the recorded seven-day trend, with at least three measurements in a window. Reached visual stages remain through later fluctuations. You can turn this off at any time.</p>
+          <p className="target-help">A personal illustration, not a prediction of your body. The standard plan moves from larger to sturdy at 50% of the baseline-to-target change, then lean at 100%, using confirmed weigh-ins. Reached visual stages remain through fluctuations. You can turn this off at any time.</p>
         </>}
         <p className="target-help">Appearance only · no Renown or XP. Grooming follows Presence; muscle follows Strength. Weight measurements never change your rank or armour.</p>
       </fieldset>

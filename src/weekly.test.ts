@@ -113,7 +113,7 @@ describe("weekly training commissions", () => {
     };
     expect(validGoals(gs)).toBe(false);
   });
-  it("advances the commission once per training day with only the daily award", () => {
+  it("advances once per training day and awards one snapshotted completion bonus", () => {
     let s = createKnight("Ada", "2026-10-05", goals());
     s = train(s, "2026-10-05");
     s = train(s, "2026-10-07");
@@ -128,16 +128,16 @@ describe("weekly training commissions", () => {
     expect(recordWeeklyActivity(s, s.entries[0].activityId)).toBe(s);
     s = train(s, "2026-10-09");
     expect(trainingStatus(s, "2026-10-09")?.remaining).toBe(0);
-    expect(totals(s).renown).toBe(105);
-    expect(totals(s).xp.Strength).toBe(60);
-    expect(s.weekly.commissions[0]).not.toHaveProperty("reward");
+    expect(totals(s).renown).toBe(125);
+    expect(totals(s).xp.Strength).toBe(70);
+    expect(s.weekly.commissions[0].bonus?.reward).toEqual(campaignRules.weeklyTrainingBonus);
     expect(s.entries[0].rewardGrant).toMatchObject({
       activityId: s.entries[0].activityId,
       period: { kind: "day", start: "2026-10-05" },
     });
     s = train(s, "2026-10-11");
     expect(trainingStatus(s, "2026-10-11")?.count).toBe(4);
-    expect(totals(s).renown).toBe(140);
+    expect(totals(s).renown).toBe(160);
     expect(validate(s)).toBe(s);
   });
   it("keeps activity progress independent of whether a daily award was granted", () => {

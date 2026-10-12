@@ -6,7 +6,7 @@ export type FeedbackIntent = "quiet" | "deed" | "oath" | "correction";
 export type FeedbackEvent =
   | { kind: "rank"; from: string; to: string }
   | { kind: "landmark"; name: string; inscription: string }
-  | { kind: "commission"; id: string; count: number; target: number }
+  | { kind: "commission"; id: string; count: number; target: number; bonus?:Reward }
   | { kind: "level"; attribute: Attribute; from: number; to: number }
   | { kind: "oath"; date: string; streak: number }
   | { kind: "deed"; name: string; id: string }
@@ -125,6 +125,7 @@ export function detectFeedback(
         id: c.id,
         count: c.activityIds.length,
         target: c.target.value,
+        ...(c.bonus?{bonus:c.bonus.reward}:{}),
       });
   }
   for (const stop of landmarks)

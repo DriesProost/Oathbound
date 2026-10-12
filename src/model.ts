@@ -38,7 +38,7 @@ export type CampaignRevision = {
 };
 export type Campaign = { revisions: CampaignRevision[] };
 export type DayPeriod = { kind: "day"; start: string };
-// Activity identity and the daily award receipt are distinct. Weekly progress links only activities.
+// Activity identity and daily rewards are distinct; weekly bonuses have separate receipts.
 export type RewardGrant = {
   id: string;
   activityId: string;
@@ -51,6 +51,7 @@ export type WeeklyCommission = {
   period: { kind: "week"; start: string; end: string; weekStartsOn: number };
   target: WeeklyTarget;
   activityIds: string[];
+  bonus?: {id:string;activityId:string;reward:Reward};
 };
 export type WeeklyCampaign = {
   weekStartsOn: number;
@@ -65,7 +66,7 @@ export type Entry = {
   goalId: BehaviourGoalId | null;
   period: { kind: "day"; start: string };
   rewardGrant: RewardGrant | null;
-  reward: Reward; // Amounts snapshotted with the daily receipt; never granted by a commission.
+  reward: Reward; // Daily receipt only; weekly milestone bonuses are stored on their commission.
   distance: number;
   deed: {
     name: string;
@@ -87,6 +88,7 @@ export type WeightSettings = {
   baseline: { date: string; grams: number } | null;
   targetGrams: number | null;
   appearance?: WeightAppearance;
+  acknowledgedGoal?: string;
 };
 export type WeighIn = {
   id: string;

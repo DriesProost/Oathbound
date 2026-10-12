@@ -1,6 +1,8 @@
 import { useFeedback } from "./feedback/Feedback";
 import { useEffect, useState } from "react";
-import { Scale, Pencil, Trash2, Settings2 } from "lucide-react";
+import { Scale, Pencil, Trash2, Settings2,ShieldCheck } from "lucide-react";
+import {acknowledgeWeightMilestone} from './weightMilestone';
+import {bodyAppearance} from './appearance';
 import { goalActive } from "./campaign";
 import { formatDay } from "./presentation";
 import {
@@ -47,6 +49,7 @@ export default function WeightChronicle({
     [editing, setEditing] = useState<string | null>(null),
     [error, setError] = useState(""),
     [message, setMessage] = useState("");
+  const [goalCelebration,setGoalCelebration]=useState(false);
   const [pending, setPending] = useState<Pending | null>(null),
     [baselineOffer, setBaselineOffer] = useState<string | null>(null),
     [settingsOpen, setSettingsOpen] = useState(false),
@@ -76,7 +79,9 @@ export default function WeightChronicle({
       : null;
   const feedback = useFeedback();
   function commit(next: State, text: string) {
-    if (update(next)) {
+    const milestone=acknowledgeWeightMilestone(state,next,today);
+    if (update(milestone.state)) {
+      if(milestone.celebrate)setGoalCelebration(true);
       if (next.weight.measurements !== state.weight.measurements)
         feedback.quiet();
       setError("");
@@ -228,6 +233,20 @@ export default function WeightChronicle({
         </p>
       )}
       <WeightChart measurements={measurements} />
+      {goalCelebration && <section className="weight-goal-celebration" aria-label="Weight goal reached" role="status">
+        <ShieldCheck size={38}/><h3>A worthy milestone.</h3>
+        <p>Your recorded weight has reached your target{settings.targetGrams!==null?` of ${formatKg(settings.targetGrams)}`:''}.</p>
+        {settings.appearance?.enabled && <p>Your knight’s build: {bodyAppearance(state.weight,today).build==='large'?'larger':bodyAppearance(state.weight,today).build}.</p>}
+        <p>Would you like to set a new goal? You can also keep this one.</p>
+        <button className="secondary" onClick={()=>{
+          const latest=orderedMeasurements(measurements).at(-1);
+          setDraft({...weightSettingsDraft(settings,today),targetKg:'',...(latest?{baselineKg:gramsToKgInput(latest.grams),baselineDate:latest.date}:{}),startingBuild:bodyAppearance(state.weight,today).build});
+          setSettingsOpen(true);setGoalCelebration(false);
+          requestAnimationFrame(()=>document.getElementById('weight-settings-target')?.focus());
+        }}>Set a new goal</button>
+        <button className="text-button" onClick={()=>setGoalCelebration(false)}>Keep this goal</button>
+        <p className="muted">An outcome milestone, separate from Renown and XP.</p>
+      </section>}
       {latestAverage && (
         <p className="weight-average-summary">
           7-day average at {formatDay(latestAverage.date)}:{" "}

@@ -18,6 +18,6 @@ export default function WeeklyReview({state,now}:{state:State;now:Date}) {
    :<p>No deed records for this period.</p>}
   {(review.kept+review.broken)>0 && <p>Temperance: {review.kept} Oaths kept · {review.broken} broken. Unconfirmed days are not counted as alcohol-free.</p>}
   <p className="muted">Failed means you explicitly recorded a missed deed. Rest means not planned. Unlogged means no result was recorded for an available deed, not failure. Training days are flexible; your weekly commission remains the target.</p>
-  <p className="muted">Use the pattern to choose a more workable next week. No weekly bonus or penalty changes your knight’s progress.</p>
+  <p className="muted">Use the pattern to choose a more workable next week. Fulfilled training earns one weekly bonus; rest days and incomplete weeks carry no penalty.</p>
  </section>;
 }

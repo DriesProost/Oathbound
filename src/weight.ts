@@ -40,6 +40,7 @@ export function validWeightSettings(value: unknown): value is WeightSettings {
         validDay(value.baseline.date) &&
         positiveGrams(value.baseline.grams))) &&
     (value.targetGrams === null || positiveGrams(value.targetGrams)) &&
+    (value.acknowledgedGoal===undefined || (typeof value.acknowledgedGoal==='string' && value.acknowledgedGoal.length<=100 && /^\d{4}-\d{2}-\d{2}:\d+:\d+$/.test(value.acknowledgedGoal)&&validDay(value.acknowledgedGoal.split(':')[0])&&positiveGrams(Number(value.acknowledgedGoal.split(':')[1]))&&positiveGrams(Number(value.acknowledgedGoal.split(':')[2])))) &&
     (value.appearance === undefined || (object(value.appearance) &&
       typeof value.appearance.enabled === "boolean" &&
       bodyBuilds.includes(value.appearance.startingBuild) &&

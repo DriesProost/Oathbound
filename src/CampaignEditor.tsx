@@ -539,8 +539,7 @@ export default function CampaignEditor({
                     <p>{targetDescription(goal.target)}</p>
                     {goal.id === "strength" && (
                       <p className="weekly-review">
-                        Train {goal.weeklyTarget?.value} times per week · no
-                        weekly reward bonus.
+                        Train {goal.weeklyTarget?.value} times per week · a modest, once-only completion bonus.
                         {mode === "edit" && weeklyContext && (
                           <>
                             {" "}

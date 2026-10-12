@@ -24,6 +24,7 @@ export type Quest = {
 export const campaignRules = {
   weekStartsOn: 1, // JavaScript weekday: Monday. Stored periods retain this snapshot.
   trainingSessions: { min: 1, max: 7, defaultValue: 3 },
+  weeklyTrainingBonus: {renown:20,xp:{Strength:10}},
 };
 export const progression = {
   attributeBaseXP: 100,

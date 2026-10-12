@@ -5,6 +5,7 @@ import { nextWeekStart } from "./calendar";
 import { formatDay } from "./presentation";
 import type { State } from "./model";
 import "./weekly.css";
+import {campaignRules} from './config';
 const words = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven"];
 export function WeeklyTraining({
   state,
@@ -82,7 +83,7 @@ export function WeeklyTraining({
       <footer>
         <span>
           {active
-            ? "One training day, one reward. No weekly bonus."
+            ? commission.bonus ? `Weekly bonus earned: +${commission.bonus.reward.renown} Renown · +${commission.bonus.reward.xp.Strength} Strength XP.` : remaining===0 ? 'Historical completion preserved; no bonus has been added retroactively.' : `Weekly completion bonus: +${campaignRules.weeklyTrainingBonus.renown} Renown · +${campaignRules.weeklyTrainingBonus.xp.Strength} Strength XP. Once per week.`
             : "Training is paused. Your recorded visits remain."}
         </span>
         {pendingTarget !== null && (
@@ -124,6 +125,7 @@ export function WeeklyLedger({ state, date }: { state: State; date: string }) {
           </div>
           <strong>
             Training: {c.activityIds.length} / {c.target.value} sessions
+            {c.bonus && <small> · Bonus: +{c.bonus.reward.renown} Renown · +{c.bonus.reward.xp.Strength} Strength XP</small>}
           </strong>
         </article>
       ))}

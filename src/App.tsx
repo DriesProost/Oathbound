@@ -10,7 +10,7 @@ import type { FeedbackIntent } from "./feedback/events";
 import WeightChronicle from "./WeightChronicle";
 import { setWeightSettings } from "./weight";
 import { WeeklyTraining, WeeklyLedger } from "./WeeklyTraining";
-import { ensureWeeklyPeriod, weeklyTarget, currentCommission } from "./weekly";
+import { ensureWeeklyPeriod, weeklyTarget, currentCommission,weeklyRewardsOn } from "./weekly";
 import { weekStart, nextWeekStart } from "./calendar";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
@@ -356,6 +356,7 @@ function OathboundApp() {
     oathKept = state.oaths[today]?.status === "kept";
   const deedsToday = done.length + Number(oathKept);
   const dailyRenown =
+    weeklyRewardsOn(state,today).reduce((n,r)=>n+r.renown,0)+
     done.reduce((n, e) => n + e.reward.renown, 0) +
     (oathKept ? state.oaths[today].reward!.renown : 0);
   function finish(q: Quest, date: string) {
@@ -410,8 +411,8 @@ function OathboundApp() {
               ? "Not planned · change" : state!.deedNotes?.find((n) => n.date === date && n.questId === q.id)?.status === "not-completed"
                 ? "Failed · change" : "Other options"}</summary>
             <p>No reward or penalty. You can still complete this deed later.</p>
-            <button type="button" className="text-button" disabled={!allowed}
-              onClick={() => persist(recordDeedStatus(state!, q.id, date, "not-completed", now))}>Mark failed</button>
+            {q.goalId!=='strength' && <button type="button" className="text-button" disabled={!allowed}
+              onClick={() => persist(recordDeedStatus(state!, q.id, date, "not-completed", now))}>Mark failed</button>}
             <button type="button" className="text-button" disabled={date < state!.created || !configuredQuests(state!, date).some((p) => p.id === q.id)}
               onClick={() => persist(recordDeedStatus(state!, q.id, date, "not-planned", now))}>Not planned</button>
             <button type="button" className="text-button"
@@ -456,13 +457,13 @@ function OathboundApp() {
                 ? "Complete"
                 : "Confirm"}
           </button>
-          <button className="failed-button" data-recorded={state!.deedNotes?.some(n=>n.date===date&&n.questId===q.id&&n.status==='not-completed')||undefined} disabled={!allowed} aria-label={`Mark ${q.name} failed`}
+          {q.goalId!=='strength' && <button className="failed-button" data-recorded={state!.deedNotes?.some(n=>n.date===date&&n.questId===q.id&&n.status==='not-completed')||undefined} disabled={!allowed} aria-label={`Mark ${q.name} failed`}
             aria-describedby={`timing-${q.id}`}
             onClick={() => {
               const before=stateRef.current!;
               const next=recordDeedStatus(before,q.id,date,'not-completed',now);
               if(next!==before && persist(next))report('Deed marked failed. No reward earned; earlier progress is preserved.');
-            }}>Failed</button></div>
+            }}>Failed</button>}</div>
         )}
       </article>
     );
@@ -1235,6 +1236,7 @@ function OathboundApp() {
                       ),
                       dayOath = state.oaths[date],
                       earned =
+                        weeklyRewardsOn(state,date).reduce((n,r)=>n+r.renown,0)+
                         entries.reduce((n, e) => n + e.reward.renown, 0) +
                         (dayOath?.status === "kept"
                           ? dayOath.reward!.renown
@@ -1259,6 +1261,7 @@ function OathboundApp() {
                             <RewardText reward={e.reward} />
                           </div>
                         ))}
+                        {weeklyRewardsOn(state,date).map((reward,i)=><div className="history-entry" key={`weekly-bonus-${i}`}><Shield size={15}/><span>Weekly training bonus</span><RewardText reward={reward}/></div>)}
                         {(state.deedNotes || []).filter((n) => n.date === date).map((n) => (
                           <div className="history-entry" key={`note-${n.questId}`}>
                             <span>{n.name}</span><span>{n.status === "not-planned" ? "Not planned" : "Failed"} · no reward or penalty</span>
