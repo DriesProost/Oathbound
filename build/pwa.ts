@@ -41,12 +41,14 @@ self.addEventListener('fetch', event => {
     })());
   } else if (URLS.includes(request.url)) {
     event.respondWith((async () => {
-      const cached = await (await caches.open(CACHE)).match(request);
+      // Hashed static assets have one representation. Preview/static hosts may send
+      // Vary: Origin, while module requests carry a different Origin header than precache requests.
+      const cached = await (await caches.open(CACHE)).match(request, {ignoreVary:true});
       return cached || fetch(request);
     })());
   } else if (new URL(request.url).pathname.startsWith(new URL('assets/',self.registration.scope).pathname)) {
     // Old hashed chunks are only read from retained precaches, never added dynamically.
-    event.respondWith((async () => (await caches.match(request)) || fetch(request))());
+    event.respondWith((async () => (await caches.match(request, {ignoreVary:true})) || fetch(request))());
   }
 });`;
 }

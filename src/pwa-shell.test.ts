@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { runInNewContext } from "node:vm";
 import { shellWorker } from "../build/pwa";
-function runtime(fail = false) {
+function runtime(fail = false, varyOrigin = false) {
   const handlers: Record<string, (event: any) => void> = {};
   const stores = new Map<string, Map<string, string>>();
   const fetch = vi.fn(async () => new Response("network"));
@@ -16,7 +16,8 @@ function runtime(fail = false) {
           for (const url of urls) data.set(url, "cached shell");
           if (fail) throw Error("partial install");
         },
-        match: async (request: string | { url: string }) => {
+        match: async (request: string | { url: string }, options?: { ignoreVary?: boolean }) => {
+          if (varyOrigin && typeof request !== "string" && !options?.ignoreVary) return undefined;
           const value = data.get(
             typeof request === "string" ? request : request.url,
           );
@@ -26,7 +27,8 @@ function runtime(fail = false) {
     },
     keys: async () => [...stores.keys()],
     delete: async (name: string) => stores.delete(name),
-    match: async (request: { url: string }) => {
+    match: async (request: { url: string }, options?: { ignoreVary?: boolean }) => {
+      if (varyOrigin && !options?.ignoreVary) return undefined;
       for (const cache of stores.values()) {
         if (cache.has(request.url)) return new Response(cache.get(request.url));
       }
@@ -83,6 +85,13 @@ describe("application-shell service worker", () => {
       "cached shell",
     );
     expect(r.skipWaiting).not.toHaveBeenCalled();
+  });
+  it("serves precached static assets offline when a host varies responses by Origin", async () => {
+    const r = runtime(false, true);
+    await r.lifecycle("install");
+    r.fetch.mockRejectedValue(Error("offline"));
+    expect(await r.request("https://example.test/app/assets/app.js")).toBe("cached shell");
+    expect(r.fetch).not.toHaveBeenCalled();
   });
   it("does not handle campaign/API writes, foreign requests, or non-shell resources", async () => {
     const r = runtime();

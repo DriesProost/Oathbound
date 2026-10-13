@@ -38,7 +38,7 @@ describe('optional outcome appearance', () => {
     const store={getItem:(k:string)=>values.get(k)??null,setItem:(k:string,v:string)=>{values.set(k,v);}};
     save(s,store);
     expect(load(store,'2026-10-09')?.weight).toEqual(s.weight);
-    expect(s.version).toBe(3);
+    expect(s.version).toBe(4);
   });
   it('leaves explicit starting build in place without baseline, target or any observations', () => {
     let s=start();

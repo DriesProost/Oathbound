@@ -1,3 +1,5 @@
+import { DailyVenture, VentureLedger } from "./DailyVenture";
+import { ensureDailyVenture, todaysVenture, completeDailyVenture, replaceDailyVenture } from "./ventureDomain";
 import { AppUpdate, InstallApp } from "./PwaStatus";
 import {
   FeedbackProvider,
@@ -125,6 +127,7 @@ function OathboundApp() {
   const animatedRenown = useAnimatedValue(state ? totals(state).renown : 0);
   const animatedRank = rankProgress(animatedRenown);
   const [now, setNow] = useState(new Date());
+  const [ventureOpen, setVentureOpen] = useState(false);
   const [campaignEditing, setCampaignEditing] = useState(false);
   const [onboardingGoals, setOnboardingGoals] = useState<CampaignGoal[]>(() =>
     defaultGoals(false),
@@ -140,12 +143,12 @@ function OathboundApp() {
   }, []);
   useEffect(() => {
     if (!state) return;
-    const next = ensureWeeklyPeriod(state, dayKey(now));
+    const next = ensureDailyVenture(ensureWeeklyPeriod(state, dayKey(now)), dayKey(now));
     if (next !== state) update(next);
   }, [state, now]);
   function update(next: State, intent: FeedbackIntent = "quiet") {
     const before = stateRef.current;
-    const ready = ensureWeeklyPeriod(next, dayKey(now));
+    const ready = ensureDailyVenture(ensureWeeklyPeriod(next, dayKey(now)), dayKey(now));
     if (!persist(ready)) return false;
     if (before) {
       feedback.emit(before, ready, intent);
@@ -353,10 +356,12 @@ function OathboundApp() {
         />
       </main>
     );
+  const venture = todaysVenture(state, today);
   const done = state.entries.filter((e) => e.date === today),
     oathKept = state.oaths[today]?.status === "kept";
   const deedsToday = done.length + Number(oathKept);
   const dailyRenown =
+    (venture?.rewardGrant ? venture.reward.renown : 0) +
     weeklyRewardsOn(state,today).reduce((n,r)=>n+r.renown,0)+
     done.reduce((n, e) => n + e.reward.renown, 0) +
     (oathKept ? state.oaths[today].reward!.renown : 0);
@@ -477,8 +482,10 @@ function OathboundApp() {
   const switchTab = (name: string) => {
     setTurnDirection(tabs.findIndex(t=>t.name===name)<tabs.findIndex(t=>t.name===tab)?'backward':'forward');
     if (name === tab) window.scrollTo({ top: 0, behavior: "instant" });
+    feedback.dismiss();
     feedback.interact("paper");
     clearPulse();
+    setVentureOpen(false);
     setTab(name);
     setNotice(null);
   };
@@ -677,6 +684,9 @@ function OathboundApp() {
           )}
           {tab === "Keep" && (
             <>
+              {venture && venture.status !== 'completed' && <button className="venture-teaser" onClick={() => {
+                switchTab("Quest Board"); setVentureOpen(true);
+              }}><strong>A fresh commission awaits.</strong><span>{venture.title} · {venture.attribute}</span></button>}
               <div
                 className={
                   "hero" +
@@ -896,6 +906,16 @@ function OathboundApp() {
                 <div className="board-plaque">
                   <span>✦</span> THE QUEST BOARD <span>✦</span>
                 </div>
+                {venture && <DailyVenture venture={venture} open={ventureOpen} onOpen={() => setVentureOpen(true)} onClose={() => setVentureOpen(false)}
+                  onComplete={() => {
+                    const current = stateRef.current!;
+                    const next = completeDailyVenture(current, venture.assignmentId, new Date());
+                    if (next !== current && update(next, "venture")) setVentureOpen(false);
+                  }} onReplace={() => {
+                    const current = stateRef.current!;
+                    const next = replaceDailyVenture(current, venture.assignmentId, new Date());
+                    if (next !== current) update(next);
+                  }} />}
                 {showOath && (
                   <OathPanel
                     state={state}
@@ -1199,6 +1219,7 @@ function OathboundApp() {
                   window.scrollTo({ top: 0 });
                 }}
               />
+              <VentureLedger state={state} />
               <WeeklyLedger state={state} date={today} />
               <WeeklyReview state={state} now={now} />
               <section className="panel chronicle-ledger">

@@ -46,6 +46,8 @@ function old2A() {
       "2026-10-05",
     ),
   );
+  s.version = 3;
+  delete s.ventures;
   delete s.weekly;
   s.entries.forEach((e: any) => {
     delete e.rewardGrant;
@@ -220,7 +222,7 @@ describe("Stage 2A save upgrade and weekly persistence", () => {
     const store = memory(),
       old = old2A(),
       raw = JSON.stringify(old);
-    store.setItem(storageKeys.current, raw);
+    store.setItem(storageKeys.v3, raw);
     const s = load(store, "2026-10-09")!;
     expect(store.getItem(storageKeys.weeklyBackup)).toBe(raw);
     expect(s.oaths).toEqual(old.oaths);
@@ -248,7 +250,7 @@ describe("Stage 2A save upgrade and weekly persistence", () => {
   it("preserves source data if backup creation fails and rejects corrupt newer data", () => {
     const store = memory(),
       raw = JSON.stringify(old2A());
-    store.setItem(storageKeys.current, raw);
+    store.setItem(storageKeys.v3, raw);
     expect(() =>
       load(
         {
@@ -260,10 +262,10 @@ describe("Stage 2A save upgrade and weekly persistence", () => {
         "2026-10-09",
       ),
     ).toThrow("quota");
-    expect(store.getItem(storageKeys.current)).toBe(raw);
+    expect(store.getItem(storageKeys.v3)).toBe(raw);
     const bad = old2A();
     bad.weekly = { trackingSince: "2026-10-05", commissions: "broken" };
-    store.setItem(storageKeys.current, JSON.stringify(bad));
+    store.setItem(storageKeys.v3, JSON.stringify(bad));
     expect(() => load(store, "2026-10-09")).toThrow();
     expect(store.getItem(storageKeys.weeklyBackup)).toBeNull();
   });

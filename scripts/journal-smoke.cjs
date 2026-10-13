@@ -15,9 +15,9 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
    const d=await import('/src/domain.ts'),c=await import('/src/campaign.ts');const goals=c.defaultGoals().map(g=>g.id==='walking'?{...g,target:{metric:'km',value:3}}:g);
    return {...d.completeQuest(d.createKnight('Rowan','2026-10-09',goals),'patrol','2026-10-09',new Date('2026-10-09T19:00:00')),portrait:'tied-hair'};
   });
-  await page.evaluate(s=>{localStorage.setItem('oathbound.knight.v3',JSON.stringify(s));localStorage.setItem('oathbound.feedback.v1',JSON.stringify({sound:'disabled',volume:.35,haptics:false,offered:true}));},fixture);await page.reload();
+  await page.evaluate(s=>{localStorage.setItem('oathbound.knight.v4',JSON.stringify(s));localStorage.setItem('oathbound.feedback.v1',JSON.stringify({sound:'disabled',volume:.35,haptics:false,offered:true}));},fixture);await page.reload();
   const go=name=>page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name,exact:true}).click();
-  const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('oathbound.knight.v3')));
+  const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('oathbound.knight.v4')));
   for(const width of [320,390,768,1440]) {await page.setViewportSize({width,height:844});for(const name of ['Keep','Quests','Journey','Knight','Chronicle']){const nav=await page.getByRole('navigation',{name:'Main navigation'}).isVisible()?'Main navigation':'Desktop navigation';await page.getByRole('navigation',{name:nav}).getByRole('button',{name:name==='Quests'&&nav==='Desktop navigation'?'Quest Board':name,exact:true}).click();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${name} at ${width}px`);}}
   await page.setViewportSize({width:390,height:844});await go('Keep');assert.equal(await page.locator('.journal-attributes').evaluate(el=>el.open),false);await page.locator('.journal-attributes summary').click();assert.equal(await page.locator('.journal-attributes .attribute').count(),6);
   assert.equal(await page.evaluate(()=>window.audioLog.created),0);

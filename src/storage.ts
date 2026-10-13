@@ -1,3 +1,4 @@
+import { validVentureHistory } from "./ventureValidation";
 import { validWeightData } from "./weight";
 import { attributes, quests, type Reward } from "./config";
 import { validDay, dayKey, weekStart, addDays } from "./calendar";
@@ -11,13 +12,16 @@ import { ensureWeeklyPeriod } from "./weekly";
 import { campaignRules } from "./config";
 import { goalIds, portraitIds, type State, type Entry } from "./model";
 export const storageKeys = {
-  current: "oathbound.knight.v3",
+  current: "oathbound.knight.v4",
+  v3: "oathbound.knight.v3",
+  ventureBackup: "oathbound.knight.v3.ventures.backup",
   weeklyBackup: "oathbound.knight.v3.2a.backup",
   previous: "oathbound.knight.v2",
   legacy: "oathbound.knight.v1",
   backup: "oathbound.knight.v1.backup",
   previousBackup: "oathbound.knight.v2.backup",
 };
+type V3State = Omit<State, "version" | "ventures"> & { version: 3 };
 type Store = Pick<Storage, "getItem" | "setItem">;
 type ObjectValue = Record<string, any>;
 const failure = (): never => {
@@ -82,7 +86,7 @@ function validCampaign(c: unknown, created: string) {
     ) && unique(c.revisions.map((r: ObjectValue) => r.id))
   );
 }
-function validateBaseV3(s: unknown): State {
+function validateBaseV3(s: unknown): V3State {
   if (
     !base(s) ||
     s.version !== 3 ||
@@ -134,9 +138,9 @@ function validateBaseV3(s: unknown): State {
     )
   )
     return failure();
-  return s as State;
+  return s as V3State;
 }
-export function validate(source: unknown): State {
+function validateV3(source: unknown): V3State {
   const s = validateBaseV3(source);
   if (s.portrait !== undefined && !portraitIds.some(id => id === s.portrait)) return failure();
   if (s.deedNotes !== undefined && (
@@ -255,7 +259,7 @@ export function validate(source: unknown): State {
   }
   return s;
 }
-function addWeeklyModel(source: unknown, date: string): State {
+function addWeeklyModel(source: unknown, date: string): V3State {
   const s = validateBaseV3(source);
   if (!validDay(date)) return failure();
   const start = weekStart(date);
@@ -293,7 +297,9 @@ function addWeeklyModel(source: unknown, date: string): State {
       commissions: [],
     },
   };
-  return validate(ensureWeeklyPeriod(next, date));
+  const ready = ensureWeeklyPeriod({ ...next, version: 4, ventures: [] }, date);
+  const { ventures: _ventures, ...legacy } = ready;
+  return validateV3({ ...legacy, version: 3 });
 }
 function validateV2(s: unknown) {
   if (
@@ -361,10 +367,10 @@ function v1ToV2(s: unknown) {
     oaths,
   });
 }
-export function migrate(source: unknown, date = dayKey()): State {
-  if (!object(source)) return failure();
+function migrateV3(source: unknown, date = dayKey()): V3State {
+  if (!object(source) || source.ventures !== undefined) return failure();
   if (source.version === 3) {
-    if (source.weekly !== undefined) return validate(source);
+    if (source.weekly !== undefined) return validateV3(source);
     // A partial newer schema must not masquerade as an old save.
     if (
       source.entries?.some((e: ObjectValue) => e.rewardGrant !== undefined) ||
@@ -412,11 +418,27 @@ export function migrate(source: unknown, date = dayKey()): State {
     date,
   );
 }
+export function validate(source: unknown): State {
+  if (!object(source) || source.version !== 4) return failure();
+  const existing = validateV3({ ...source, version: 3 });
+  if (!validVentureHistory(source.ventures, source.created)) return failure();
+  const receipts = [...existing.entries.filter(e => e.rewardGrant).map(e => e.rewardGrant!.id),
+    ...source.ventures.filter(v => v.rewardGrant).map(v => v.rewardGrant!.id),
+    ...existing.weekly.commissions.filter(c => c.bonus).map(c => c.bonus!.id)];
+  if (!unique(receipts)) return failure();
+  return source as State;
+}
+export function migrate(source: unknown, date = dayKey()): State {
+  if (object(source) && source.version === 4) return validate(source);
+  const old = migrateV3(source, date);
+  return validate({ ...old, version: 4, ventures: [] });
+}
 export function load(
   store: Store = localStorage,
   date = dayKey(),
 ): State | null {
-  const current = store.getItem(storageKeys.current);
+  const v4 = store.getItem(storageKeys.current);
+  const current = v4 ?? store.getItem(storageKeys.v3);
   if (current !== null) {
     const source = JSON.parse(current);
     const migrated = migrate(source, date);
@@ -426,7 +448,9 @@ export function load(
       store.getItem(storageKeys.weeklyBackup) === null
     )
       store.setItem(storageKeys.weeklyBackup, current);
-    if (source.weekly === undefined || next !== migrated)
+    if (source.version === 3 && store.getItem(storageKeys.ventureBackup) === null)
+      store.setItem(storageKeys.ventureBackup, current);
+    if (v4 === null || source.version !== 4 || source.weekly === undefined || next !== migrated)
       store.setItem(storageKeys.current, JSON.stringify(next));
     return next;
   }

@@ -34,6 +34,7 @@ const titles: Record<FeedbackEvent["kind"], string> = {
   landmark: "A LANDMARK REACHED",
   commission: "COMMISSION FULFILLED",
   level: "AN ATTRIBUTE GROWS",
+  venture: "VENTURE COMPLETE",
   oath: "OATH KEPT",
   deed: "DEED RECORDED",
   reward: "RENOWN EARNED",
@@ -48,6 +49,7 @@ export function leadCue(events: FeedbackEvent[]): Cue | null {
         landmark: "landmark",
         commission: "commission",
         level: "steel",
+        venture: "steel",
         oath: "oath",
         deed: "seal",
         reward: "renown",
@@ -387,6 +389,7 @@ export function eventText(event: FeedbackEvent): string {
       return `${event.attribute} ${roman(event.to)} · level ${event.from} → ${event.to}`;
     case "oath":
       return `Oath kept · ${event.streak} ${event.streak === 1 ? "day" : "days"} steadfast · ${formatDay(event.date)}`;
+    case "venture":
     case "deed":
       return event.name;
     case "reward":

@@ -1,0 +1,18 @@
+.venture-notice { position: relative; margin: 1.25rem 0; padding: 1.75rem 2rem; border: 1px solid #a68b52; border-top: 4px solid #85652d; background: linear-gradient(110deg, #ede0bb, #f8f0dc); box-shadow: 0 4px 12px #21191024; color: #30291f; }
+.venture-notice h2 { margin: .65rem 0; }
+.venture-attribute { display: flex; align-items: center; gap: .5rem; margin-top: .7rem; font-size: .85rem; font-weight: 600; }
+.venture-flavour { font-style: italic; line-height: 1.6; }
+.venture-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; margin: 1rem 0 .65rem; }
+.venture-seal { color: #52623c; font-weight: 700; }
+.venture-teaser { display: block; width: 100%; padding: 1rem 1.25rem; margin: 1rem 0; text-align: left; border: 1px solid #ab925c; background: #f0e5cb; color: #342b1f; }
+.venture-teaser span, .venture-ledger small { display: block; margin-top: .4rem; }
+.venture-dialog { width: min(640px, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); padding: 1.75rem; border: 2px solid #8c7546; background: #f7eed9; color: #30291f; border-radius: 6px; box-shadow: 0 10px 50px #0006; }
+.venture-dialog::backdrop { background: #171a20b8; }
+.venture-dialog-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.venture-dialog p, .venture-dialog li { line-height: 1.7; }
+.venture-dialog li { margin-bottom: .4rem; }
+.venture-lesson, .venture-reflection { margin: 1.25rem 0; padding: 1rem; border-block: 1px solid #b6a279; background: #fff9eb88; }
+.venture-adaptation { border-left: 3px solid #887744; padding-left: 1rem; }
+.reward-feedback.tier-venture { border: 2px solid #9d7c3c; background: linear-gradient(110deg, #e4d1a4, #f8efdb); }
+.tier-venture .feedback-emblem { color: #73552d; box-shadow: 0 0 0 3px #a98a5044; }
+@media (max-width: 600px) { .venture-notice { padding: 1.4rem 1rem; } .venture-dialog { padding: 1.25rem; } .venture-ledger .history-entry { flex-wrap: wrap; } }

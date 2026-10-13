@@ -328,7 +328,7 @@ describe("outcome isolation and persistence", () => {
     const s = settings(add(initial(), "2026-10-03", 87450), 90000, 85000);
     save(s, store);
     const next = load(store, "2026-10-09")!;
-    expect(next.version).toBe(3);
+    expect(next.version).toBe(4);
     expect(next.weight).toEqual(s.weight);
     expect(next.entries).toEqual(s.entries);
     expect(next.weight.measurements).toHaveLength(1);
@@ -338,6 +338,8 @@ describe("outcome isolation and persistence", () => {
     const source: any = structuredClone(
       settings(add(initial(), "2026-10-03", 87450), 90000, 85000),
     );
+    source.version = 3;
+    delete source.ventures;
     delete source.weekly;
     source.entries.forEach((e: any) => delete e.rewardGrant);
     source.campaign.revisions.forEach((r: any) => {
@@ -345,7 +347,7 @@ describe("outcome isolation and persistence", () => {
       r.goals.forEach((g: any) => delete g.weeklyTarget);
     });
     const raw = JSON.stringify(source),
-      values = new Map([[storageKeys.current, raw]]),
+      values = new Map([[storageKeys.v3, raw]]),
       store = {
         getItem: (k: string) => values.get(k) ?? null,
         setItem: (k: string, v: string) => {

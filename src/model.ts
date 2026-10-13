@@ -1,3 +1,4 @@
+import type { VentureDefinition } from "./ventures";
 import type { Reward, Quest } from "./config";
 export const portraitIds = ['classic', 'personal', 'tied-hair'] as const;
 export type PortraitId = (typeof portraitIds)[number];
@@ -98,7 +99,8 @@ export type WeighIn = {
   updatedAt: string;
 };
 export type State = {
-  version: 3;
+  version: 4;
+  ventures: VentureAssignment[];
   name: string;
   // Cosmetic selection only; absent on existing saves means the original set.
   portrait?: PortraitId;
@@ -111,4 +113,16 @@ export type State = {
   oaths: Record<string, OathRecord>;
   weight: { settings: WeightSettings; measurements: WeighIn[] };
   migratedFrom?: 1 | 2;
+};
+
+// Full authored content and reward snapshots keep old receipts readable after library edits.
+export type VentureAssignment = VentureDefinition & {
+  assignmentId: string;
+  date: string;
+  reward: Reward;
+  rewardGrant: RewardGrant | null;
+  status: "assigned" | "set-aside" | "completed";
+  replaced: boolean;
+  replacementOf?: string;
+  completedAt?: string;
 };

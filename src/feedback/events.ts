@@ -2,12 +2,13 @@ import { attributes, totals, rankProgress, oathStats } from "../domain";
 import type { State } from "../model";
 import type { Reward, Attribute } from "../config";
 import { landmarks } from "../journey";
-export type FeedbackIntent = "quiet" | "deed" | "oath" | "correction";
+export type FeedbackIntent = "quiet" | "venture" | "deed" | "oath" | "correction";
 export type FeedbackEvent =
   | { kind: "rank"; from: string; to: string }
   | { kind: "landmark"; name: string; inscription: string }
   | { kind: "commission"; id: string; count: number; target: number; bonus?:Reward }
   | { kind: "level"; attribute: Attribute; from: number; to: number }
+  | { kind: "venture"; name: string; id: string }
   | { kind: "oath"; date: string; streak: number }
   | { kind: "deed"; name: string; id: string }
   | { kind: "reward"; reward: Reward }
@@ -18,10 +19,11 @@ export const priority: Record<FeedbackEvent["kind"], number> = {
   landmark: 1,
   commission: 2,
   level: 3,
-  oath: 4,
-  deed: 5,
-  reward: 6,
-  correction: 7,
+  venture: 4,
+  oath: 5,
+  deed: 6,
+  reward: 7,
+  correction: 8,
 };
 // Text is available immediately. These offsets sequence emphasis and the count-up in one surface.
 export function presentationTimeline(events: FeedbackEvent[]) {
@@ -33,7 +35,9 @@ export function presentationTimeline(events: FeedbackEvent[]) {
         ? 500
         : lead === "level"
           ? 400
-          : lead === "oath"
+          : lead === "venture"
+            ? 350
+            : lead === "oath"
             ? 350
             : lead === "deed"
               ? 200
@@ -70,6 +74,12 @@ export function detectFeedback(
       ? [{ kind: "correction", reward }]
       : [];
   const events: FeedbackEvent[] = [];
+  if (intent === "venture") {
+    events.push(...after.ventures.filter(v => v.rewardGrant &&
+      !before.ventures.some(b => b.assignmentId === v.assignmentId && b.rewardGrant)).map(v => ({
+        kind: "venture" as const, name: v.title, id: v.assignmentId,
+      })));
+  }
   if (intent === "deed") {
     const added = after.entries.filter(
       (e) => e.rewardGrant && !before.entries.some((b) => b.id === e.id),

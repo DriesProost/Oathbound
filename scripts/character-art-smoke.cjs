@@ -24,7 +24,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
           const fixture = structuredClone(base);
           fixture.entries[0].reward = { renown: thresholds[rank], xp: { Wisdom: [0, 225, 750][beard], Presence:groomed ? 225 : 0, Strength:750, Vitality:750 } };
           fixture.weight.settings.appearance = { enabled:true, startingBuild:body, targetBuild:body };
-          await page.evaluate(s => localStorage.setItem('oathbound.knight.v3', JSON.stringify(s)), fixture);
+          await page.evaluate(s => localStorage.setItem('oathbound.knight.v4', JSON.stringify(s)), fixture);
           await page.reload();
           await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Knight', exact: true }).click();
           const portrait = page.locator('.profile-art .knight-illustration');

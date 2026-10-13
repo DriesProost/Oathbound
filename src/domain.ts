@@ -23,7 +23,8 @@ export function createKnight(
 ): State {
   return ensureWeeklyPeriod(
     {
-      version: 3,
+      version: 4,
+      ventures: [],
       name: name.trim() || "The Traveller",
       created: date,
       campaign: createCampaign(date, goals),
@@ -172,6 +173,7 @@ export function attributeProgress(xp: number) {
 }
 export function totals(state: State) {
   const rewards = [
+    ...state.ventures.filter(v => v.rewardGrant !== null).map(v => v.reward),
     ...state.weekly.commissions.filter(c=>c.bonus).map(c=>c.bonus!.reward),
     ...state.entries.filter((e) => e.rewardGrant !== null).map((e) => e.reward),
     ...Object.values(state.oaths)
