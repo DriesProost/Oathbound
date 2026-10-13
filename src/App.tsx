@@ -1,3 +1,4 @@
+import { ventureAttributeLabel } from "./ventures";
 import { DailyVenture, VentureLedger } from "./DailyVenture";
 import { ensureDailyVenture, todaysVenture, completeDailyVenture, replaceDailyVenture } from "./ventureDomain";
 import { AppUpdate, InstallApp } from "./PwaStatus";
@@ -686,7 +687,7 @@ function OathboundApp() {
             <>
               {venture && venture.status !== 'completed' && <button className="venture-teaser" onClick={() => {
                 switchTab("Quest Board"); setVentureOpen(true);
-              }}><strong>A fresh commission awaits.</strong><span>{venture.title} · {venture.attribute}</span></button>}
+              }}><strong>A fresh commission awaits.</strong><span>{venture.title} · {ventureAttributeLabel(venture)}</span></button>}
               <div
                 className={
                   "hero" +

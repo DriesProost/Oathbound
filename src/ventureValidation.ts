@@ -1,6 +1,6 @@
 import { attributes } from './config';
 import { validDay } from './calendar';
-import { ventureTiers } from './ventures';
+import { ventureAttributes, ventureTiers } from './ventures';
 import type { VentureAssignment } from './model';
 const text = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0;
 const strings = (v: unknown) => Array.isArray(v) && v.every(text);
@@ -11,7 +11,11 @@ export function validVentureHistory(value: unknown, created: string): value is V
   const ids = new Set<string>();
   for (const v of value) {
     if (!v || typeof v !== 'object' || !text(v.id) || !text(v.title) ||
-      !attributes.includes(v.attribute) || !Object.hasOwn(ventureTiers, v.tier) ||
+      !attributes.includes(v.attribute) ||
+      (v.secondaryAttributes !== undefined && (!Array.isArray(v.secondaryAttributes) ||
+        v.secondaryAttributes.some((a: unknown) => !attributes.includes(a as any)) ||
+        new Set([v.attribute, ...v.secondaryAttributes]).size !== 1 + v.secondaryAttributes.length)) ||
+      !Object.hasOwn(ventureTiers, v.tier) ||
       !validDay(v.date) || v.date < created || !text(v.duration) || !text(v.introduction) ||
       !strings(v.instructions) || !strings(v.tags) ||
       (v.steps !== undefined && !strings(v.steps)) ||
@@ -19,8 +23,9 @@ export function validVentureHistory(value: unknown, created: string): value is V
       !['assigned', 'set-aside', 'completed'].includes(v.status) || typeof v.replaced !== 'boolean' ||
       v.assignmentId !== `venture:${v.date}:${v.replacementOf ? 'replacement' : 'first'}` || ids.has(v.assignmentId) ||
       !v.reward || !Number.isFinite(v.reward.renown) || v.reward.renown <= 0 ||
-      !v.reward.xp || Object.keys(v.reward.xp).length !== 1 ||
-      !Number.isFinite(v.reward.xp[v.attribute]) || v.reward.xp[v.attribute] <= 0) return false;
+      !v.reward.xp || typeof v.reward.xp !== 'object' || Array.isArray(v.reward.xp) ||
+      Object.keys(v.reward.xp).length !== ventureAttributes(v).length ||
+      ventureAttributes(v).some(a => !Number.isFinite(v.reward.xp[a]) || v.reward.xp[a] <= 0)) return false;
     ids.add(v.assignmentId);
     if (v.status === 'completed') {
       const r = v.rewardGrant;

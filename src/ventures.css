@@ -16,3 +16,6 @@
 .reward-feedback.tier-venture { border: 2px solid #9d7c3c; background: linear-gradient(110deg, #e4d1a4, #f8efdb); }
 .tier-venture .feedback-emblem { color: #73552d; box-shadow: 0 0 0 3px #a98a5044; }
 @media (max-width: 600px) { .venture-notice { padding: 1.4rem 1rem; } .venture-dialog { padding: 1.25rem; } .venture-ledger .history-entry { flex-wrap: wrap; } }
+
+.venture-attribute > span { display: inline-flex; align-items: center; gap: .4rem; }
+.venture-attribute { flex-wrap: wrap; }

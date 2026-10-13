@@ -56,6 +56,31 @@ const production = process.env.PWA_URL || 'http://127.0.0.1:4173';
     assert.deepEqual(await read(), completed);
     await go('Chronicle');
     assert.match(await page.getByRole('region', { name: 'Completed Ventures' }).textContent(), /Wisdom · Brief/);
+    // New multi-attribute notices display both names and share one tier reward.
+    const dualFixture = await page.evaluate(async fixture => {
+      const v = await import('/src/ventureDomain.ts'), library = await import('/src/ventures.ts');
+      const s = { ...fixture, ventures: [], oaths: { '2026-10-13': { status: 'kept', reward: { renown: 995, xp: { Strength: 99, Endurance: 99 } } } } };
+      return v.ensureDailyVenture(s, '2026-10-13', [library.ventures.find(v => v.id === 'tower-steps')]);
+    }, fixture);
+    await page.setViewportSize({ width: 320, height: 844 });
+    await seed(dualFixture);
+    await page.getByRole('button', { name: /A fresh commission awaits/ }).click();
+    await dialog.waitFor();
+    assert.match(await dialog.textContent(), /Strength \+ Endurance/);
+    assert.match(await dialog.textContent(), /40 Strength XP/);
+    assert.match(await dialog.textContent(), /40 Endurance XP/);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    await dialog.getByRole('button', { name: 'Complete Venture', exact: true }).click();
+    await page.getByRole('heading', { name: 'RISE, MAN-AT-ARMS' }).waitFor();
+    const dualCompleted = await read();
+    assert.deepEqual(dualCompleted.ventures[0].reward, { renown: 45, xp: { Strength: 40, Endurance: 40 } });
+    await go('Chronicle');
+    assert.match(await page.getByRole('region', { name: 'Completed Ventures' }).textContent(), /Strength \+ Endurance/);
+    await page.setViewportSize({ width: 390, height: 844 });
+    const newLessonFixture = await page.evaluate(async fixture => {
+      const v = await import('/src/ventureDomain.ts'), library = await import('/src/ventures.ts');
+      return v.ensureDailyVenture({ ...fixture, ventures: [] }, '2026-10-13', [library.ventures.find(v => v.id === 'cartographer-flat-world')]);
+    }, fixture);
     // A replaced notice is never rewardable, and rerolling stays unavailable after refresh.
     await seed(fixture); await go('Quest Board');
     await page.getByRole('button', { name: 'Choose another Venture' }).click();
@@ -84,21 +109,21 @@ const production = process.env.PWA_URL || 'http://127.0.0.1:4173';
     await offline.evaluate(s => {
       localStorage.setItem('oathbound.knight.v4', JSON.stringify(s));
       localStorage.setItem('oathbound.feedback.v1', JSON.stringify({ sound: 'disabled', haptics: false, volume: .35, offered: true }));
-    }, fixture);
+    }, newLessonFixture);
     await offline.waitForFunction(() => !!navigator.serviceWorker.controller);
     await offlineContext.setOffline(true);
     await offline.reload();
     await offline.getByRole('button', { name: /A fresh commission awaits/ }).click();
     const offlineDialog = offline.getByRole('dialog');
-    assert.match(await offlineDialog.textContent(), /The system protected standards and provided social security/);
+    assert.match(await offlineDialog.textContent(), /A globe represents the Earth on a curved surface/);
     await offlineDialog.getByRole('button', { name: 'Mark as read & complete Venture' }).click();
     await offline.getByRole('heading', { name: 'RISE, MAN-AT-ARMS' }).waitFor();
     await offline.reload(); assert.equal(await offline.locator('.reward-feedback').count(), 0);
     const receipt = await offline.evaluate(() => JSON.parse(localStorage.getItem('oathbound.knight.v4')).ventures[0]);
     assert.equal(receipt.status, 'completed'); assert.ok(receipt.rewardGrant);
     await offline.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Chronicle', exact: true }).click();
-    assert.match(await offline.getByRole('region', { name: 'Completed Ventures' }).textContent(), /The Scholar at the Gate/);
+    assert.match(await offline.getByRole('region', { name: 'Completed Ventures' }).textContent(), /The Cartographer/);
     assert.deepEqual(errors, []);
-    console.log('PASS: Daily Ventures teaser/detail, lesson completion, coordinated rank/level feedback, no replay, one replacement, rollover, completed-only Chronicle, 320–1440px layouts and real production offline PWA completion.');
+    console.log('PASS: Daily Ventures teaser/detail, lesson completion, multi-attribute rewards, coordinated rank/level feedback, no replay, one replacement, rollover, completed-only Chronicle, 320–1440px layouts and real production offline PWA completion.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { createKnight, completeQuest, totals, confirmOath } from './domain';
+import { createKnight, completeQuest, totals, confirmOath, quests, oathDefinition } from './domain';
 import { addDays, dayKey } from './calendar';
 import { ventures, ventureReward, ventureTiers, type VentureDefinition } from './ventures';
 import { ensureDailyVenture, todaysVenture, replaceDailyVenture, completeDailyVenture, completedVentures, selectVenture } from './ventureDomain';
@@ -121,7 +121,7 @@ describe('optional completion and replacement', () => {
     expect(current(s).completedAt).toBe(now.toISOString());
     expect(validate(s)).toBe(s);
   });
-  it.each([['Brief', 30, 20], ['Standard', 45, 30], ['Bold', 65, 40]] as const)('grants exact %s rewards for all six attributes', (tier, renown, xp) => {
+  it.each([['Brief', 30, 60], ['Standard', 45, 80], ['Bold', 65, 100]] as const)('grants exact %s rewards for all six attributes', (tier, renown, xp) => {
     for (const attribute of ['Strength', 'Endurance', 'Wisdom', 'Vitality', 'Presence', 'Resolve'] as const) {
       const s = ensureDailyVenture(initial(), date, [{ ...ventures[0], tier, attribute }]);
       expect(ventureReward(tier, attribute)).toEqual({ renown, xp: { [attribute]: xp } });
@@ -249,5 +249,115 @@ describe('v3 → v4 save migration', () => {
       const invalid = structuredClone(s); mutation(invalid.ventures[0]); expect(() => validate(invalid)).toThrow();
     }
     expect(() => validate({ ...s, ventures: [...s.ventures, ...s.ventures] })).toThrow();
+  });
+});
+
+describe('expanded authored library and multiple attributes', () => {
+  it('contains 60 unique Ventures, with eight additions led by each attribute', () => {
+    expect(ventures).toHaveLength(60);
+    expect(new Set(ventures.map(v => v.id)).size).toBe(60);
+    for (const attribute of ['Strength', 'Endurance', 'Wisdom', 'Vitality', 'Presence', 'Resolve'])
+      expect(ventures.slice(12).filter(v => v.attribute === attribute)).toHaveLength(8);
+    for (const definition of ventures) {
+      const s = ensureDailyVenture(initial(), date, [definition]);
+      expect(validate(complete(s))).toBeDefined();
+    }
+    const lessons = ventures.slice(12).filter(v => v.reading);
+    expect(lessons).toHaveLength(8);
+    for (const lesson of lessons) {
+      const words = lesson.reading!.trim().split(/\s+/).length;
+      expect(words).toBeGreaterThanOrEqual(150);
+      expect(words).toBeLessThanOrEqual(400);
+    }
+  });
+  it.each([['Brief', 30, 30], ['Standard', 45, 40], ['Bold', 65, 50]] as const)(
+    'splits %s XP while granting Renown once and preserving one completion receipt', (tier, renown, xp) => {
+      const definition: VentureDefinition = { ...ventures[0], tier, secondaryAttributes: ['Endurance'] };
+      const s = ensureDailyVenture(initial(), date, [definition]), done = complete(s), total = totals(done);
+      expect(current(done).reward).toEqual({ renown, xp: { Strength: xp, Endurance: xp } });
+      expect(total.renown).toBe(renown); expect(total.xp.Strength).toBe(xp); expect(total.xp.Endurance).toBe(xp);
+      expect(complete(done)).toBe(done);
+      const store = memory(); save(done, store);
+      expect(load(store, date)).toEqual(done);
+    },
+  );
+  it('keeps integer XP and the total tier budget when divided across three attributes', () => {
+    expect(ventureReward('Standard', 'Strength', ['Endurance', 'Resolve'])).toEqual({
+      renown: 45, xp: { Strength: 27, Endurance: 27, Resolve: 26 },
+    });
+    expect(() => ventureReward('Brief', 'Strength', ['Strength'])).toThrow('distinct');
+  });
+  it('avoids repeating any previous attribute when a disjoint Venture is available', () => {
+    let s = ensureDailyVenture(initial(), date, [{ ...ventures[0], secondaryAttributes: ['Endurance'] }]);
+    const library: VentureDefinition[] = [
+      { ...ventures[8], secondaryAttributes: ['Strength'] }, ventures[6],
+    ];
+    s = ensureDailyVenture(s, addDays(date, 1), library);
+    expect(current(s, addDays(date, 1)).attribute).toBe('Vitality');
+    const replaced = replaceDailyVenture(ensureDailyVenture(initial(), date, [{ ...ventures[0], secondaryAttributes: ['Endurance'] }]),
+      `venture:${date}:first`, now, library);
+    expect(current(replaced).attribute).toBe('Vitality');
+  });
+  it('falls back to a different primary attribute when all candidates overlap', () => {
+    const s = ensureDailyVenture(initial(), date, [{ ...ventures[0], secondaryAttributes: ['Endurance'] }]);
+    const next = ensureDailyVenture(s, addDays(date, 1), [{ ...ventures[8], secondaryAttributes: ['Strength'] }]);
+    expect(current(next, addDays(date, 1)).attribute).toBe('Presence');
+  });
+  it('counts secondary attributes when preferring less frequently represented attributes', () => {
+    let s = ensureDailyVenture(initial(), date, [{ ...ventures[6], secondaryAttributes: ['Wisdom'] }]);
+    s = ensureDailyVenture(s, addDays(date, 1), [ventures[8]]);
+    const next = ensureDailyVenture(s, addDays(date, 2), [ventures[0], { ...ventures[4], tier: 'Standard' }]);
+    expect(current(next, addDays(date, 2)).attribute).toBe('Strength');
+  });
+  it('retains secondary attributes and rewards as historical snapshots after definition edits', () => {
+    const definition: VentureDefinition = { ...structuredClone(ventures[0]), secondaryAttributes: ['Endurance'] };
+    const done = complete(ensureDailyVenture(initial(), date, [definition]));
+    definition.secondaryAttributes = ['Resolve'];
+    const store = memory(); save(done, store);
+    const history = current(load(store, date)!);
+    expect(history.secondaryAttributes).toEqual(['Endurance']);
+    expect(history.reward.xp).toEqual({ Strength: 40, Endurance: 40 });
+    const markup = renderToStaticMarkup(<VentureLedger state={done} />);
+    expect(markup).toContain('Strength + Endurance');
+    expect(markup).toContain('15');
+  });
+  it('keeps old v4 single-attribute saves and their full original XP unchanged', () => {
+    const original = ensureDailyVenture(initial(), date, [ventures[0]]), store = memory();
+    // A pre-expansion v4 receipt contains the original Standard reward, not the new balance.
+    original.ventures[0].reward = { renown: 45, xp: { Strength: 30 } };
+    const done = complete(original);
+    expect(current(done).secondaryAttributes).toBeUndefined();
+    save(done, store);
+    expect(load(store, date)).toEqual(done);
+    expect(current(load(store, date)!).reward.xp).toEqual({ Strength: 30 });
+  });
+  it('coordinates both attribute level-ups with one Venture event and one total reward', () => {
+    let s = ensureDailyVenture(initial(), date, [{ ...ventures[0], secondaryAttributes: ['Endurance'] }]);
+    s = { ...s, oaths: { [date]: { status: 'kept', reward: { renown: 995, xp: { Strength: 99, Endurance: 99 } } } } };
+    const events = detectFeedback(s, complete(s), 'venture');
+    expect(events.map(e => e.kind)).toEqual(['rank', 'level', 'level', 'venture', 'reward']);
+    expect(events.filter(e => e.kind === 'level').map(e => e.attribute)).toEqual(['Strength', 'Endurance']);
+    expect(events.at(-1)).toEqual({ kind: 'reward', reward: { renown: 45, xp: { Strength: 40, Endurance: 40 } } });
+  });
+  it('keeps the share in every authored multi-attribute Venture above ordinary deed and Oath XP', () => {
+    const ordinary = Math.max(...quests.flatMap(q => Object.values(q.reward.xp)), ...Object.values(oathDefinition.reward.xp));
+    for (const definition of ventures.filter(v => v.secondaryAttributes?.length)) {
+      const reward = ventureReward(definition.tier, definition.attribute, definition.secondaryAttributes);
+      expect(Object.values(reward.xp).every(xp => xp! > ordinary)).toBe(true);
+      expect(Object.values(reward.xp).reduce((total, xp) => total + xp!, 0)).toBe(ventureTiers[definition.tier].xp);
+    }
+  });
+  it('rejects duplicate, unknown or incomplete multi-attribute snapshots', () => {
+    const done = complete(ensureDailyVenture(initial(), date, [{ ...ventures[0], secondaryAttributes: ['Endurance'] }]));
+    for (const mutate of [
+      (v: any) => { v.secondaryAttributes = ['Strength']; },
+      (v: any) => { v.secondaryAttributes = ['Endurance', 'Endurance']; },
+      (v: any) => { v.secondaryAttributes = ['Magic']; },
+      (v: any) => { v.secondaryAttributes = 'Endurance'; },
+      (v: any) => { delete v.reward.xp.Endurance; },
+      (v: any) => { v.reward.xp.Resolve = 10; },
+    ]) {
+      const bad = structuredClone(done); mutate(bad.ventures[0]); expect(() => validate(bad)).toThrow();
+    }
   });
 });

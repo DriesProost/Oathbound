@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { State, VentureAssignment } from './model';
 import { icons, RewardText } from './components';
 import { formatDay } from './presentation';
+import { ventureAttributeLabel, ventureAttributes } from './ventures';
 import { completedVentures } from './ventureDomain';
 import './ventures.css';
 
@@ -9,7 +10,7 @@ export function DailyVenture({ venture, open, onOpen, onClose, onComplete, onRep
   venture: VentureAssignment; open: boolean; onOpen: () => void; onClose: () => void;
   onComplete: () => void; onReplace: () => void;
 }) {
-  const Icon = icons[venture.attribute], dialog = useRef<HTMLDialogElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const element = dialog.current;
     if (open && !element?.open) element?.showModal();
@@ -18,7 +19,10 @@ export function DailyVenture({ venture, open, onOpen, onClose, onComplete, onRep
   return <article className="venture-notice parchment-notice" aria-label="Today's Venture">
     <div className="notice-pin" />
     <span className="eyebrow">TODAY'S VENTURE</span>
-    <div className="venture-attribute"><Icon size={20} /> {venture.attribute}</div>
+    <div className="venture-attribute">{ventureAttributes(venture).map((attribute, index) => {
+      const Icon = icons[attribute];
+      return <span key={attribute}>{index > 0 && <span aria-hidden="true"> + </span>}<Icon size={20} aria-hidden="true" /> {attribute}</span>;
+    })}</div>
     <h2>{venture.title}</h2>
     <p className="venture-flavour">{venture.introduction}</p>
     <p>{venture.duration} · {venture.tier}</p>
@@ -30,7 +34,7 @@ export function DailyVenture({ venture, open, onOpen, onClose, onComplete, onRep
     </div>
     <small>Optional. Tomorrow brings another Venture.</small>
     <dialog className="venture-dialog" ref={dialog} onCancel={onClose} onClose={onClose} aria-labelledby="venture-title">
-      <div className="venture-dialog-heading"><span className="eyebrow">TODAY'S VENTURE · {venture.attribute}</span><button className="text-button" onClick={onClose} aria-label="Close Venture">Close</button></div>
+      <div className="venture-dialog-heading"><span className="eyebrow">TODAY'S VENTURE · {ventureAttributeLabel(venture)}</span><button className="text-button" onClick={onClose} aria-label="Close Venture">Close</button></div>
       <h2 id="venture-title">{venture.title}</h2>
       <p className="venture-flavour">{venture.introduction}</p>
       <p>{venture.duration} · {venture.tier}</p>
@@ -54,6 +58,6 @@ export function VentureLedger({ state }: { state: State }) {
   const completed = completedVentures(state);
   if (!completed.length) return null;
   return <section className="panel venture-ledger" aria-label="Completed Ventures"><span className="eyebrow">PATHS YOU CHOSE</span><h2>Venture ledger</h2>
-    {completed.map(v => <div className="history-entry" key={v.assignmentId}><time dateTime={v.date}>{formatDay(v.date, true)}</time><div><strong>{v.title}</strong><small>{v.attribute} · {v.tier}</small></div><RewardText reward={v.reward} /></div>)}
+    {completed.map(v => <div className="history-entry" key={v.assignmentId}><time dateTime={v.date}>{formatDay(v.date, true)}</time><div><strong>{v.title}</strong><small>{ventureAttributeLabel(v)} · {v.tier}</small></div><RewardText reward={v.reward} /></div>)}
   </section>;
 }
