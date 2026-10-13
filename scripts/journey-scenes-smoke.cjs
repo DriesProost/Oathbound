@@ -81,7 +81,7 @@ const path = require('node:path');
     await page.locator('[data-landmark="keep"] summary').focus(); await page.keyboard.press('Enter');
     assert.equal(await page.locator('[data-landmark="keep"]').evaluate(el => el.open), true);
     const earned = await read(); assert.equal(earned.name, 'Rowan'); assert.equal(earned.entries.length, 2);
-    await go('Keep'); await page.getByRole('heading', { name: 'Welcome to your keep, Sir Rowan.' }).waitFor();
+    await go('Keep'); await page.getByRole('heading', { name: 'Your keep' }).waitFor();
     await go('Knight'); await page.getByRole('heading', { name: 'Sir Rowan', exact: true }).waitFor();
     await page.reload(); await go('Journey');
     assert.deepEqual(await read(), earned);

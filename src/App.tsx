@@ -54,6 +54,7 @@ import {
   weekdayTemperance,
   weekdayOathSummary,
   optionalOathDay,
+  targetRules,
 } from "./campaign";
 import type { CampaignGoal } from "./model";
 import {kmToSteps, routeSteps} from './walking';
@@ -404,15 +405,20 @@ function OathboundApp() {
             <h3>{recorded?.deed.name || q.name}</h3>
             {material && <span className="difficulty">{q.difficulty}</span>}
           </div>
-          <p>{recorded?.deed.description || q.description}</p>
+          {q.goalId==='walking' ? (()=>{
+            const target=recorded?.deed.target || q.target;
+            if(!target || (target.metric!=='steps'&&target.metric!=='km'))return <p>{recorded?.deed.description || q.description}</p>;
+            const steps=target.metric==='steps'?target.value:kmToSteps(target.value);
+            return <div className="walking-target"><strong>{steps.toLocaleString()} steps</strong><span>{target.metric==='km'?`Estimated equivalent of ${target.value} km`:'Daily patrol target · manually confirmed'}</span>
+              {!completed && target.metric==='km' && <button className="text-button" onClick={()=>steps>targetRules.steps.max?editCampaign():update(configureCampaign(state!,currentGoals.map(g=>g.id==='walking'?{...g,target:{metric:'steps' as const,value:Math.max(targetRules.steps.min,steps)}}:g),today))}>{steps>targetRules.steps.max?'Choose a step target':'Use this step target'}</button>}
+            </div>;
+          })() : <p>{recorded?.deed.description || q.description}</p>}
           {!completed && <RewardText reward={q.reward} />}
           {!completed && <details className="deed-status-options">
             <summary>{state!.deedNotes?.find((n) => n.date === date && n.questId === q.id)?.status === "not-planned"
               ? "Not planned · change" : state!.deedNotes?.find((n) => n.date === date && n.questId === q.id)?.status === "not-completed"
                 ? "Failed · change" : "Other options"}</summary>
             <p>No reward or penalty. You can still complete this deed later.</p>
-            {q.goalId!=='strength' && <button type="button" className="text-button" disabled={!allowed}
-              onClick={() => persist(recordDeedStatus(state!, q.id, date, "not-completed", now))}>Mark failed</button>}
             <button type="button" className="text-button" disabled={date < state!.created || !configuredQuests(state!, date).some((p) => p.id === q.id)}
               onClick={() => persist(recordDeedStatus(state!, q.id, date, "not-planned", now))}>Not planned</button>
             <button type="button" className="text-button"
@@ -582,26 +588,18 @@ function OathboundApp() {
                     : "YOUR CAMPAIGN, ONE DAY AT A TIME."}
               </span>
               <h1>
-                {tab === "Keep"
-                  ? `Welcome to your keep, ${displayName}.`
-                  : tab === "Quest Board"
-                    ? "Small deeds. Lasting change."
-                    : tab === "Journey"
-                      ? "The road ahead."
-                      : tab === "Knight"
-                        ? "The knight you are becoming."
-                        : "Every day is part of the story."}
+                {tab === 'Keep'?'Your keep':tab}
               </h1>
               <p>
                 {tab === "Keep"
-                  ? "Your next chapter is written in the things you do today."
+                  ? "A life well fought."
                   : tab === "Quest Board"
-                    ? "Choose the deeds that serve you today. There is no perfect-day checklist."
+                    ? "Choose what serves you today. No perfect-day checklist."
                     : tab === "Journey"
-                      ? "Let your daily walks carry you a little further."
+                      ? "Walk. Record. Discover."
                       : tab === "Knight"
-                        ? "Earned through consistency. A campaign measured in seasons."
-                        : "A lost skirmish never erases a campaign."}
+                        ? "By deed, not word."
+                        : "Your campaign, over time."}
               </p>
             </div>
             <span className="day-badge">

@@ -273,7 +273,7 @@ const path = require("node:path");
   await context.setOffline(true);
   await p.reload();
   await p
-    .getByRole("heading", { name: "Welcome to your keep, Rowan." })
+    .getByRole("heading", { name: "Your keep" })
     .waitFor();
   assert.deepEqual(await read(), saved);
   await go("Chronicle");
@@ -312,7 +312,7 @@ const path = require("node:path");
     async () => !(await navigator.serviceWorker.getRegistration()).waiting,
   );
   await p
-    .getByRole("heading", { name: "Welcome to your keep, Rowan." })
+    .getByRole("heading", { name: "Your keep" })
     .waitFor();
   assert.deepEqual(await read(), saved);
   await otherTab
@@ -326,7 +326,7 @@ const path = require("node:path");
   );
   await otherTab.getByRole("button", { name: "Update & reload" }).click();
   await otherTab
-    .getByRole("heading", { name: "Welcome to your keep, Rowan." })
+    .getByRole("heading", { name: "Your keep" })
     .waitFor();
   assert.equal(
     await otherTab
