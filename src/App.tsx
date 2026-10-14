@@ -1,3 +1,4 @@
+import RelicCabinet from "./RelicCabinet";
 import KeepOverview from "./KeepOverview";
 import RetinuePanel from "./RetinuePanel";
 import { synchronizeWorld } from "./worldProgression";
@@ -689,8 +690,6 @@ function OathboundApp() {
           )}
           {tab === "Keep" && (
             <>
-              <KeepOverview state={state} />
-              <RetinuePanel state={state} date={today} update={update} />
               {venture && venture.status !== 'completed' && <button className="venture-teaser" onClick={() => {
                 switchTab("Quest Board"); setVentureOpen(true);
               }}><strong>A fresh commission awaits.</strong><span>{venture.title} · {ventureAttributeLabel(venture)}</span></button>}
@@ -762,6 +761,9 @@ function OathboundApp() {
                   </div>
                 </div>
               </div>
+              <KeepOverview state={state} />
+              <RetinuePanel state={state} date={today} update={update} />
+              <RelicCabinet state={state} />
               <details className="journal-attributes">
                 <summary><Shield size={17} /> Knight attributes <span>Six disciplines</span></summary>
                 <Attributes state={state} />
