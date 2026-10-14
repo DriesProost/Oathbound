@@ -16,9 +16,9 @@ export const retinue: readonly Retainer[] = [
   { id: 'arms', name: 'Ser Oswin', title: 'Master-at-Arms', role: 'Keeper of the practice yard', attribute: 'Strength', location: 'Training Yard',
     biography: 'A former garrison instructor who prefers a repaired shield to a decorated one. He has taught more beginners than champions.', personality: 'Terse, practical, suspicious of bravado.', arrival: arrival('Strength'), arrivalTitle: 'A MASTER FINDS A YARD', arrivalText: 'Ser Oswin arrives with a practice blade and asks which fence needs mending first.',
     dialogue: ['A comfortable movement, done properly. Begin there.', 'The rack is repaired. It ought to last longer than the speeches.', 'Leave enough strength to put your tools away.'], reactions: [{ kind: 'keep', text: 'More room to practise. A sound improvement.' }, { kind: 'relic', text: 'That blade remembers practice, not a tournament.' }], ventureIntro: 'Ser Oswin has set a practical exercise beside the yard gate.' },
-  { id: 'scout', name: 'Mara Fen', title: 'Scout', role: 'Reader of roads and weather', attribute: 'Endurance', location: 'Scout Post',
-    biography: 'An experienced road warden who notices loose stones, early rain and who has passed through a gate. Her maps carry useful corrections.', personality: 'Observant, dry humour, more comfortable moving than making speeches.', arrival: arrival('Endurance'), arrivalTitle: 'A SCOUT RETURNS FROM THE ROAD', arrivalText: 'Mara Fen leaves wet boots by the door and a carefully corrected map on the table.',
-    dialogue: ['The shorter road is not always the easier one.', 'There is a bench beyond the bend. Sensible people notice benches.', 'The road is still there. Take the portion that suits today.'], reactions: [{ kind: 'chapter', text: 'A road with people at both ends. Worth knowing.' }, { kind: 'restoration', text: 'The beacon makes a useful landmark after dusk.' }], ventureIntro: 'Mara Fen has marked a small expedition on the map.' },
+  { id: 'scout', name: 'Ysabel Fen', title: 'Scout', role: 'Reader of roads and weather', attribute: 'Endurance', location: 'Scout Post',
+    biography: 'An experienced road warden who notices loose stones, early rain and who has passed through a gate. Her maps carry useful corrections.', personality: 'Observant, dry humour, more comfortable moving than making speeches.', arrival: arrival('Endurance'), arrivalTitle: 'A SCOUT RETURNS FROM THE ROAD', arrivalText: 'Ysabel Fen leaves wet boots by the door and a carefully corrected map on the table.',
+    dialogue: ['The shorter road is not always the easier one.', 'There is a bench beyond the bend. Sensible people notice benches.', 'The road is still there. Take the portion that suits today.'], reactions: [{ kind: 'chapter', text: 'A road with people at both ends. Worth knowing.' }, { kind: 'restoration', text: 'The beacon makes a useful landmark after dusk.' }], ventureIntro: 'Ysabel Fen has marked a small expedition on the map.' },
   { id: 'scholar', name: 'Brother Aldren', title: 'Scholar', role: 'Keeper of questions and manuscripts', attribute: 'Wisdom', location: 'Library',
     biography: 'A travelling teacher with an untidy satchel and a careful mind. He believes an ordinary object can contain a very good lesson.', personality: 'Curious, mildly eccentric, happy to explain without examining anyone.', arrival: arrival('Wisdom'), arrivalTitle: 'A SCHOLAR SEEKS LODGING', arrivalText: 'A rain-soaked traveller arrives carrying more parchment than clothing. Brother Aldren asks for a dry shelf.',
     dialogue: ['A useful question does not need an impressive answer.', 'I put the diagram somewhere sensible. That may have been a mistake.', 'Understanding begins when we notice what we assumed.'], reactions: [{ kind: 'keep', text: 'A dry shelf is an excellent argument for staying.' }, { kind: 'chapter', text: 'We ought to preserve the names, not just the distance.' }], ventureIntro: 'Brother Aldren has left a lesson open on the library table.' },
@@ -46,16 +46,16 @@ export function reconcileRetinue(state: State, date: string, provenance: WorldMi
   return next;
 }
 export function currentRemark(state: State, member: Retainer, date: string): string {
+  const value = [...`${date}:${member.id}`].reduce((n, c) => n + c.charCodeAt(0), 0);
   const encounter = state.world.encounters.find(e => e.resolvedDate && e.choices.find(c => c.id === e.choiceId)?.characterId === member.id);
-  if (encounter) return encounter.choices.find(c => c.id === encounter.choiceId)!.memory;
-  const recent = state.world.milestones.filter(m => m.kind !== 'retinue' && (!m.attribute || m.attribute === member.attribute)).at(-1);
+  if (encounter && (encounter.resolvedDate === date || value % 4 === 0)) return encounter.choices.find(c => c.id === encounter.choiceId)!.memory;
+  const recent = state.world.milestones.filter(m => member.reactions.some(r => r.kind === m.kind) && (!m.attribute || m.attribute === member.attribute)).at(-1);
   const reaction = member.reactions.find(r => r.kind === recent?.kind);
-  if (reaction) return reaction.text;
-  if (member.id === 'bard') {
+  if (reaction && (recent?.date === date || value % 5 === 0)) return reaction.text;
+  if (member.id === 'bard' && value % 3 === 0) {
     const song = state.world.milestones.findLast(m => m.kind === 'song');
     if (song) return `I have put “${song.title}” in the Songbook. Some airs take time to find their notes.`;
   }
-  const value = [...`${date}:${member.id}`].reduce((n, c) => n + c.charCodeAt(0), 0);
   return member.dialogue[value % member.dialogue.length];
 }
 export function retinueVentureIntro(state: State, attribute: Attribute, date: string) {

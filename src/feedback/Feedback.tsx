@@ -32,6 +32,7 @@ import { landmarkScene } from "../journeyArt";
 const titles: Record<FeedbackEvent["kind"], string> = {
   rank: "RISE",
   chapter: "A CHAPTER CLOSES",
+  restoration: "A PLACE RETURNS TO THE WORLD",
   keep: "THE KEEP GROWS",
   relic: "A RELIC IS REMEMBERED",
   title: "A NAME TRAVELS BEFORE YOU",
@@ -52,6 +53,7 @@ export function leadCue(events: FeedbackEvent[]): Cue | null {
       {
         rank: "rankUp",
         chapter: "landmark",
+        restoration: "landmark",
         retinue: "paper",
         keep: "woodClick",
         relic: "seal",
@@ -181,7 +183,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
         );
       haptic(
         preferenceRef.current.haptics,
-        ["rank", "level", "commission", "landmark"].includes(events[0].kind),
+        ["rank", "chapter", "level", "commission", "landmark", "restoration"].includes(events[0].kind),
       );
       if (
         preferenceRef.current.sound === "unset" &&
@@ -389,6 +391,7 @@ export function useFeedbackPulse(
 }
 export function eventText(event: FeedbackEvent): string {
   switch (event.kind) {
+    case "restoration":
     case "title":
     case "chapter":
     case "relic":

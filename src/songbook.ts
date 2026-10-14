@@ -13,7 +13,7 @@ export const soundtrack = [
   { id: 'oakhaven-lamps', title: 'Lamps Along the Road', rank: 0, arrangement: 'A chapter closing air', location: 'Oakhaven', chapter: 'oakhaven', asset: null },
 ] as const;
 // Selection metadata only. No automatic playback or replacement of the user's existing ambience.
-export function availableThemes(state: State, context?: { location?: string; chapter?: string; keepStage?: number }) {
+export function availableThemes(state: State, context?: { location?: string; chapter?: string }) {
   const threshold = rankProgress(totals(state).renown).rank.threshold;
   const rank = progression.ranks.findIndex(r => r.threshold === threshold);
   return soundtrack.filter(t => t.rank <= rank &&

@@ -7,7 +7,10 @@ const optionalText = (v: any) => v === undefined || text(v);
 const unique = (values: string[]) => new Set(values).size === values.length;
 export function validMilestone(m: any): boolean {
   return obj(m) && text(m.id, 160) && worldKinds.includes(m.kind) && validDay(m.date) &&
-    ['earned', 'discovered'].includes(m.provenance) && text(m.title, 200) && text(m.text) &&
+    ['earned', 'discovered'].includes(m.provenance) &&
+    (m.kind !== 'keep' || (attributes.includes(m.attribute) && Number.isInteger(m.stage) && m.stage >= 1 && m.stage <= 4)) &&
+    (m.kind !== 'relic' || (text(m.origin) && text(m.category) && text(m.location))) &&
+    (m.kind !== 'title' || text(m.origin)) && text(m.title, 200) && text(m.text) &&
     (m.attribute === undefined || attributes.includes(m.attribute)) &&
     (m.stage === undefined || (Number.isInteger(m.stage) && m.stage >= 1 && m.stage <= 4)) &&
     optionalText(m.location) && optionalText(m.origin) && optionalText(m.category);
@@ -19,7 +22,7 @@ export function validPage(p: any): boolean {
    Array.isArray(p.events) && p.events.every((m:any)=>validMilestone(m)&&m.date>=p.start&&m.date<=p.end);
 }
 export function validEncounter(e: any): boolean {
- return obj(e)&&text(e.id,160)&&validDay(e.date)&&text(e.title,200)&&text(e.text)&&text(e.chapterId,160)&&Number.isFinite(e.km)&&e.km>=0&&
+ return obj(e)&&text(e.id,160)&&validDay(e.date)&&text(e.title,200)&&text(e.text)&&text(e.chapterId,160)&&optionalText(e.routeId)&&Number.isFinite(e.km)&&e.km>=0&&
    obj(e.range)&&Number.isFinite(e.range.start)&&Number.isFinite(e.range.end)&&e.range.start>=0&&e.range.end>=e.range.start&&e.km>=e.range.start&&e.km<=e.range.end&&
    ['earned','discovered'].includes(e.provenance)&&Array.isArray(e.choices)&&e.choices.length>=2&&e.choices.length<=3&&
    e.choices.every((c:any)=>obj(c)&&text(c.id,160)&&text(c.label,200)&&text(c.text)&&text(c.memory)&&optionalText(c.characterId))&&unique(e.choices.map((c:any)=>c.id))&&
@@ -35,6 +38,12 @@ export function validWorld(v: unknown, created: string): v is WorldState {
       validDay(s.created) && validDay(s.updated) && s.created >= created && s.updated >= s.created) ||
     !unique(w.songs.map((s: any) => s.id)) || !Array.isArray(w.pages) || !Array.isArray(w.encounters) ||
     (w.preferredTitle !== null && (!text(w.preferredTitle, 160) || !w.milestones.some((m: any) => m.kind === 'title' && m.id === w.preferredTitle)))) return false;
-  // Later phases fill these collections; unknown or partial records are not accepted.
-  return w.pages.every(validPage) && unique(w.pages.map((p:any)=>p.id)) && w.encounters.every((e:any)=>validEncounter(e)&&e.date>=created) && unique(w.encounters.map((e:any)=>e.id));
+  // Snapshot identities link the manuscript and choice memories to their permanent ledger.
+  return w.pages.every((p:any)=>validPage(p) &&
+    (p.kind!=='chapter'||w.milestones.some((m:any)=>m.kind==='chapter'&&p.id===`chapter:${m.id}`&&m.date===p.end)) &&
+    p.events.every((e:any)=>w.milestones.some((m:any)=>m.id===e.id&&m.kind===e.kind&&m.date===e.date))) &&
+    unique(w.pages.map((p:any)=>p.id)) && w.encounters.every((e:any)=>validEncounter(e)&&e.date>=created&&
+      (!e.choiceId||w.milestones.some((m:any)=>m.kind==='encounter'&&m.id===e.id&&m.date===e.resolvedDate))) &&
+    unique(w.encounters.map((e:any)=>e.id)) && w.milestones.filter((m:any)=>m.kind==='encounter').every((m:any)=>
+      w.encounters.some((e:any)=>e.id===m.id&&e.choiceId&&e.resolvedDate===m.date));
 }

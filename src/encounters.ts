@@ -43,7 +43,7 @@ export function reconcileEncounters(state:State,date:string,provenance:WorldMile
  const newlyAvailable=encounters.filter(e=>!state.world.encounters.some(r=>r.id===e.id)&&distance>=e.range.start&&chapters.some(c=>c.id===e.chapterId&&c.route.id===e.routeId&&c.encounters.includes(e.id)&&meets(state,c.openingCondition,date)&&(!c.previous||state.world.milestones.some(m=>m.kind==='chapter'&&m.id===c.previous))));
  if(!newlyAvailable.length)return state;
  // A large real-world patrol may pass an entire interval. Its story remains available rather than being lost.
- return {...state,world:{...state.world,encounters:[...state.world.encounters,...newlyAvailable.map(e=>({id:e.id,date,title:e.title,text:e.text,chapterId:e.chapterId,km:e.range.start,range:structuredClone(e.range),provenance,choices:structuredClone(e.choices)}))]}};
+ return {...state,world:{...state.world,encounters:[...state.world.encounters,...newlyAvailable.map(e=>({id:e.id,date,title:e.title,text:e.text,chapterId:e.chapterId,routeId:e.routeId,km:e.range.start,range:structuredClone(e.range),provenance,choices:structuredClone(e.choices)}))]}};
 }
 export function chooseEncounter(state:State,id:string,choiceId:string,date=dayKey()):State {
  const record=state.world.encounters.find(e=>e.id===id),choice=record?.choices.find(c=>c.id===choiceId);

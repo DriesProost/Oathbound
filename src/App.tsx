@@ -1,3 +1,4 @@
+import WorldFrontier from "./WorldFrontier";
 import TitlePanel from "./TitlePanel";
 import { displayedTitle } from "./titles";
 import EncounterPanel from "./EncounterPanel";
@@ -511,6 +512,7 @@ function OathboundApp() {
     .reverse();
   return (
     <div className="app">
+      <span id="road-story-status" className="sr-only" role="status">{state.world.encounters.some(e => !e.choiceId) ? 'A roadside story is available in Journey.' : ''}</span>
       <aside className="sidebar">
         <div className="brand">
           <Shield size={30} />
@@ -526,11 +528,12 @@ function OathboundApp() {
               key={t.name}
               className={tab === t.name ? "active" : ""}
               aria-current={tab === t.name ? "page" : undefined}
+              aria-describedby={t.name === 'Journey' && state.world.encounters.some(e => !e.choiceId) ? 'road-story-status' : undefined}
               onClick={() => switchTab(t.name)}
             >
               <t.icon size={20} />
               {t.name}
-              {t.name === 'Journey' && state.world.encounters.some(e => !e.choiceId) && <span className="road-notification" aria-label="Roadside story available">•</span>}
+              {t.name === 'Journey' && state.world.encounters.some(e => !e.choiceId) && <span className="road-notification" aria-hidden="true">•</span>}
               {tab === t.name && <ChevronRight size={15} />}
             </button>
           ))}
@@ -1142,6 +1145,7 @@ function OathboundApp() {
               <span className="eyebrow">THE ROAD TO OAKHAVEN</span>
               <h2>{routeSteps(total.distance)} route steps</h2>
               <JourneyMap distance={total.distance} />
+              <WorldFrontier state={state} />
               <p className="journey-method">
                 {campaignQuests.find((q) => q.id === "patrol")?.target
                   ?.metric === "steps"
@@ -1336,6 +1340,7 @@ function OathboundApp() {
               key={t.name}
               className={tab === t.name ? "active" : ""}
               aria-current={tab === t.name ? "page" : undefined}
+              aria-describedby={t.name === 'Journey' && state.world.encounters.some(e => !e.choiceId) ? 'road-story-status' : undefined}
               onClick={() => switchTab(t.name)}
             >
               <t.icon size={21} />

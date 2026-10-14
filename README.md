@@ -18,7 +18,7 @@ Run `npm test` for campaign goals, targets, weekly boundaries/snapshots, reward 
 ## Structure
 
 - `src/config.ts`: central quest definitions, difficulty, reward snapshots, action timing, rank thresholds and attribute XP curve.
-- `src/model.ts`: v3 save, campaign, activity and separate outcome types.
+- `src/model.ts` / `src/worldModel.ts`: v5 campaign, reward receipts, separate outcomes and permanent world history.
 - `src/campaign.ts`: goal catalogue, target validation, dated configuration revisions and goal-driven deeds.
 - `src/calendar.ts`: local calendar keys, validation and configurable week boundaries.
 - `src/weekly.ts`: weekly commission snapshots, prospective targets and unique activity links.
@@ -56,7 +56,7 @@ Correcting kept → broken removes exactly that record's stored reward; it does 
 
 No account or backend is required. Progress stays in this browser; clearing site data removes it.
 
-Version 3 uses `oathbound.knight.v3`. Valid v2 and v1 saves migrate automatically. The exact source is backed up at `oathbound.knight.v2.backup` or `oathbound.knight.v1.backup` before v3 is written. Source keys and existing backups are never overwritten. Invalid saves and failed backup writes stop migration; corrupt newer saves never silently fall back to older campaigns.
+Version 5 uses `oathbound.knight.v5`. Valid v4 saves migrate with an exact backup at `oathbound.knight.v4.world.backup` before writing, leaving original values intact and adding an empty world ledger. Eligible earlier world achievements are recognised on the discovery date, not assigned fabricated historical dates. Older versions retain their existing migration paths. The earlier v3 campaign upgrade works as follows: valid v2 and v1 saves migrate automatically. The exact source is backed up at `oathbound.knight.v2.backup` or `oathbound.knight.v1.backup` before v3 is written. Source keys and existing backups are never overwritten. Invalid saves and failed backup writes stop migration; corrupt newer saves never silently fall back to older campaigns.
 
 Legitimate historical reward amounts, XP, dates, Oaths and walking distances remain unchanged. Migration adds stable activity IDs and daily reward slots. Old targets were not stored: migrated deeds explicitly show that their original target is unknown, instead of inventing a quantity. Existing behaviour goals stay enabled and weight remains off. Legacy v1 rewards already attached to a broken Oath are corrected for that entry only, following the existing policy. Weight history starts empty.
 
@@ -121,3 +121,7 @@ For phone installation, publish the production `dist` directory over HTTPS, open
 The **Publish Oathbound** GitHub Actions workflow builds for `https://driesproost.github.io/Oathbound/` and publishes the tested production shell to GitHub Pages. Enable it once in repository **Settings → Pages → Source → GitHub Actions**, then open **Actions → Publish Oathbound → Run workflow**. Wait for a successful deployment before opening that address on your phone. Future main-branch pushes publish updates automatically.
 
 On Android, open the address in Chrome, choose **⋮ → Install app / Add to home screen → Install**, then launch the Oathbound icon. Progress is stored on that phone/browser; existing Windows localhost progress does not automatically transfer to the new address.
+
+## The Eight Great Systems
+
+Retinue, six evolving Keep areas, twelve permanent Relics, weekly Illuminated Chronicle pages, Chapter I, ten Journey encounters, ten earned Titles and five Grey Host restoration milestones share the existing campaign progression. The 60 Daily Ventures remain intact. Nothing is lost through inactivity, and none of these world systems introduces rewards or a currency. See [architecture, save migration, content and verification](docs/eight-great-systems.md).

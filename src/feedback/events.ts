@@ -4,7 +4,7 @@ import type { Reward, Attribute } from "../config";
 import { landmarks } from "../journey";
 export type FeedbackIntent = "quiet" | "venture" | "deed" | "oath" | "correction";
 export type FeedbackEvent =
-  | { kind: "retinue" | "keep" | "relic" | "chapter" | "title"; id: string; title: string; text: string }
+  | { kind: "retinue" | "keep" | "relic" | "chapter" | "title" | "restoration"; id: string; title: string; text: string }
   | { kind: "rank"; from: string; to: string }
   | { kind: "landmark"; name: string; inscription: string }
   | { kind: "commission"; id: string; count: number; target: number; bonus?:Reward }
@@ -16,38 +16,18 @@ export type FeedbackEvent =
   | { kind: "correction"; reward: Reward };
 // Equal tiers have a fixed order: landmarks by route, commissions by ID, attributes by configuration.
 export const priority: Record<FeedbackEvent["kind"], number> = {
-  rank: 0,
-  chapter: .5,
-  landmark: 1,
-  commission: 2,
-  retinue: 2.5,
-  keep: 2.4,
-  level: 3,
-  relic: 3.5,
-  title: 3.6,
-  venture: 4,
-  oath: 5,
-  deed: 6,
-  reward: 7,
-  correction: 8,
+  rank: 0, chapter: 1, landmark: 2, restoration: 2.1, commission: 2.2,
+  keep: 3, retinue: 3.1, level: 4, relic: 5, title: 5.1,
+  venture: 6, oath: 7, deed: 7.1, reward: 8, correction: 9,
 };
 // Text is available immediately. These offsets sequence emphasis and the count-up in one surface.
 export function presentationTimeline(events: FeedbackEvent[]) {
   const lead = events[0]?.kind;
-  const firstFollowUp =
-    lead === "rank"
-      ? 1100
-      : lead === "landmark" || lead === "commission"
-        ? 500
-        : lead === "level"
-          ? 400
-          : lead === "venture"
-            ? 350
-            : lead === "oath"
-            ? 350
-            : lead === "deed"
-              ? 200
-              : 0;
+  const offsets: Partial<Record<FeedbackEvent['kind'], number>> = {
+    rank: 1100, chapter: 800, landmark: 500, restoration: 500, commission: 500,
+    keep: 450, retinue: 450, level: 400, relic: 350, title: 350, venture: 350, oath: 350, deed: 200,
+  };
+  const firstFollowUp = offsets[lead] ?? 0;
   return events.map((event, index) => ({
     event,
     at: index === 0 ? 0 : firstFollowUp + (index - 1) * 100,
@@ -113,9 +93,9 @@ export function detectFeedback(
         });
     }
   }
-  for (const m of after.world.milestones.filter(m => (m.kind === 'retinue' || m.kind === 'keep' || m.kind === 'relic' || m.kind === 'chapter' || m.kind === 'title') && m.provenance === 'earned' &&
+  for (const m of after.world.milestones.filter(m => (m.kind === 'retinue' || m.kind === 'keep' || m.kind === 'relic' || m.kind === 'chapter' || m.kind === 'title' || m.kind === 'restoration') && m.provenance === 'earned' &&
     !before.world.milestones.some(b => b.kind === m.kind && b.id === m.id)))
-    events.push({ kind: m.kind as 'retinue' | 'keep' | 'relic' | 'chapter' | 'title', id: m.id, title: m.title, text: m.text });
+    events.push({ kind: m.kind as 'retinue' | 'keep' | 'relic' | 'chapter' | 'title' | 'restoration', id: m.id, title: m.title, text: m.text });
   // New action receipts or permanent world milestones are required.
   if (!events.length) return [];
   if (reward.renown > 0 || Object.values(reward.xp).some((v) => v! > 0))
