@@ -31,6 +31,7 @@ import { landmarks } from "../journey";
 import { landmarkScene } from "../journeyArt";
 const titles: Record<FeedbackEvent["kind"], string> = {
   rank: "RISE",
+  chapter: "A CHAPTER CLOSES",
   keep: "THE KEEP GROWS",
   relic: "A RELIC IS REMEMBERED",
   retinue: "A GUEST JOINS THE KEEP",
@@ -49,6 +50,7 @@ export function leadCue(events: FeedbackEvent[]): Cue | null {
     (
       {
         rank: "rankUp",
+        chapter: "landmark",
         retinue: "paper",
         keep: "woodClick",
         relic: "seal",
@@ -385,6 +387,7 @@ export function useFeedbackPulse(
 }
 export function eventText(event: FeedbackEvent): string {
   switch (event.kind) {
+    case "chapter":
     case "relic":
     case "keep":
     case "retinue":

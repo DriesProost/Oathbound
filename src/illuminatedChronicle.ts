@@ -44,7 +44,7 @@ export function weeklyPage(state:State,start:string):ChroniclePage {
  const stanzaKind=(['chapter','restoration','keep','retinue'] as const).find(kind=>events.some(e=>e.kind===kind));
  const occasional=Math.floor(Date.parse(start)/604800000)%4===0;
  return {id:`week:${start}`,kind:'week',start,end,title:`The week of ${startLabel}`,narrative:sentences.join(' '),highlights,events:structuredClone(events),
-  reconstructed:start<state.world.trackingSince,...(bard&&stanzaKind&&occasional?{stanza:chronicleCopy.stanzas[stanzaKind]}:{})};
+  reconstructed:end<state.world.trackingSince,...(bard&&stanzaKind&&occasional?{stanza:chronicleCopy.stanzas[stanzaKind]}:{})};
 }
 export function reconcileChronicle(state:State,date:string):State {
  const currentWeek=weekStart(date,state.weekly.weekStartsOn);

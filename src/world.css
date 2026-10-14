@@ -31,3 +31,6 @@
 .chronicle-highlights { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr)); gap:.7rem; }
 .chronicle-highlights dd { margin: .3rem 0; }.chronicle-highlights dt { color:#776b56; font-size:.8rem; }
 .bard-stanza { white-space:pre-line; font-style:italic; line-height:1.7; margin:1rem 0; }.bard-stanza small { display:block; font-style:normal; }
+.chapter-panel summary { min-height:44px; padding:.6rem 0; cursor:pointer; }.chapter-panel p { line-height:1.7; }
+.chapter-hooks { padding-left:1.2rem; }.chapter-hooks li { color:#897e68; margin-block:.6rem; }.chapter-hooks .chapter-reached { color:#40533b; }
+.closed-chapter { padding:1rem 0; border-top:1px solid #baaa87; }

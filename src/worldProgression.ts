@@ -1,3 +1,4 @@
+import { reconcileChapters } from './chapters';
 import { reconcileChronicle } from './illuminatedChronicle';
 import { reconcileRelics } from './relics';
 import { reconcileKeep } from './keep';
@@ -7,5 +8,10 @@ import { reconcileRetinue } from './retinue';
 import type { WorldMilestone } from './worldModel';
 export function synchronizeWorld(state: State, date: string, provenance: WorldMilestone['provenance'] = 'earned'): State {
   if (!validDay(date) || date < state.created) return state;
-  return reconcileChronicle(reconcileRelics(reconcileRetinue(reconcileKeep(state, date, provenance), date, provenance), date, provenance), date);
+  let next = reconcileKeep(state, date, provenance);
+  next = reconcileRetinue(next, date, provenance);
+  next = reconcileRelics(next, date, provenance);
+  next = reconcileChapters(next, date, provenance);
+  next = reconcileRelics(next, date, provenance);
+  return reconcileChronicle(next, date);
 }

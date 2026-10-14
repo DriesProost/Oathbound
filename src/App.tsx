@@ -1,3 +1,4 @@
+import ChapterPanel from "./ChapterPanel";
 import IlluminatedChronicle from "./IlluminatedChronicle";
 import RelicCabinet from "./RelicCabinet";
 import KeepOverview from "./KeepOverview";
@@ -1127,6 +1128,8 @@ function OathboundApp() {
             </>
           )}
           {tab === "Journey" && (
+            <>
+            <ChapterPanel state={state} date={today} />
             <section className="journey panel">
               <span className="eyebrow">THE ROAD TO OAKHAVEN</span>
               <h2>{routeSteps(total.distance)} route steps</h2>
@@ -1157,6 +1160,7 @@ function OathboundApp() {
                 <ArrowRight size={16} />
               </button>
             </section>
+            </>
           )}
           {tab === "Chronicle" && (
             <>
