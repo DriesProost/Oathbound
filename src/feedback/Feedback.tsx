@@ -31,6 +31,7 @@ import { landmarks } from "../journey";
 import { landmarkScene } from "../journeyArt";
 const titles: Record<FeedbackEvent["kind"], string> = {
   rank: "RISE",
+  retinue: "A GUEST JOINS THE KEEP",
   landmark: "A LANDMARK REACHED",
   commission: "COMMISSION FULFILLED",
   level: "AN ATTRIBUTE GROWS",
@@ -46,6 +47,7 @@ export function leadCue(events: FeedbackEvent[]): Cue | null {
     (
       {
         rank: "rankUp",
+        retinue: "paper",
         landmark: "landmark",
         commission: "commission",
         level: "steel",
@@ -379,6 +381,8 @@ export function useFeedbackPulse(
 }
 export function eventText(event: FeedbackEvent): string {
   switch (event.kind) {
+    case "retinue":
+      return `${event.title} · ${event.text}`;
     case "rank":
       return `${event.from} → ${event.to}`;
     case "landmark":
@@ -444,7 +448,7 @@ export function FeedbackSurface({ onReadJourney }: { onReadJourney?: () => void 
             ? `RISE, ${lead.to.toUpperCase()}`
             : lead.kind === "level"
               ? `${lead.attribute.toUpperCase()} ${roman(lead.to)}`
-              : titles[lead.kind]}
+              : "title" in lead ? lead.title : titles[lead.kind]}
         </h2>
         {batch.events.some((e) => e.kind === "landmark") && (
           <svg

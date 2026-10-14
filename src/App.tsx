@@ -1,3 +1,6 @@
+import RetinuePanel from "./RetinuePanel";
+import { synchronizeWorld } from "./worldProgression";
+import { retinueVentureIntro } from "./retinue";
 import { ventureAttributeLabel } from "./ventures";
 import { DailyVenture, VentureLedger } from "./DailyVenture";
 import { ensureDailyVenture, todaysVenture, completeDailyVenture, replaceDailyVenture } from "./ventureDomain";
@@ -144,12 +147,12 @@ function OathboundApp() {
   }, []);
   useEffect(() => {
     if (!state) return;
-    const next = ensureDailyVenture(ensureWeeklyPeriod(state, dayKey(now)), dayKey(now));
+    const next = synchronizeWorld(ensureDailyVenture(ensureWeeklyPeriod(state, dayKey(now)), dayKey(now)), dayKey(now), "discovered");
     if (next !== state) update(next);
   }, [state, now]);
   function update(next: State, intent: FeedbackIntent = "quiet") {
     const before = stateRef.current;
-    const ready = ensureDailyVenture(ensureWeeklyPeriod(next, dayKey(now)), dayKey(now));
+    const ready = synchronizeWorld(ensureDailyVenture(ensureWeeklyPeriod(next, dayKey(now)), dayKey(now)), dayKey(now), intent === "quiet" ? "discovered" : "earned");
     if (!persist(ready)) return false;
     if (before) {
       feedback.emit(before, ready, intent);
@@ -685,6 +688,7 @@ function OathboundApp() {
           )}
           {tab === "Keep" && (
             <>
+              <RetinuePanel state={state} date={today} update={update} />
               {venture && venture.status !== 'completed' && <button className="venture-teaser" onClick={() => {
                 switchTab("Quest Board"); setVentureOpen(true);
               }}><strong>A fresh commission awaits.</strong><span>{venture.title} · {ventureAttributeLabel(venture)}</span></button>}
@@ -907,7 +911,7 @@ function OathboundApp() {
                 <div className="board-plaque">
                   <span>✦</span> THE QUEST BOARD <span>✦</span>
                 </div>
-                {venture && <DailyVenture venture={venture} open={ventureOpen} onOpen={() => setVentureOpen(true)} onClose={() => setVentureOpen(false)}
+                {venture && <DailyVenture venture={venture} introduction={retinueVentureIntro(state, venture.attribute, today)} open={ventureOpen} onOpen={() => setVentureOpen(true)} onClose={() => setVentureOpen(false)}
                   onComplete={() => {
                     const current = stateRef.current!;
                     const next = completeDailyVenture(current, venture.assignmentId, new Date());

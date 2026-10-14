@@ -15,9 +15,9 @@ const http=require('node:http'), fs=require('node:fs'), path=require('node:path'
   const fixture=await page.evaluate(async()=>{
    const d=await import('/src/domain.ts');return JSON.parse(JSON.stringify(d.completeQuest(d.createKnight('Rowan','2026-10-10'),'training','2026-10-10',new Date('2026-10-10T12:00:00+02:00'))));
   });
-  await page.evaluate(s=>localStorage.setItem('oathbound.knight.v4',JSON.stringify(s)),fixture);await page.reload();
+  await page.evaluate(s=>localStorage.setItem('oathbound.knight.v5',JSON.stringify(s)),fixture);await page.reload();
   const go=async name=>page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name,exact:true}).click();
-  const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('oathbound.knight.v4')));
+  const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('oathbound.knight.v5')));
   await go('Knight');await page.getByLabel('Character portrait').selectOption(portrait);
   await page.locator(`.profile-art [data-portrait="${portrait}"]`).waitFor();
   const saved=await read();assert.deepEqual(saved,{...fixture,portrait});
@@ -70,12 +70,12 @@ const http=require('node:http'), fs=require('node:fs'), path=require('node:path'
   const production=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,timezoneId:'Europe/Brussels'});
   const phone=await production.newPage();phone.on('pageerror',e=>errors.push(e.message));await phone.clock.install({time:new Date('2026-10-10T12:00:00+02:00')});await phone.goto(url);
   await phone.waitForFunction(()=>navigator.serviceWorker.controller);
-  await phone.evaluate(({fixture,portrait})=>localStorage.setItem('oathbound.knight.v4',JSON.stringify({...fixture,portrait})),{fixture,portrait});await phone.reload();
+  await phone.evaluate(({fixture,portrait})=>localStorage.setItem('oathbound.knight.v5',JSON.stringify({...fixture,portrait})),{fixture,portrait});await phone.reload();
   await phone.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Knight',exact:true}).click();await phone.locator(`.profile-art [data-portrait="${portrait}"]`).waitFor();
   const art=fs.readdirSync(path.join(root,'assets')).filter(name=>name.startsWith(`${portrait}-`)&&name.endsWith('.webp'));assert.equal(art.length,15);
   await production.setOffline(true);await phone.reload();await phone.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Knight',exact:true}).click();
   assert.equal(await phone.getByLabel('Character portrait').inputValue(),portrait);
-  assert.deepEqual(await phone.evaluate(()=>JSON.parse(localStorage.getItem('oathbound.knight.v4'))),{...fixture,portrait});
+  assert.deepEqual(await phone.evaluate(()=>JSON.parse(localStorage.getItem('oathbound.knight.v5'))),{...fixture,portrait});
   const sizes=await phone.evaluate(async urls=>Promise.all(urls.map(async url=>{const i=new Image();i.src=url;await i.decode();return [i.naturalWidth,i.naturalHeight]})),art.map(name=>`${url}assets/${name}`));
   assert.equal(sizes.every(([w,h])=>w===900&&h===1350),true);
   await phone.getByLabel('Character portrait').selectOption('classic');await phone.getByLabel('Character portrait').selectOption(portrait);

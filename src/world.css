@@ -1,0 +1,18 @@
+.world-panel { margin-block: 1rem; }
+.world-panel > summary { cursor: pointer; min-height: 44px; font-family: Georgia, serif; font-size: 1.3rem; padding: .5rem 0; }
+.world-panel > summary > span { display: block; font-family: inherit; font-size: .82rem; color: #776c57; margin-top: .3rem; }
+.retinue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 1rem; margin-block: 1rem; }
+.retainer { padding: 1.2rem; border: 1px solid #baa880; background: #f5ecd8; }
+.retainer h3 { margin: .5rem 0; }
+.retainer blockquote { margin: 1rem 0; font-style: italic; line-height: 1.6; }
+.retainer details summary { min-height: 44px; cursor: pointer; padding-block: .65rem; }
+.empty-chamber { color: #807766; background: repeating-linear-gradient(120deg,#ece4d2,#ece4d2 3px,#eee7d9 3px,#eee7d9 6px); }
+.retainer-seal { display: flex; gap: .5rem; align-items: center; color: #80673a; }
+.songbook { border-top: 1px solid #b8a47b; padding-top: 1rem; }
+.songbook small { display: block; color: #776c57; }
+.songbook form { display: grid; gap: .7rem; max-width: 650px; }
+.songbook label { display: grid; gap: .35rem; }
+.songbook textarea { resize: vertical; width: 100%; min-height: 70px; padding: .6rem; font: inherit; color: #342d22; background: #fbf5e7; border: 1px solid #b5a47e; }
+.song-notes { white-space: pre-wrap; overflow-wrap: anywhere; font-size: inherit; max-width: 100%; }
+.world-panel button { min-height: 44px; }
+.reward-feedback.tier-retinue { border-color: #a88b50; }

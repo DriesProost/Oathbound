@@ -20,12 +20,12 @@ const production = process.env.PWA_URL || 'http://127.0.0.1:4173';
     });
     const seed = async s => {
       await page.evaluate(s => {
-        localStorage.setItem('oathbound.knight.v4', JSON.stringify(s));
+        localStorage.setItem('oathbound.knight.v5', JSON.stringify(s));
         localStorage.setItem('oathbound.feedback.v1', JSON.stringify({ sound: 'disabled', haptics: false, volume: .35, offered: true }));
       }, s);
       await page.reload();
     };
-    const read = () => page.evaluate(() => JSON.parse(localStorage.getItem('oathbound.knight.v4')));
+    const read = () => page.evaluate(() => JSON.parse(localStorage.getItem('oathbound.knight.v5')));
     const go = async name => {
       const nav = await page.getByRole('navigation', { name: 'Main navigation' }).isVisible() ? 'Main navigation' : 'Desktop navigation';
       await page.getByRole('navigation', { name: nav }).getByRole('button', { name: name === 'Quest Board' && nav === 'Main navigation' ? 'Quests' : name, exact: true }).click();
@@ -97,7 +97,7 @@ const production = process.env.PWA_URL || 'http://127.0.0.1:4173';
     // Local midnight creates one new notice; ignored opportunities add no penalty or ceremony.
     await page.clock.setSystemTime(new Date('2026-10-14T00:01:00+02:00'));
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-    await page.waitForFunction(() => JSON.parse(localStorage.getItem('oathbound.knight.v4')).ventures.length === 3);
+    await page.waitForFunction(() => JSON.parse(localStorage.getItem('oathbound.knight.v5')).ventures.length === 3);
     const rollover = await read(); assert.deepEqual(rollover.oaths, replaced.oaths);
     assert.equal(rollover.ventures[2].date, '2026-10-14');
     assert.equal(await page.locator('.reward-feedback').count(), 0);
@@ -107,7 +107,7 @@ const production = process.env.PWA_URL || 'http://127.0.0.1:4173';
     await offline.clock.install({ time: new Date('2026-10-13T12:00:00+02:00') });
     await offline.goto(production);
     await offline.evaluate(s => {
-      localStorage.setItem('oathbound.knight.v4', JSON.stringify(s));
+      localStorage.setItem('oathbound.knight.v5', JSON.stringify(s));
       localStorage.setItem('oathbound.feedback.v1', JSON.stringify({ sound: 'disabled', haptics: false, volume: .35, offered: true }));
     }, newLessonFixture);
     await offline.waitForFunction(() => !!navigator.serviceWorker.controller);
@@ -119,7 +119,7 @@ const production = process.env.PWA_URL || 'http://127.0.0.1:4173';
     await offlineDialog.getByRole('button', { name: 'Mark as read & complete Venture' }).click();
     await offline.getByRole('heading', { name: 'RISE, MAN-AT-ARMS' }).waitFor();
     await offline.reload(); assert.equal(await offline.locator('.reward-feedback').count(), 0);
-    const receipt = await offline.evaluate(() => JSON.parse(localStorage.getItem('oathbound.knight.v4')).ventures[0]);
+    const receipt = await offline.evaluate(() => JSON.parse(localStorage.getItem('oathbound.knight.v5')).ventures[0]);
     assert.equal(receipt.status, 'completed'); assert.ok(receipt.rewardGrant);
     await offline.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Chronicle', exact: true }).click();
     assert.match(await offline.getByRole('region', { name: 'Completed Ventures' }).textContent(), /The Cartographer/);

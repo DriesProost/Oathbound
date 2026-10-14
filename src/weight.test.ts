@@ -328,7 +328,7 @@ describe("outcome isolation and persistence", () => {
     const s = settings(add(initial(), "2026-10-03", 87450), 90000, 85000);
     save(s, store);
     const next = load(store, "2026-10-09")!;
-    expect(next.version).toBe(4);
+    expect(next.version).toBe(5);
     expect(next.weight).toEqual(s.weight);
     expect(next.entries).toEqual(s.entries);
     expect(next.weight.measurements).toHaveLength(1);
@@ -339,6 +339,7 @@ describe("outcome isolation and persistence", () => {
       settings(add(initial(), "2026-10-03", 87450), 90000, 85000),
     );
     source.version = 3;
+    delete source.world;
     delete source.ventures;
     delete source.weekly;
     source.entries.forEach((e: any) => delete e.rewardGrant);

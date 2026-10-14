@@ -87,8 +87,8 @@ const path = require("node:path");
     timezoneId: "Europe/Brussels",
   });
   await context.addInitScript((fixture) => {
-    if (!localStorage.getItem("oathbound.knight.v4"))
-      localStorage.setItem("oathbound.knight.v4", JSON.stringify(fixture));
+    if (!localStorage.getItem("oathbound.knight.v5"))
+      localStorage.setItem("oathbound.knight.v5", JSON.stringify(fixture));
     localStorage.setItem(
       "oathbound.feedback.v1",
       JSON.stringify({
@@ -107,7 +107,7 @@ const path = require("node:path");
   await p.goto(url);
   await p.waitForFunction(() => navigator.serviceWorker.controller);
   const read = () =>
-    p.evaluate(() => JSON.parse(localStorage.getItem("oathbound.knight.v4")));
+    p.evaluate(() => JSON.parse(localStorage.getItem("oathbound.knight.v5")));
   const noOverflow = async () =>
     assert.equal(
       await p.evaluate(() => document.documentElement.scrollWidth > innerWidth),
@@ -320,7 +320,7 @@ const path = require("node:path");
     .waitFor();
   assert.deepEqual(
     await otherTab.evaluate(() =>
-      JSON.parse(localStorage.getItem("oathbound.knight.v4")),
+      JSON.parse(localStorage.getItem("oathbound.knight.v5")),
     ),
     saved,
   );

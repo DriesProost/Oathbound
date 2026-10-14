@@ -23,14 +23,14 @@ const path = require('node:path');
       const s = structuredClone(fixture);
       s.entries[0].distance = distance; s.entries[0].reward.renown = renown;
       await page.evaluate(s => {
-        localStorage.setItem('oathbound.knight.v4', JSON.stringify(s));
+        localStorage.setItem('oathbound.knight.v5', JSON.stringify(s));
         localStorage.setItem('oathbound.feedback.v1', JSON.stringify({ sound: 'disabled', volume: .35, haptics: false }));
       }, s);
       await page.reload();
       return JSON.parse(JSON.stringify(s));
     };
     const go = name => page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name, exact: true }).click();
-    const read = () => page.evaluate(() => JSON.parse(localStorage.getItem('oathbound.knight.v4')));
+    const read = () => page.evaluate(() => JSON.parse(localStorage.getItem('oathbound.knight.v5')));
     const keys = ['keep', 'mill', 'inn', 'oakhaven'];
     const thresholds = [0, 9, 21, 30];
     for (const distance of [0, 8.999, 9, 20.999, 21, 29.999, 30]) {
@@ -112,7 +112,7 @@ const path = require('node:path');
     offline.on('pageerror', e => offlineErrors.push(e.message));
     await offline.goto(`http://127.0.0.1:${server.address().port}`);
     const completed = structuredClone(earned); completed.entries[0].distance = 30;
-    await offline.evaluate(s => localStorage.setItem('oathbound.knight.v4', JSON.stringify(s)), completed);
+    await offline.evaluate(s => localStorage.setItem('oathbound.knight.v5', JSON.stringify(s)), completed);
     await offline.reload(); await offline.waitForFunction(() => navigator.serviceWorker.controller);
     await context.setOffline(true); await offline.reload();
     await offline.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Journey', exact: true }).click();
@@ -121,7 +121,7 @@ const path = require('node:path');
       await offline.locator(`[data-landmark="${key}"] img`).evaluate(el => el.decode());
       assert.equal(await offline.locator(`[data-landmark="${key}"] .postcard-body > p`).count(), 3);
     }
-    assert.deepEqual(await offline.evaluate(() => JSON.parse(localStorage.getItem('oathbound.knight.v4'))), completed);
+    assert.deepEqual(await offline.evaluate(() => JSON.parse(localStorage.getItem('oathbound.knight.v5'))), completed);
     assert.deepEqual(offlineErrors, []);
     assert.equal(await offline.getByRole('region', { name: 'Action feedback' }).count(), 0);
     console.log('PASS: all landmark boundaries; actual 16:9 art; dimmed locked previews without story spoilers; full three-paragraph chapters; keyboard rereading; exact combined rank/landmark/reward receipt; read-chapter navigation; Sir display with raw name preserved; no replay or save changes; 320/390/1440px; reduced-motion offline art and history.');

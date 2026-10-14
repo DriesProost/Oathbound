@@ -109,7 +109,7 @@ const assert = require("node:assert/strict");
           s = d.completeQuest(s, "patrol", "2026-10-08", now);
           s.entries[0].distance = 8;
         }
-        localStorage.setItem("oathbound.knight.v4", JSON.stringify(s));
+        localStorage.setItem("oathbound.knight.v5", JSON.stringify(s));
         if (sound !== "unset")
           localStorage.setItem(
             "oathbound.feedback.v1",
@@ -136,7 +136,7 @@ const assert = require("node:assert/strict");
       nav: p.getByRole("navigation", { name: "Main navigation" }),
       read: () =>
         p.evaluate(() =>
-          JSON.parse(localStorage.getItem("oathbound.knight.v4")),
+          JSON.parse(localStorage.getItem("oathbound.knight.v5")),
         ),
     };
   }

@@ -1,3 +1,4 @@
+import type { WorldState } from "./worldModel";
 import type { VentureDefinition } from "./ventures";
 import type { Reward, Quest } from "./config";
 export const portraitIds = ['classic', 'personal', 'tied-hair'] as const;
@@ -99,7 +100,8 @@ export type WeighIn = {
   updatedAt: string;
 };
 export type State = {
-  version: 4;
+  version: 5;
+  world: WorldState;
   ventures: VentureAssignment[];
   name: string;
   // Cosmetic selection only; absent on existing saves means the original set.

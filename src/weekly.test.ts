@@ -47,6 +47,7 @@ function old2A() {
     ),
   );
   s.version = 3;
+  delete s.world;
   delete s.ventures;
   delete s.weekly;
   s.entries.forEach((e: any) => {

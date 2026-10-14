@@ -13,10 +13,10 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.goto(`http://127.0.0.1:${server.address().port}/Oathbound/`);await page.waitForFunction(()=>navigator.serviceWorker.controller);
   await context.setOffline(true);await page.reload();
   assert.equal(await page.evaluate(()=>window.musicPlayback.length),0);
-  const before=await page.evaluate(()=>localStorage.getItem('oathbound.knight.v4'));
+  const before=await page.evaluate(()=>localStorage.getItem('oathbound.knight.v5'));
   await page.getByRole('button',{name:'Sound effects settings'}).click();await page.getByRole('button',{name:'Play ambience',exact:true}).click();await page.waitForFunction(()=>window.musicPlayback.length===1);
   const [track]=await page.evaluate(()=>window.musicPlayback);assert.ok(Math.abs(track.duration-57.73)<.1);assert.equal(track.channels,2);assert.equal(track.loop,true);
-  await page.getByRole('button',{name:'Mute ambience',exact:true}).click();assert.equal(await page.evaluate(()=>localStorage.getItem('oathbound.knight.v4')),before);
+  await page.getByRole('button',{name:'Mute ambience',exact:true}).click();assert.equal(await page.evaluate(()=>localStorage.getItem('oathbound.knight.v5')),before);
   console.log('PASS: supplied 57.73-second stereo recording decodes and loops offline under /Oathbound/; no autoplay or campaign changes; mute remains available.');
  }finally{await browser?.close();if(server)await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

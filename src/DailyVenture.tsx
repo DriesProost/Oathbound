@@ -6,8 +6,8 @@ import { ventureAttributeLabel, ventureAttributes } from './ventures';
 import { completedVentures } from './ventureDomain';
 import './ventures.css';
 
-export function DailyVenture({ venture, open, onOpen, onClose, onComplete, onReplace }: {
-  venture: VentureAssignment; open: boolean; onOpen: () => void; onClose: () => void;
+export function DailyVenture({ venture, introduction, open, onOpen, onClose, onComplete, onReplace }: {
+  venture: VentureAssignment; introduction?: string; open: boolean; onOpen: () => void; onClose: () => void;
   onComplete: () => void; onReplace: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -24,7 +24,7 @@ export function DailyVenture({ venture, open, onOpen, onClose, onComplete, onRep
       return <span key={attribute}>{index > 0 && <span aria-hidden="true"> + </span>}<Icon size={20} aria-hidden="true" /> {attribute}</span>;
     })}</div>
     <h2>{venture.title}</h2>
-    <p className="venture-flavour">{venture.introduction}</p>
+    <p className="venture-flavour">{introduction || venture.introduction}</p>
     <p>{venture.duration} · {venture.tier}</p>
     <RewardText reward={venture.reward} />
     <div className="venture-actions">
@@ -36,7 +36,7 @@ export function DailyVenture({ venture, open, onOpen, onClose, onComplete, onRep
     <dialog className="venture-dialog" ref={dialog} onCancel={onClose} onClose={onClose} aria-labelledby="venture-title">
       <div className="venture-dialog-heading"><span className="eyebrow">TODAY'S VENTURE · {ventureAttributeLabel(venture)}</span><button className="text-button" onClick={onClose} aria-label="Close Venture">Close</button></div>
       <h2 id="venture-title">{venture.title}</h2>
-      <p className="venture-flavour">{venture.introduction}</p>
+      <p className="venture-flavour">{introduction || venture.introduction}</p>
       <p>{venture.duration} · {venture.tier}</p>
       <RewardText reward={venture.reward} />
       {venture.reading && <section className="venture-lesson" aria-label="Lesson"><h3>The lesson</h3>{venture.reading.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}</section>}

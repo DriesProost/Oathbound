@@ -1,3 +1,4 @@
+import { createWorld } from "./worldModel";
 import { ensureWeeklyPeriod, recordWeeklyActivity,grantWeeklyBonuses } from "./weekly";
 import {
   campaignRules,
@@ -23,7 +24,8 @@ export function createKnight(
 ): State {
   return ensureWeeklyPeriod(
     {
-      version: 4,
+      version: 5,
+      world: createWorld(date),
       ventures: [],
       name: name.trim() || "The Traveller",
       created: date,

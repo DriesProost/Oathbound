@@ -213,14 +213,14 @@ describe('v3 → v4 save migration', () => {
         measurements: [{ id: 'original-measurement', date, grams: 88000, createdAt: now.toISOString(), updatedAt: now.toISOString() }],
       },
     };
-    const { ventures: _ventures, ...old } = s;
+    const { ventures: _ventures, world: _world, ...old } = s;
     return { ...old, version: 3 };
   }
   it('preserves every existing field/value, reward and history exactly and invents no Ventures', () => {
-    const old = v3(), next = migrate(old, date), { ventures: history, version, ...rest } = next;
+    const old = v3(), next = migrate(old, date), { ventures: history, world: _world, version, ...rest } = next;
     const { version: _version, ...oldFields } = old;
     expect(rest).toEqual(oldFields);
-    expect(version).toBe(4); expect(history).toEqual([]);
+    expect(version).toBe(5); expect(history).toEqual([]);
   });
   it('backs up exact v3 bytes before committing v4 and keeps migration idempotent', () => {
     const old = v3(), raw = JSON.stringify(old, null, 2), store = memory(); store.setItem(storageKeys.v3, raw);
