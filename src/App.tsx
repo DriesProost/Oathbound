@@ -1,3 +1,4 @@
+import KeepOverview from "./KeepOverview";
 import RetinuePanel from "./RetinuePanel";
 import { synchronizeWorld } from "./worldProgression";
 import { retinueVentureIntro } from "./retinue";
@@ -688,6 +689,7 @@ function OathboundApp() {
           )}
           {tab === "Keep" && (
             <>
+              <KeepOverview state={state} />
               <RetinuePanel state={state} date={today} update={update} />
               {venture && venture.status !== 'completed' && <button className="venture-teaser" onClick={() => {
                 switchTab("Quest Board"); setVentureOpen(true);

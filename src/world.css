@@ -16,3 +16,9 @@
 .song-notes { white-space: pre-wrap; overflow-wrap: anywhere; font-size: inherit; max-width: 100%; }
 .world-panel button { min-height: 44px; }
 .reward-feedback.tier-retinue { border-color: #a88b50; }
+.keep-areas { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(260px,100%),1fr)); gap: 1rem; }
+.keep-area { border: 1px solid #b6a27b; background: linear-gradient(135deg,#f7eed9,#e9dfc5); padding: 1rem; }
+.keep-room-image { width: 100%; height: 100px; object-fit: cover; color: #766543; border-bottom: 1px solid #c1b08d; }
+.room-stage-0 { opacity: .55; }.room-stage-3,.room-stage-4 { color: #8a692a; }
+.keep-area h3 { margin: .5rem 0; }.keep-area p { line-height: 1.6; }
+.room-resident { display: block; font-size: .8rem; border-top: 1px solid #c6b795; padding-top: .5rem; }
