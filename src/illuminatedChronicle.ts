@@ -17,8 +17,8 @@ export function snapshotPage(state:State,page:ChroniclePage):State {
  if(state.world.pages.some(p=>p.id===page.id))return state;
  return {...state,world:{...state.world,pages:[...state.world.pages,structuredClone(page)]}};
 }
-export function weeklyPage(state:State,start:string):ChroniclePage {
- const end=addDays(start,6),before=totals(through(state,addDays(start,-1))),after=totals(through(state,end));
+export function weeklyPage(state:State,start:string,end=addDays(start,6)):ChroniclePage {
+ const before=totals(through(state,addDays(start,-1))),after=totals(through(state,end));
  const entries=state.entries.filter(e=>e.date>=start&&e.date<=end),ventures=state.ventures.filter(v=>v.rewardGrant&&v.date>=start&&v.date<=end);
  const kept=Object.entries(state.oaths).filter(([date,o])=>date>=start&&date<=end&&o.status==='kept').length;
  const training=entries.filter(e=>e.goalId==='strength').length,patrols=entries.filter(e=>e.goalId==='walking').length;
@@ -52,4 +52,19 @@ export function reconcileChronicle(state:State,date:string):State {
   ...Object.entries(state.oaths).filter(([,o])=>o.status==='kept').map(([d])=>d),...state.world.milestones.map(m=>m.date)];
  const weeks=[...new Set(dates.filter(d=>d<=date).map(d=>weekStart(d,state.weekly.weekStartsOn)))].filter(start=>start<currentWeek).sort();
  let next=state;for(const start of weeks)if(!next.world.pages.some(p=>p.id===`week:${start}`))next=snapshotPage(next,weeklyPage(next,start));return next;
+}
+
+// Explicit factual edits compare both histories under the same current configuration.
+// Content/configuration changes alone therefore never invalidate a stored page.
+export function correctChronicle(before: State, after: State): State {
+ let changed = false;
+ const pages = after.world.pages.map(page => {
+  if (page.kind !== 'week') return page;
+  const oldFacts = weeklyPage(before, page.start, page.end);
+  const newFacts = weeklyPage(after, page.start, page.end);
+  if (JSON.stringify(oldFacts.highlights) === JSON.stringify(newFacts.highlights)) return page;
+  changed = true;
+  return { ...page, narrative: newFacts.narrative, highlights: newFacts.highlights };
+ });
+ return changed ? { ...after, world: { ...after.world, pages } } : after;
 }

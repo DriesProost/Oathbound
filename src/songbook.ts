@@ -27,7 +27,7 @@ export function writeSong(state: State, values: { title: string; notes: string; 
   if (!validDay(date) || date < state.created || !values.title.trim() || values.title.length > 120 || values.notes.length > 12000 || values.chords.length > 4000) return state;
   if (!state.world.milestones.some(m => m.kind === 'retinue' && m.id === 'bard')) return state;
   const previous = id ? state.world.songs.find(s => s.id === id) : undefined;
-  if (id && !previous) return state;
+  if ((id && !previous) || (previous && date < previous.created)) return state;
   const record = { ...values, title: values.title.trim(), id: previous?.id ?? `song:${date}:${state.world.songs.length}`, created: previous?.created ?? date, updated: date };
   if (previous && record.title === previous.title && record.notes === previous.notes && record.chords === previous.chords) return state;
   return { ...state, world: { ...state.world, songs: previous ? state.world.songs.map(s => s.id === id ? record : s) : [...state.world.songs, record] } };

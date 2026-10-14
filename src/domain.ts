@@ -1,3 +1,4 @@
+import { correctChronicle } from "./illuminatedChronicle";
 import { createWorld } from "./worldModel";
 import { ensureWeeklyPeriod, recordWeeklyActivity,grantWeeklyBonuses } from "./weekly";
 import {
@@ -108,7 +109,7 @@ export function completeQuest(
       },
     ],
   };
-  return grantWeeklyBonuses(state,recordWeeklyActivity(next, `activity:${date}:${quest.goalId}`));
+  return correctChronicle(state, grantWeeklyBonuses(state,recordWeeklyActivity(next, `activity:${date}:${quest.goalId}`)));
 }
 export function takeOath(
   state: State,
@@ -142,7 +143,7 @@ export function confirmOath(
   )
     return state;
   // Replacing this one record reverses only this oath's reward. Other dates and actions remain untouched.
-  return {
+  return correctChronicle(state, {
     ...state,
     oaths: {
       ...state.oaths,
@@ -152,7 +153,7 @@ export function confirmOath(
           status === "kept" ? structuredClone(oathDefinition.reward) : null,
       },
     },
-  };
+  });
 }
 export function attributeProgress(xp: number) {
   let level = 1,

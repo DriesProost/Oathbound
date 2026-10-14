@@ -6,7 +6,7 @@ import { known, remember } from './worldRecords';
 import { snapshotPage } from './illuminatedChronicle';
 export type Chapter = {id:string;title:string;subtitle:string;opening:string;route:{id:string;start:number;end:number};
  openingCondition:WorldCondition;closingCondition:WorldCondition;hooks:{km:number;title:string;text:string}[];
- encounters:string[];closingTitle:string;closing:string;song?:{id:string;title:string};relic?:string;previous?:string};
+ encounters:string[];closingTitle:string;closing:string;song?:{id:string;title:string};previous?:string};
 export const chapters:readonly Chapter[]=[{
  id:'oakhaven',title:'Chapter I: The Road to Oakhaven',subtitle:'A key, a letter, and the places between',
  opening:'The road beyond the Keep once joined people who depended on one another. A faded green ribbon and a small brass key invite you to learn what remains. There is no deadline at the gate. Take the road a portion at a time; the work already done remains behind you. Farther out, abandoned posts stand quiet in the mist. The local folk call those silent reaches the Grey Host.',
@@ -15,7 +15,7 @@ export const chapters:readonly Chapter[]=[{
  encounters:['bridge','cart','shelter','scholar-road','merchant','shrine','rain','shepherd','messenger','beacon-keeper'],
  closingTitle:'THE LAMPS OF OAKHAVEN',
  closing:'The key, the measuring cord and the letters have reached their proper hands. Mara sends word home, and the miller’s place in the story is no longer a question left unanswered. The road has brought people back into one another’s reach. Beyond the village, some watchfires remain dark. Tonight, here, lamps answer lamps. Chapter I closes; the journey and the earlier work remain yours.',
- song:{id:'oakhaven-lamps',title:'Lamps Along the Road'},relic:'mara-key',
+ song:{id:'oakhaven-lamps',title:'Lamps Along the Road'},
 }];
 export function activeChapter(state:State,date:string) {return chapters.find(c=>!known(state,'chapter',c.id)&&(!c.previous||known(state,'chapter',c.previous))&&meets(state,c.openingCondition,date));}
 export function reconcileChapters(state:State,date:string,provenance:WorldMilestone['provenance']):State {

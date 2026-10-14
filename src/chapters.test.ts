@@ -1,6 +1,7 @@
 import {describe,it,expect} from 'vitest';
 import {createKnight,completeQuest,totals} from './domain';
-import {activeChapter,reconcileChapters} from './chapters';
+import {reconcileRelics, relics} from './relics';
+import {chapters, activeChapter,reconcileChapters} from './chapters';
 import {synchronizeWorld} from './worldProgression';
 import {detectFeedback} from './feedback/events';
 const date='2026-10-14';
@@ -11,6 +12,15 @@ describe('Campaign Chapters',()=>{
   const before=travelled(30),next=synchronizeWorld(before,date);expect(next.world.milestones.filter(m=>m.kind==='chapter')).toHaveLength(1);expect(next.world.pages.filter(p=>p.kind==='chapter')).toHaveLength(1);
   expect(next.world.milestones.some(m=>m.kind==='song'&&m.id==='oakhaven-lamps')).toBe(true);expect(next.world.milestones.some(m=>m.id==='mara-key')).toBe(true);expect(totals(next)).toEqual(totals(before));
   expect(reconcileChapters(next,'2027-01-01','earned')).toBe(next);expect(activeChapter(next,date)).toBeUndefined();
+ });
+ it('authors chapter-linked Relics exclusively through the Relic system',()=>{
+  expect(chapters.every(c=>!('relic' in c))).toBe(true);
+  expect(relics.find(r=>r.id==='mara-key')?.condition).toEqual({chapter:'oakhaven'});
+  const before=travelled(30),closed=reconcileChapters(before,date,'earned');
+  expect(closed.world.milestones.some(m=>m.kind==='relic')).toBe(false);
+  const awarded=reconcileRelics(closed,date,'earned');
+  expect(awarded.world.milestones.filter(m=>m.kind==='relic'&&m.id==='mara-key')).toHaveLength(1);
+  expect(reconcileRelics(awarded,date,'earned')).toBe(awarded);expect(totals(awarded)).toEqual(totals(before));
  });
  it('coordinates closing feedback ahead of Keep, arrivals and Relics without reload replay',()=>{
   const before=travelled(30),after=synchronizeWorld(before,date),events=detectFeedback(before,after,'deed');expect(events[0].kind).toBe('chapter');expect(detectFeedback(after,structuredClone(after),'deed')).toEqual([]);
