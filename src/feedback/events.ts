@@ -4,7 +4,7 @@ import type { Reward, Attribute } from "../config";
 import { landmarks } from "../journey";
 export type FeedbackIntent = "quiet" | "venture" | "deed" | "oath" | "correction";
 export type FeedbackEvent =
-  | { kind: "retinue" | "keep" | "relic" | "chapter"; id: string; title: string; text: string }
+  | { kind: "retinue" | "keep" | "relic" | "chapter" | "title"; id: string; title: string; text: string }
   | { kind: "rank"; from: string; to: string }
   | { kind: "landmark"; name: string; inscription: string }
   | { kind: "commission"; id: string; count: number; target: number; bonus?:Reward }
@@ -24,6 +24,7 @@ export const priority: Record<FeedbackEvent["kind"], number> = {
   keep: 2.4,
   level: 3,
   relic: 3.5,
+  title: 3.6,
   venture: 4,
   oath: 5,
   deed: 6,
@@ -112,9 +113,9 @@ export function detectFeedback(
         });
     }
   }
-  for (const m of after.world.milestones.filter(m => (m.kind === 'retinue' || m.kind === 'keep' || m.kind === 'relic' || m.kind === 'chapter') && m.provenance === 'earned' &&
+  for (const m of after.world.milestones.filter(m => (m.kind === 'retinue' || m.kind === 'keep' || m.kind === 'relic' || m.kind === 'chapter' || m.kind === 'title') && m.provenance === 'earned' &&
     !before.world.milestones.some(b => b.kind === m.kind && b.id === m.id)))
-    events.push({ kind: m.kind as 'retinue' | 'keep' | 'relic' | 'chapter', id: m.id, title: m.title, text: m.text });
+    events.push({ kind: m.kind as 'retinue' | 'keep' | 'relic' | 'chapter' | 'title', id: m.id, title: m.title, text: m.text });
   // New action receipts or permanent world milestones are required.
   if (!events.length) return [];
   if (reward.renown > 0 || Object.values(reward.xp).some((v) => v! > 0))

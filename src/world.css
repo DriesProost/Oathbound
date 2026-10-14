@@ -37,3 +37,5 @@
 .road-encounter { border-top:1px solid #c2af87; padding:1rem 0; }.encounters-panel summary { cursor:pointer; min-height:44px; padding:.5rem 0; }
 .encounters-panel p { line-height:1.7; }.encounter-choices { display:flex; flex-wrap:wrap; gap:.65rem; margin:1rem 0; }.encounter-choices button { min-height:44px; white-space:normal; }
 .road-notification { color:#a68a42; }.encounters-panel small { color:#807153; }
+.title-panel label { display:grid; gap:.5rem; max-width:500px; }.title-panel select { width:100%; min-height:44px; }
+.title-panel article { border-top:1px solid #baa987; margin-top:1rem; padding-top:.75rem; }.preferred-title { font-family:Georgia,serif; color:#846538; font-size:1.1rem; }

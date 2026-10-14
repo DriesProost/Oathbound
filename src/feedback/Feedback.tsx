@@ -34,6 +34,7 @@ const titles: Record<FeedbackEvent["kind"], string> = {
   chapter: "A CHAPTER CLOSES",
   keep: "THE KEEP GROWS",
   relic: "A RELIC IS REMEMBERED",
+  title: "A NAME TRAVELS BEFORE YOU",
   retinue: "A GUEST JOINS THE KEEP",
   landmark: "A LANDMARK REACHED",
   commission: "COMMISSION FULFILLED",
@@ -54,6 +55,7 @@ export function leadCue(events: FeedbackEvent[]): Cue | null {
         retinue: "paper",
         keep: "woodClick",
         relic: "seal",
+        title: "steel",
         landmark: "landmark",
         commission: "commission",
         level: "steel",
@@ -387,6 +389,7 @@ export function useFeedbackPulse(
 }
 export function eventText(event: FeedbackEvent): string {
   switch (event.kind) {
+    case "title":
     case "chapter":
     case "relic":
     case "keep":

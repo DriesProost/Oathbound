@@ -1,3 +1,5 @@
+import TitlePanel from "./TitlePanel";
+import { displayedTitle } from "./titles";
 import EncounterPanel from "./EncounterPanel";
 import ChapterPanel from "./ChapterPanel";
 import IlluminatedChronicle from "./IlluminatedChronicle";
@@ -712,6 +714,7 @@ function OathboundApp() {
                     <Shield size={14} />
                     {rank.rank.name}
                   </span>
+                  {displayedTitle(state) && <p className="preferred-title">{displayedTitle(state)}</p>}
                   <div className="renown-label">
                     <span>RENOWN</span>
                     <strong>
@@ -1018,6 +1021,7 @@ function OathboundApp() {
                   <span className="eyebrow">A HERALDIC RECORD</span>
                   <h2>{displayName}</h2>
                   <span className="rank-badge dark">{rank.rank.name}</span>
+                  {displayedTitle(state) && <p className="preferred-title">{displayedTitle(state)}</p>}
                   <div className="portrait-choice">
                     <label htmlFor="knight-portrait">Character portrait</label>
                     <select id="knight-portrait" value={state.portrait || 'classic'}
@@ -1068,6 +1072,7 @@ function OathboundApp() {
                   {bodyAppearanceExplanation(state.weight, today) && <p className="muted appearance-status">{bodyAppearanceExplanation(state.weight, today)}</p>}
                 </div>
               </div>
+              <TitlePanel state={state} update={update} />
               <section className="panel campaign-summary">
                 <div className="section-heading">
                   <h2>Your campaign</h2>

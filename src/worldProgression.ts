@@ -1,3 +1,4 @@
+import { reconcileTitles } from './titles';
 import { reconcileEncounters } from './encounters';
 import { reconcileChapters } from './chapters';
 import { reconcileChronicle } from './illuminatedChronicle';
@@ -15,5 +16,6 @@ export function synchronizeWorld(state: State, date: string, provenance: WorldMi
   next = reconcileEncounters(next, date, provenance);
   next = reconcileChapters(next, date, provenance);
   next = reconcileRelics(next, date, provenance);
+  next = reconcileTitles(next, date, provenance);
   return reconcileChronicle(next, date);
 }
