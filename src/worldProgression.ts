@@ -1,3 +1,4 @@
+import { reconcileEncounters } from './encounters';
 import { reconcileChapters } from './chapters';
 import { reconcileChronicle } from './illuminatedChronicle';
 import { reconcileRelics } from './relics';
@@ -11,6 +12,7 @@ export function synchronizeWorld(state: State, date: string, provenance: WorldMi
   let next = reconcileKeep(state, date, provenance);
   next = reconcileRetinue(next, date, provenance);
   next = reconcileRelics(next, date, provenance);
+  next = reconcileEncounters(next, date, provenance);
   next = reconcileChapters(next, date, provenance);
   next = reconcileRelics(next, date, provenance);
   return reconcileChronicle(next, date);

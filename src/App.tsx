@@ -1,3 +1,4 @@
+import EncounterPanel from "./EncounterPanel";
 import ChapterPanel from "./ChapterPanel";
 import IlluminatedChronicle from "./IlluminatedChronicle";
 import RelicCabinet from "./RelicCabinet";
@@ -527,6 +528,7 @@ function OathboundApp() {
             >
               <t.icon size={20} />
               {t.name}
+              {t.name === 'Journey' && state.world.encounters.some(e => !e.choiceId) && <span className="road-notification" aria-label="Roadside story available">•</span>}
               {tab === t.name && <ChevronRight size={15} />}
             </button>
           ))}
@@ -1130,6 +1132,7 @@ function OathboundApp() {
           {tab === "Journey" && (
             <>
             <ChapterPanel state={state} date={today} />
+            <EncounterPanel state={state} date={today} update={update} />
             <section className="journey panel">
               <span className="eyebrow">THE ROAD TO OAKHAVEN</span>
               <h2>{routeSteps(total.distance)} route steps</h2>

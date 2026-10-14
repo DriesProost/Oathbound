@@ -34,3 +34,6 @@
 .chapter-panel summary { min-height:44px; padding:.6rem 0; cursor:pointer; }.chapter-panel p { line-height:1.7; }
 .chapter-hooks { padding-left:1.2rem; }.chapter-hooks li { color:#897e68; margin-block:.6rem; }.chapter-hooks .chapter-reached { color:#40533b; }
 .closed-chapter { padding:1rem 0; border-top:1px solid #baaa87; }
+.road-encounter { border-top:1px solid #c2af87; padding:1rem 0; }.encounters-panel summary { cursor:pointer; min-height:44px; padding:.5rem 0; }
+.encounters-panel p { line-height:1.7; }.encounter-choices { display:flex; flex-wrap:wrap; gap:.65rem; margin:1rem 0; }.encounter-choices button { min-height:44px; white-space:normal; }
+.road-notification { color:#a68a42; }.encounters-panel small { color:#807153; }

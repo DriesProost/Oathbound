@@ -18,6 +18,13 @@ export function validPage(p: any): boolean {
    Array.isArray(p.highlights) && p.highlights.every((h:any)=>obj(h)&&text(h.label,200)&&text(h.value,2000)) &&
    Array.isArray(p.events) && p.events.every((m:any)=>validMilestone(m)&&m.date>=p.start&&m.date<=p.end);
 }
+export function validEncounter(e: any): boolean {
+ return obj(e)&&text(e.id,160)&&validDay(e.date)&&text(e.title,200)&&text(e.text)&&text(e.chapterId,160)&&Number.isFinite(e.km)&&e.km>=0&&
+   obj(e.range)&&Number.isFinite(e.range.start)&&Number.isFinite(e.range.end)&&e.range.start>=0&&e.range.end>=e.range.start&&e.km>=e.range.start&&e.km<=e.range.end&&
+   ['earned','discovered'].includes(e.provenance)&&Array.isArray(e.choices)&&e.choices.length>=2&&e.choices.length<=3&&
+   e.choices.every((c:any)=>obj(c)&&text(c.id,160)&&text(c.label,200)&&text(c.text)&&text(c.memory)&&optionalText(c.characterId))&&unique(e.choices.map((c:any)=>c.id))&&
+   (e.choiceId===undefined?e.resolvedDate===undefined:validDay(e.resolvedDate)&&e.resolvedDate>=e.date&&e.choices.some((c:any)=>c.id===e.choiceId));
+}
 export function validWorld(v: unknown, created: string): v is WorldState {
   const w = v as any;
   if (!obj(w) || !validDay(w.trackingSince) || w.trackingSince < created ||
@@ -29,5 +36,5 @@ export function validWorld(v: unknown, created: string): v is WorldState {
     !unique(w.songs.map((s: any) => s.id)) || !Array.isArray(w.pages) || !Array.isArray(w.encounters) ||
     (w.preferredTitle !== null && (!text(w.preferredTitle, 160) || !w.milestones.some((m: any) => m.kind === 'title' && m.id === w.preferredTitle)))) return false;
   // Later phases fill these collections; unknown or partial records are not accepted.
-  return w.pages.every(validPage) && unique(w.pages.map((p:any)=>p.id)) && w.encounters.length === 0;
+  return w.pages.every(validPage) && unique(w.pages.map((p:any)=>p.id)) && w.encounters.every((e:any)=>validEncounter(e)&&e.date>=created) && unique(w.encounters.map((e:any)=>e.id));
 }

@@ -47,7 +47,7 @@ export function reconcileRetinue(state: State, date: string, provenance: WorldMi
 }
 export function currentRemark(state: State, member: Retainer, date: string): string {
   const encounter = state.world.encounters.find(e => e.resolvedDate && e.choices.find(c => c.id === e.choiceId)?.characterId === member.id);
-  if (encounter) return `I remember our meeting at ${encounter.title.toLowerCase()}. There are familiar faces on that road.`;
+  if (encounter) return encounter.choices.find(c => c.id === encounter.choiceId)!.memory;
   const recent = state.world.milestones.filter(m => m.kind !== 'retinue' && (!m.attribute || m.attribute === member.attribute)).at(-1);
   const reaction = member.reactions.find(r => r.kind === recent?.kind);
   if (reaction) return reaction.text;

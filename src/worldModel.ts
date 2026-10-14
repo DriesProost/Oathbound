@@ -1,5 +1,5 @@
 import type { Attribute } from './config';
-export const worldKinds = ['retinue', 'keep', 'relic', 'chapter', 'title', 'restoration', 'song'] as const;
+export const worldKinds = ['retinue', 'keep', 'relic', 'chapter', 'title', 'restoration', 'song', 'encounter'] as const;
 export type WorldKind = typeof worldKinds[number];
 export type WorldMilestone = {
   id: string; kind: WorldKind; date: string; provenance: 'earned' | 'discovered';
@@ -9,7 +9,7 @@ export type WorldMilestone = {
 export type SongEntry = { id: string; title: string; notes: string; chords: string; created: string; updated: string };
 export type EncounterRecord = {
   id: string; date: string; title: string; text: string; chapterId: string; km: number;
-  provenance: 'earned' | 'discovered';
+  provenance: 'earned' | 'discovered'; range: { start: number; end: number };
   choices: { id: string; label: string; text: string; memory: string; characterId?: string }[];
   choiceId?: string; resolvedDate?: string;
 };

@@ -7,7 +7,7 @@ export type WorldCondition =
   | { distance: number } | { ventures: number; attribute?: Attribute }
   | { keptOaths: number } | { training: number } | { ageDays: number }
   | { activeDays: number } | { keep: { attribute: Attribute; stage: number } }
-  | { chapter: string } | { relics: number };
+  | { encounter: string } | { chapter: string } | { relics: number };
 export function recordedDays(state: State) {
   return new Set([...state.entries.map(e => e.date), ...state.ventures.filter(v => v.rewardGrant).map(v => v.date),
     ...Object.keys(state.oaths).filter(d => state.oaths[d].status === 'kept')]);
@@ -21,6 +21,7 @@ export function meets(state: State, condition: WorldCondition, date: string): bo
     v.attribute === condition.attribute || v.secondaryAttributes?.includes(condition.attribute))).length >= condition.ventures;
   if ('training' in condition) return state.entries.filter(e => e.goalId === 'strength').length >= condition.training;
   if ('keptOaths' in condition) return Object.values(state.oaths).filter(o => o.status === 'kept').length >= condition.keptOaths;
+  if ('encounter' in condition) return state.world.encounters.some(e => e.id === condition.encounter && !!e.choiceId);
   if ('chapter' in condition) return state.world.milestones.some(m => m.kind === 'chapter' && m.id === condition.chapter);
   if ('relics' in condition) return state.world.milestones.filter(m => m.kind === 'relic').length >= condition.relics;
   if ('keep' in condition) return state.world.milestones.some(m => m.kind === 'keep' && m.attribute === condition.keep.attribute && (m.stage ?? 0) >= condition.keep.stage);
