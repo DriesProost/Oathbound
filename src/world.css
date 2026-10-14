@@ -25,3 +25,9 @@
 .relic-cabinet { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(240px,100%),1fr)); gap: 1rem; }
 .relic { padding: 1.2rem; border: 1px solid #bba478; background: #efe4cd; box-shadow: inset 0 0 0 4px #f8f0df; }
 .relic > svg { color: #8d703c; }.relic-origin { font-size: .85rem; font-style: italic; }
+.illuminated-page { border-top: 1px solid #bba779; padding: 1rem 0; }.illuminated-page summary { min-height: 44px; cursor: pointer; font-family: Georgia,serif; font-size: 1.15rem; }
+.illuminated-page summary small { display:block; font: .8rem sans-serif; color: #7a6a4d; margin-top: .4rem; }
+.illuminated-prose { line-height: 1.9; font-family: Georgia,serif; }.illuminated-prose::first-letter { font-size: 2.1rem; color: #854c38; }
+.chronicle-highlights { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr)); gap:.7rem; }
+.chronicle-highlights dd { margin: .3rem 0; }.chronicle-highlights dt { color:#776b56; font-size:.8rem; }
+.bard-stanza { white-space:pre-line; font-style:italic; line-height:1.7; margin:1rem 0; }.bard-stanza small { display:block; font-style:normal; }

@@ -1,3 +1,4 @@
+import IlluminatedChronicle from "./IlluminatedChronicle";
 import RelicCabinet from "./RelicCabinet";
 import KeepOverview from "./KeepOverview";
 import RetinuePanel from "./RetinuePanel";
@@ -1228,6 +1229,7 @@ function OathboundApp() {
                   window.scrollTo({ top: 0 });
                 }}
               />
+              <IlluminatedChronicle state={state} />
               <VentureLedger state={state} />
               <WeeklyLedger state={state} date={today} />
               <WeeklyReview state={state} now={now} />

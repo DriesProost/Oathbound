@@ -12,6 +12,12 @@ export function validMilestone(m: any): boolean {
     (m.stage === undefined || (Number.isInteger(m.stage) && m.stage >= 1 && m.stage <= 4)) &&
     optionalText(m.location) && optionalText(m.origin) && optionalText(m.category);
 }
+export function validPage(p: any): boolean {
+ return obj(p) && text(p.id,160) && ['week','month','chapter'].includes(p.kind) && validDay(p.start) && validDay(p.end) && p.end>=p.start &&
+   text(p.title,200) && text(p.narrative) && typeof p.reconstructed==='boolean' && optionalText(p.stanza) &&
+   Array.isArray(p.highlights) && p.highlights.every((h:any)=>obj(h)&&text(h.label,200)&&text(h.value,2000)) &&
+   Array.isArray(p.events) && p.events.every((m:any)=>validMilestone(m)&&m.date>=p.start&&m.date<=p.end);
+}
 export function validWorld(v: unknown, created: string): v is WorldState {
   const w = v as any;
   if (!obj(w) || !validDay(w.trackingSince) || w.trackingSince < created ||
@@ -23,5 +29,5 @@ export function validWorld(v: unknown, created: string): v is WorldState {
     !unique(w.songs.map((s: any) => s.id)) || !Array.isArray(w.pages) || !Array.isArray(w.encounters) ||
     (w.preferredTitle !== null && (!text(w.preferredTitle, 160) || !w.milestones.some((m: any) => m.kind === 'title' && m.id === w.preferredTitle)))) return false;
   // Later phases fill these collections; unknown or partial records are not accepted.
-  return w.pages.length === 0 && w.encounters.length === 0;
+  return w.pages.every(validPage) && unique(w.pages.map((p:any)=>p.id)) && w.encounters.length === 0;
 }
