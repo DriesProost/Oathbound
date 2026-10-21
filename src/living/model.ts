@@ -6,7 +6,7 @@ export type AiSettings = {
 export type Arc = { id: string; template: string; title: string; premise: string; stage: number; started: string; completed?: string };
 export type StoryChoice = { id: string; label: string; outcome: string };
 export type StoryBeat = {
- id: string; date: string; arcId: string; stage: number;
+ id: string; date: string; arcId: string; stage: number; progress: number;
  type: 'scene' | 'letter' | 'rumour' | 'quiet' | 'confrontation' | 'ending';
  title: string; prose: string; speakerId?: string; locationId: string;
  canonFactsAdded: string[]; hooksAdded: string[]; hooksResolved: string[];

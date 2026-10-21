@@ -1,3 +1,4 @@
+import JourneyStory, { StoryHistory } from './living/JourneyStory';
 import { generateReplacement } from './living/ventureGeneration';
 import { JsonNarrativeProvider } from './living/provider';
 import NarrativeSettings from './living/NarrativeSettings';
@@ -775,6 +776,7 @@ function OathboundApp() {
                   </div>
                 </div>
               </div>
+              {state.living.story.hooks.length>0 && <button className="venture-teaser" onClick={()=>switchTab("Journey")}><strong>Word from the road</strong><span>{state.living.story.hooks.at(-1)}</span></button>}
               <KeepOverview state={state} date={today} update={update} />
               <details className="journal-attributes">
                 <summary><Shield size={17} /> Knight attributes <span>Six disciplines</span></summary>
@@ -1145,8 +1147,8 @@ function OathboundApp() {
           )}
           {tab === "Journey" && (
             <>
-            <section className="journey-story" aria-label="The campaign story"><ChapterPanel state={state} date={today} />
-            <EncounterPanel state={state} date={today} update={update} /></section>
+            <JourneyStory state={state} date={today} update={update}/><details className="earlier-road"><summary>The earlier road to Oakhaven</summary><section className="journey-story" aria-label="The campaign story"><ChapterPanel state={state} date={today} />
+            <EncounterPanel state={state} date={today} update={update} /></section></details>
             <section className="journey panel">
               <span className="eyebrow">THE ROAD TO OAKHAVEN</span>
               <h2>{routeSteps(total.distance)} route steps</h2>
@@ -1251,7 +1253,7 @@ function OathboundApp() {
                   window.scrollTo({ top: 0 });
                 }}
               />
-              <IlluminatedChronicle state={state} /><RelicCabinet state={state} />
+              <StoryHistory state={state}/><IlluminatedChronicle state={state} /><RelicCabinet state={state} />
               <VentureLedger state={state} />
               <WeeklyLedger state={state} date={today} />
               <WeeklyReview state={state} now={now} />
