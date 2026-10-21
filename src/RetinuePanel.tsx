@@ -1,3 +1,4 @@
+import CreativeNote from './living/CreativeNote';
 import { useState } from 'react';
 import { Shield, Music2 } from 'lucide-react';
 import type { State } from './model';
@@ -18,11 +19,11 @@ export default function RetinuePanel({ state, date, update, room }: { room?: str
       return <article className="retainer" key={member.id}>
         <div className="retainer-seal" aria-hidden="true">{member.id === 'bard' ? <Music2 /> : <Shield />}<span>{member.name.split(' ').map(n => n[0]).join('')}</span></div>
         <h3>{member.name}</h3><strong>{member.title}</strong><p className="muted">{member.role} · {member.location}</p>
-        <blockquote>{currentRemark(state, member, date)}</blockquote>
+        <blockquote>{currentRemark(state, member, date)}</blockquote><CreativeNote state={state} date={date} kind="dialogue" sourceId={member.id} update={update}/>
         <details><summary>By the hearth</summary><p>{member.biography}</p><p>{arrived.text}</p><small>{arrived.provenance === 'discovered' ? 'Welcomed on' : 'Arrived'} {formatDay(arrived.date, true)}</small></details>
       </article>;
     })}</div>
-    {bard && <details className="songbook"><summary>Tomas’s Songbook</summary><section aria-label="Songbook"><h3>The Songbook</h3><p>Names of airs, and a place for words of your own. Music plays only through your existing ambience controls.</p>
+    {bard && <details className="songbook"><summary>Tomas’s Songbook</summary><section aria-label="Songbook"><h3>The Songbook</h3><CreativeNote state={state} date={date} kind="bard" sourceId="bard" update={update}/><p>Names of airs, and a place for words of your own. Music plays only through your existing ambience controls.</p>
       {availableThemes(state).map(theme => <p key={theme.id}><strong>{theme.title}</strong> · {theme.arrangement}<small>{theme.asset ? 'Available through Keep ambience' : 'An air awaiting its music'}</small></p>)}
       {state.world.songs.map(song => <details key={song.id}><summary>{song.title}</summary><p className="song-notes">{song.notes}</p><pre className="song-notes">{song.chords}</pre><small>Begun {formatDay(song.created, true)}</small><button className="text-button" onClick={() => { setTitle(song.title); setNotes(song.notes); setChords(song.chords); setEditing(song.id); }}>Edit song</button></details>)}
       <form onSubmit={e => { e.preventDefault(); const next = writeSong(state, { title, notes, chords }, date, editing);

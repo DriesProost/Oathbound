@@ -1132,7 +1132,7 @@ function OathboundApp() {
                   window.scrollTo({ top: 0 });
                 }}
               />
-              <StoryHistory state={state}/><IlluminatedChronicle state={state} /><RelicCabinet state={state} />
+              <StoryHistory state={state}/><IlluminatedChronicle state={state} date={today} update={update}/><RelicCabinet state={state} />
               <VentureLedger state={state} />
               <WeeklyLedger state={state} date={today} />
               <WeeklyReview state={state} now={now} />

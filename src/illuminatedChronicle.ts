@@ -66,5 +66,6 @@ export function correctChronicle(before: State, after: State): State {
   changed = true;
   return { ...page, narrative: newFacts.narrative, highlights: newFacts.highlights };
  });
- return changed ? { ...after, world: { ...after.world, pages } } : after;
+ const affected = new Set(pages.filter((page,i)=>page !== after.world.pages[i]).map(p=>p.id));
+ return changed ? { ...after, world: { ...after.world, pages }, living: { ...after.living, story: { ...after.living.story, creative: after.living.story.creative.filter(e=>e.kind !== 'chronicle' || !affected.has(e.sourceId)) } } } : after;
 }

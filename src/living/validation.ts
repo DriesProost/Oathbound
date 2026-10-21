@@ -4,7 +4,7 @@ import type { LivingCampaign } from './model';
 export const object = (v: unknown): v is Record<string, any> => !!v && typeof v === 'object' && !Array.isArray(v);
 export const text = (v: unknown, max=4000): v is string => typeof v === 'string' && v.trim().length > 0 && v.length <= max;
 export const texts = (v: unknown, max=1000): v is string[] => Array.isArray(v) && v.length<=max && v.every(x=>text(x));
-export const exact = (v: unknown, keys: string[]) => object(v) && Object.keys(v).every(k=>keys.includes(k));
+export const exact = (v: unknown, keys: string[]): v is Record<string, any> => object(v) && Object.keys(v).every(k=>keys.includes(k));
 const unique = (v: string[]) => new Set(v).size===v.length;
 export function validLiving(v: unknown): v is LivingCampaign {
  if(!object(v)||v.version!==1||!object(v.settings)||!object(v.story)||!Array.isArray(v.battles))return false;
