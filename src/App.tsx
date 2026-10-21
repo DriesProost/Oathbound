@@ -1,3 +1,4 @@
+import NarrativeSettings from './living/NarrativeSettings';
 import WorldFrontier from "./WorldFrontier";
 import TitlePanel from "./TitlePanel";
 import { displayedTitle } from "./titles";
@@ -1072,7 +1073,7 @@ function OathboundApp() {
                   {bodyAppearanceExplanation(state.weight, today) && <p className="muted appearance-status">{bodyAppearanceExplanation(state.weight, today)}</p>}
                 </div>
               </div>
-              <details className="profile-flavour"><summary>Your name in the campaign</summary><TitlePanel state={state} update={update} /></details>
+              <details className="profile-flavour"><summary>Your name in the campaign</summary><TitlePanel state={state} update={update} /></details><NarrativeSettings state={state} update={update}/>
               <section className="panel campaign-summary">
                 <div className="section-heading">
                   <h2>Your campaign</h2>
