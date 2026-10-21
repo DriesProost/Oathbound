@@ -1,3 +1,5 @@
+import { generateReplacement } from './living/ventureGeneration';
+import { JsonNarrativeProvider } from './living/provider';
 import NarrativeSettings from './living/NarrativeSettings';
 import WorldFrontier from "./WorldFrontier";
 import TitlePanel from "./TitlePanel";
@@ -11,7 +13,7 @@ import { synchronizeWorld } from "./worldProgression";
 import { retinueVentureIntro } from "./retinue";
 import { ventureAttributeLabel } from "./ventures";
 import { DailyVenture, VentureLedger } from "./DailyVenture";
-import { ensureDailyVenture, todaysVenture, completeDailyVenture, replaceDailyVenture } from "./ventureDomain";
+import { ensureDailyVenture, todaysVenture, completeDailyVenture } from "./ventureDomain";
 import { AppUpdate, InstallApp } from "./PwaStatus";
 import {
   FeedbackProvider,
@@ -140,6 +142,8 @@ function OathboundApp() {
   const animatedRank = rankProgress(animatedRenown);
   const [now, setNow] = useState(new Date());
   const [ventureOpen, setVentureOpen] = useState(false);
+  const [ventureBusy, setVentureBusy] = useState(false);
+  const ventureRequest = useRef(false);
   const [campaignEditing, setCampaignEditing] = useState(false);
   const [onboardingGoals, setOnboardingGoals] = useState<CampaignGoal[]>(() =>
     defaultGoals(false),
@@ -923,15 +927,19 @@ function OathboundApp() {
                 <div className="board-plaque">
                   <span>✦</span> THE QUEST BOARD <span>✦</span>
                 </div>
-                {venture && <DailyVenture venture={venture} introduction={retinueVentureIntro(state, venture.attribute, today)} open={ventureOpen} onOpen={() => setVentureOpen(true)} onClose={() => setVentureOpen(false)}
+                {venture && <DailyVenture busy={ventureBusy} venture={venture} introduction={retinueVentureIntro(state, venture.attribute, today)} open={ventureOpen} onOpen={() => setVentureOpen(true)} onClose={() => setVentureOpen(false)}
                   onComplete={() => {
                     const current = stateRef.current!;
                     const next = completeDailyVenture(current, venture.assignmentId, new Date());
                     if (next !== current && update(next, "venture")) setVentureOpen(false);
-                  }} onReplace={() => {
-                    const current = stateRef.current!;
-                    const next = replaceDailyVenture(current, venture.assignmentId, new Date());
-                    if (next !== current) update(next);
+                  }} onReplace={async () => {
+                    if (ventureRequest.current) return;
+                    ventureRequest.current = true; setVentureBusy(true);
+                    const current = stateRef.current!, requested = new Date();
+                    try {
+                      const next = await generateReplacement(current, venture.assignmentId, requested, new JsonNarrativeProvider(current.living.settings));
+                      if (stateRef.current === current && dayKey(new Date()) === dayKey(requested) && next !== current) update(next);
+                    } finally { ventureRequest.current = false; setVentureBusy(false); }
                   }} />}
                 {showOath && (
                   <OathPanel

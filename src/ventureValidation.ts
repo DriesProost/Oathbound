@@ -26,6 +26,7 @@ export function validVentureHistory(value: unknown, created: string): value is V
       !v.reward.xp || typeof v.reward.xp !== 'object' || Array.isArray(v.reward.xp) ||
       Object.keys(v.reward.xp).length !== ventureAttributes(v).length ||
       ventureAttributes(v).some(a => !Number.isFinite(v.reward.xp[a]) || v.reward.xp[a] <= 0)) return false;
+    if (v.generation !== undefined && (!v.generation || v.generation.source !== 'ai' || !validDay(v.generation.date) || !text(v.generation.model) || !text(v.generation.consequenceHook))) return false;
     ids.add(v.assignmentId);
     if (v.status === 'completed') {
       const r = v.rewardGrant;

@@ -6,8 +6,8 @@ import { ventureAttributeLabel, ventureAttributes } from './ventures';
 import { completedVentures } from './ventureDomain';
 import './ventures.css';
 
-export function DailyVenture({ venture, introduction, open, onOpen, onClose, onComplete, onReplace }: {
-  venture: VentureAssignment; introduction?: string; open: boolean; onOpen: () => void; onClose: () => void;
+export function DailyVenture({ venture, introduction, busy, open, onOpen, onClose, onComplete, onReplace }: {
+  venture: VentureAssignment; introduction?: string; busy?: boolean; open: boolean; onOpen: () => void; onClose: () => void;
   onComplete: () => void; onReplace: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -30,7 +30,7 @@ export function DailyVenture({ venture, introduction, open, onOpen, onClose, onC
     <div className="venture-actions">
       <button className="secondary" onClick={onOpen}>Open Venture</button>
       {venture.status === 'completed' ? <span className="venture-seal">✦ Venture complete</span> :
-        !venture.replacementOf && <button className="text-button" onClick={onReplace}>Choose another Venture</button>}
+        !venture.replacementOf && <button className="text-button" disabled={busy} onClick={onReplace}>{busy ? "Preparing a notice…" : "Choose another Venture"}</button>}
     </div>
     <small>Optional. Tomorrow brings another Venture.</small>
     <dialog className="venture-dialog" ref={dialog} onCancel={onClose} onClose={onClose} aria-labelledby="venture-title">
@@ -39,6 +39,7 @@ export function DailyVenture({ venture, introduction, open, onOpen, onClose, onC
       <p className="venture-flavour">{introduction || venture.introduction}</p>
       <p>{venture.duration} · {venture.tier}</p>
       <RewardText reward={venture.reward} />
+      {venture.generation && <small>AI-authored notice · rewards set by Oathbound</small>}
       {venture.reading && <section className="venture-lesson" aria-label="Lesson"><h3>The lesson</h3>{venture.reading.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}</section>}
       <section aria-label="Practical instructions">
         {venture.instructions.map((instruction, i) => <div key={i}><p>{instruction}</p>

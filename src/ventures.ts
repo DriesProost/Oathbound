@@ -20,6 +20,7 @@ export type VentureDefinition = {
   reflection?: string;
   tags: string[];
   safety?: string;
+  generation?: { source: "ai"; date: string; model: string; consequenceHook: string };
 };
 export function ventureAttributes(venture: Pick<VentureDefinition, 'attribute' | 'secondaryAttributes'>): Attribute[] {
   return [venture.attribute, ...(venture.secondaryAttributes ?? [])];
