@@ -6,13 +6,13 @@ import { known } from './worldRecords';
 import { availableThemes, writeSong } from './songbook';
 import { formatDay } from './presentation';
 import './world.css';
-export default function RetinuePanel({ state, date, update }: { state: State; date: string; update: (state: State) => boolean }) {
+export default function RetinuePanel({ state, date, update, room }: { room?: string; state: State; date: string; update: (state: State) => boolean }) {
   const [title, setTitle] = useState(''), [notes, setNotes] = useState(''), [chords, setChords] = useState('');
   const [editing, setEditing] = useState<string | undefined>(), [error, setError] = useState('');
-  const bard = known(state, 'retinue', 'bard');
-  return <details className="panel world-panel"><summary>The Retinue <span>Inhabitants of the Keep</span></summary>
+  const bard = (!room || room === 'Great Hall') && known(state, 'retinue', 'bard');
+  return <details className="panel world-panel"><summary>By the hearth <span>People in this room</span></summary>
     <p className="muted">A household grows around the campaign. A quiet day sends nobody away.</p>
-    <div className="retinue-grid">{retinue.map(member => {
+    <div className="retinue-grid">{retinue.filter(m => (!room || m.location === room) && known(state, 'retinue', m.id)).map(member => {
       const arrived = state.world.milestones.find(m => m.kind === 'retinue' && m.id === member.id);
       if (!arrived) return <article className="retainer empty-chamber" key={member.id}><Shield aria-hidden="true" /><h3>{member.location}</h3><p>An empty chamber awaits a future guest.</p></article>;
       return <article className="retainer" key={member.id}>
@@ -22,7 +22,7 @@ export default function RetinuePanel({ state, date, update }: { state: State; da
         <details><summary>By the hearth</summary><p>{member.biography}</p><p>{arrived.text}</p><small>{arrived.provenance === 'discovered' ? 'Welcomed on' : 'Arrived'} {formatDay(arrived.date, true)}</small></details>
       </article>;
     })}</div>
-    {bard && <section className="songbook" aria-label="Songbook"><h3>The Songbook</h3><p>Names of airs, and a place for words of your own. Music plays only through your existing ambience controls.</p>
+    {bard && <details className="songbook"><summary>Tomas’s Songbook</summary><section aria-label="Songbook"><h3>The Songbook</h3><p>Names of airs, and a place for words of your own. Music plays only through your existing ambience controls.</p>
       {availableThemes(state).map(theme => <p key={theme.id}><strong>{theme.title}</strong> · {theme.arrangement}<small>{theme.asset ? 'Available through Keep ambience' : 'An air awaiting its music'}</small></p>)}
       {state.world.songs.map(song => <details key={song.id}><summary>{song.title}</summary><p className="song-notes">{song.notes}</p><pre className="song-notes">{song.chords}</pre><small>Begun {formatDay(song.created, true)}</small><button className="text-button" onClick={() => { setTitle(song.title); setNotes(song.notes); setChords(song.chords); setEditing(song.id); }}>Edit song</button></details>)}
       <form onSubmit={e => { e.preventDefault(); const next = writeSong(state, { title, notes, chords }, date, editing);
@@ -34,6 +34,6 @@ export default function RetinuePanel({ state, date, update }: { state: State; da
         <label>Chords<textarea rows={2} maxLength={4000} value={chords} onChange={e => setChords(e.target.value)} /></label>
         {error && <p role="status">{error}</p>}<button className="secondary">Save song</button>
         {editing && <button type="button" className="text-button" onClick={() => { setEditing(undefined); setTitle(''); setNotes(''); setChords(''); }}>Cancel editing</button>}
-      </form></section>}
+      </form></section></details>}
   </details>;
 }

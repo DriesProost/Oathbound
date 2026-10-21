@@ -6,7 +6,6 @@ import ChapterPanel from "./ChapterPanel";
 import IlluminatedChronicle from "./IlluminatedChronicle";
 import RelicCabinet from "./RelicCabinet";
 import KeepOverview from "./KeepOverview";
-import RetinuePanel from "./RetinuePanel";
 import { synchronizeWorld } from "./worldProgression";
 import { retinueVentureIntro } from "./retinue";
 import { ventureAttributeLabel } from "./ventures";
@@ -771,9 +770,7 @@ function OathboundApp() {
                   </div>
                 </div>
               </div>
-              <KeepOverview state={state} />
-              <RetinuePanel state={state} date={today} update={update} />
-              <RelicCabinet state={state} />
+              <KeepOverview state={state} date={today} update={update} />
               <details className="journal-attributes">
                 <summary><Shield size={17} /> Knight attributes <span>Six disciplines</span></summary>
                 <Attributes state={state} />
@@ -1075,7 +1072,7 @@ function OathboundApp() {
                   {bodyAppearanceExplanation(state.weight, today) && <p className="muted appearance-status">{bodyAppearanceExplanation(state.weight, today)}</p>}
                 </div>
               </div>
-              <TitlePanel state={state} update={update} />
+              <details className="profile-flavour"><summary>Your name in the campaign</summary><TitlePanel state={state} update={update} /></details>
               <section className="panel campaign-summary">
                 <div className="section-heading">
                   <h2>Your campaign</h2>
@@ -1139,8 +1136,8 @@ function OathboundApp() {
           )}
           {tab === "Journey" && (
             <>
-            <ChapterPanel state={state} date={today} />
-            <EncounterPanel state={state} date={today} update={update} />
+            <section className="journey-story" aria-label="The campaign story"><ChapterPanel state={state} date={today} />
+            <EncounterPanel state={state} date={today} update={update} /></section>
             <section className="journey panel">
               <span className="eyebrow">THE ROAD TO OAKHAVEN</span>
               <h2>{routeSteps(total.distance)} route steps</h2>
@@ -1245,7 +1242,7 @@ function OathboundApp() {
                   window.scrollTo({ top: 0 });
                 }}
               />
-              <IlluminatedChronicle state={state} />
+              <IlluminatedChronicle state={state} /><RelicCabinet state={state} />
               <VentureLedger state={state} />
               <WeeklyLedger state={state} date={today} />
               <WeeklyReview state={state} now={now} />
