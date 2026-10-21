@@ -1,3 +1,4 @@
+import {validBattle} from './combatValidation';
 import { validDay } from '../calendar';
 import type { LivingCampaign } from './model';
 export const object = (v: unknown): v is Record<string, any> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -19,5 +20,5 @@ export function validLiving(v: unknown): v is LivingCampaign {
  if(s.lastGenerated!==null&&!validDay(s.lastGenerated))return false;
  if(!Array.isArray(s.choices)||!s.choices.every((c:any)=>object(c)&&validDay(c.date)&&text(c.outcome)&&s.beats.some((b:any)=>b.id===c.beatId&&b.chosen===c.choiceId&&b.date<=c.date)))return false;
  if(!Array.isArray(s.creative)||!s.creative.every((e:any)=>object(e)&&text(e.id,250)&&['dialogue','bard','chronicle'].includes(e.kind)&&validDay(e.date)&&text(e.sourceId,180)&&text(e.sourceHash,100)&&text(e.text,8000)&&['authored','ai'].includes(e.source))||!unique(s.creative.map((e:any)=>e.id)))return false;
- return v.battle===null && v.battles.length===0; // Replaced by combat validator when the engine is introduced.
+ return (v.battle===null||validBattle(v.battle,s as any)) && v.battles.every((b:any)=>validBattle(b,s as any)&&b.status!=='active') && unique(v.battles.map((b:any)=>b.id)) && (v.battle===null||v.battle.status==='active'?!v.battle||!v.battles.some((b:any)=>b.id===v.battle.id):v.battles.some((b:any)=>JSON.stringify(b)===JSON.stringify(v.battle)));
 }

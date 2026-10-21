@@ -1,6 +1,7 @@
 import {describe,it,expect,vi} from 'vitest';
 import {createKnight,completeQuest,totals} from '../domain';
 import {continueStory,chooseStory,canContinue,validScene} from './director';
+import {startBattle,takeTurn} from './combat';
 import {validate} from '../storage';
 const date='2026-10-21';
 const scene=()=>({title:'A neighbour at the gate',prose:'The traveller carries a letter for the miller.',canonFactsAdded:['The miller has a cousin in the village.'],hooksAdded:[],hooksResolved:[],choices:[]});
@@ -28,7 +29,7 @@ describe('Narrative continuity',()=>{
    const beat=s.living.story.beats.at(-1)!;
    if(beat.choices.length){s=chooseStory(s,beat.id,'public',d);expect(chooseStory(s,beat.id,'quiet',d)).toBe(s);}
    // Story/combat integration records a resolved confrontation; engine verifies it later.
-   if(beat.combatSetup)s={...s,living:{...s.living,battles:[{id:'test',beatId:beat.id,status:'withdrawn'} as any]}};
+   if(beat.combatSetup)s=takeTurn(startBattle(s,beat.id,d),'withdraw');
   }
   expect(s.living.story.arcs[0].completed).toBe('2026-10-27');expect(s.living.story.choices).toHaveLength(1);expect(s.living.story.completedMysteries).toHaveLength(1);
   s=completeQuest(s,'training','2026-10-28',new Date('2026-10-28T20:00:00'));s=completeQuest(s,'patrol','2026-10-28',new Date('2026-10-28T20:00:00'));
