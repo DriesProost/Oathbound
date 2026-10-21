@@ -127,7 +127,7 @@ On Android, open the address in Chrome, choose **⋮ → Install app / Add to ho
 Retinue, six evolving Keep areas, twelve permanent Relics, weekly Illuminated Chronicle pages, Chapter I, ten Journey encounters, ten earned Titles and five Grey Host restoration milestones share the existing campaign progression. The 60 Daily Ventures remain intact. Nothing is lost through inactivity, and none of these world systems introduces rewards or a currency. See [architecture, save migration, content and verification](docs/eight-great-systems.md).
 
 
-### Living Campaign (save v6)
+### Living Campaign (save v7)
 
 The five destinations now combine the household and narrative systems: enter rooms in Keep, act through Quests, follow connected arcs and deterministic tactical confrontations in Journey, read factual/fictional manuscripts in Chronicle, and manage attributes/Techniques/preferences in Knight. Existing reward/history records are preserved through an exact-backed-up v5 → v6 migration.
 
@@ -135,3 +135,5 @@ Optional runtime AI is **OpenAI `gpt-6-luna` only, low reasoning**, with no mode
 
 
 AI setup: open **Knight → Narrative preferences**. The OpenAI chat-completions endpoint is prefilled. Paste an existing key, leave **Remember key on this device** checked, then save. **Test connection** makes a minimal real Luna request and reports model access, key, billing/quota, connectivity and JSON errors. Keys are stored separately from campaign history, bound to the exact endpoint, and can be removed with **Forget saved key**. Session-only retention remains available.
+
+Campaign content now prepares automatically while the app is open, with accepted results cached. **Read the next page** still reveals the next story scene: at most one per local day, with unread pages preserved across skipped days. Choices and combat remain explicit actions. Optional **A chore a day** rewards any completed household chore with +20 Renown and +10 Resolve XP through its own ordinary daily slot. The exact-backed-up v6 → v7 migration enables this goal from the migration date, preserving historical records.

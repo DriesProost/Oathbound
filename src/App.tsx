@@ -1,3 +1,5 @@
+import {ensureAutomatic, markVentureSeen} from './living/automatic';
+import {useAutomaticCampaign} from './living/useAutomaticCampaign';
 import { KeepAtmosphere } from './living/Atmosphere';
 import { TechniqueBook } from './living/CombatScene';
 import JourneyStory, { StoryHistory } from './living/JourneyStory';
@@ -108,7 +110,8 @@ function OathboundApp() {
   const [pulse, clearPulse] = useFeedbackPulse(3200);
   const [initial] = useState(() => {
     try {
-      return { state: load(), error: "" };
+      const saved = load();
+      return { state: saved ? ensureAutomatic(saved, dayKey()) : null, error: "" };
     } catch {
       return {
         state: null,
@@ -164,6 +167,21 @@ function OathboundApp() {
     const next = synchronizeWorld(ensureDailyVenture(ensureWeeklyPeriod(state, dayKey(now)), dayKey(now)), dayKey(now), "discovered");
     if (next !== state) update(next);
   }, [state, now]);
+  useAutomaticCampaign(state, now, {
+    current: () => stateRef.current,
+    fresh: () => {
+      const current = stateRef.current;
+      if (!current) return null;
+      const saved = load();
+      if (!saved) return null;
+      const ready = ensureAutomatic(saved, dayKey());
+      if (JSON.stringify(ready) !== JSON.stringify(current)) {
+        stateRef.current = ready; setState(ready);
+      }
+      return ready;
+    },
+    update: next => update(next),
+  });
   function update(next: State, intent: FeedbackIntent = "quiet") {
     const before = stateRef.current;
     const ready = synchronizeWorld(ensureDailyVenture(ensureWeeklyPeriod(next, dayKey(now)), dayKey(now)), dayKey(now), intent === "quiet" ? "discovered" : "earned");
@@ -316,6 +334,7 @@ function OathboundApp() {
     total = totals(state),
     rank = rankProgress(total.renown),
     oath = oathStats(state, today);
+  const roadAvailable = !!state.living.automatic?.preparedStory || state.world.encounters.some(e=>!e.choiceId) || state.living.story.beats.some(b=>b.choices.length&&!b.chosen) || !!(state.living.story.beats.at(-1)?.combatSetup&&!state.living.battles.some(b=>b.beatId===state.living.story.beats.at(-1)?.id));
   const displayName = knightlyName(state.name, total.renown);
   const currentGoals = campaignGoals(state.campaign, today);
   const campaignQuests = availableQuests(state, now);
@@ -518,7 +537,7 @@ function OathboundApp() {
     .reverse();
   return (
     <div className="app">
-      <span id="road-story-status" className="sr-only" role="status">{state.world.encounters.some(e => !e.choiceId) ? 'A roadside story is available in Journey.' : ''}</span>
+      <span id="road-story-status" className="sr-only" role="status">{roadAvailable ? state.living.automatic?.preparedStory ? 'A new page is ready in Journey.' : 'A meeting or reply is waiting in Journey.' : ''}</span>
       <aside className="sidebar">
         <div className="brand">
           <Shield size={30} />
@@ -534,12 +553,12 @@ function OathboundApp() {
               key={t.name}
               className={tab === t.name ? "active" : ""}
               aria-current={tab === t.name ? "page" : undefined}
-              aria-describedby={t.name === 'Journey' && state.world.encounters.some(e => !e.choiceId) ? 'road-story-status' : undefined}
+              aria-describedby={t.name === 'Journey' && roadAvailable ? 'road-story-status' : undefined}
               onClick={() => switchTab(t.name)}
             >
               <t.icon size={20} />
               {t.name}
-              {t.name === 'Journey' && state.world.encounters.some(e => !e.choiceId) && <span className="road-notification" aria-hidden="true">•</span>}
+              {t.name === 'Journey' && roadAvailable && <span className="road-notification" aria-hidden="true">•</span>}
               {tab === t.name && <ChevronRight size={15} />}
             </button>
           ))}
@@ -706,7 +725,7 @@ function OathboundApp() {
           {tab === "Keep" && (
             <>
               {venture && venture.status !== 'completed' && <button className="venture-teaser" onClick={() => {
-                switchTab("Quest Board"); setVentureOpen(true);
+                update(markVentureSeen(stateRef.current!, venture.assignmentId, today)); switchTab("Quest Board"); setVentureOpen(true);
               }}><strong>A fresh commission awaits.</strong><span>{venture.title} · {ventureAttributeLabel(venture)}</span></button>}
               <div
                 className={
@@ -777,8 +796,8 @@ function OathboundApp() {
                   </div>
                 </div>
               </div>
-              {state.living.story.hooks.length>0 && <button className="venture-teaser" onClick={()=>switchTab("Journey")}><strong>Word from the road</strong><span>{state.living.story.hooks.at(-1)}</span></button>}
-              <KeepAtmosphere state={state}/><KeepOverview state={state} date={today} update={update} />
+              {(state.living.automatic?.preparedStory || state.living.story.hooks.length>0) && <button className="venture-teaser" onClick={()=>switchTab("Journey")}><strong>{state.living.automatic?.preparedStory ? "A new page awaits." : "Word from the road"}</strong><span>{state.living.automatic?.preparedStory?.beat.title ?? state.living.story.hooks.at(-1)}</span></button>}
+              <KeepAtmosphere state={state}/><KeepOverview state={state} date={today} update={update} current={()=>stateRef.current}/>
               <button className="hero-link" onClick={()=>switchTab("Quest Board")}>Visit the Quest Board <ArrowRight size={16}/></button>
               <InstallApp />
               <div className="footer-note">
@@ -808,7 +827,7 @@ function OathboundApp() {
                 <div className="board-plaque">
                   <span>✦</span> THE QUEST BOARD <span>✦</span>
                 </div>
-                {venture && <DailyVenture busy={ventureBusy} venture={venture} introduction={venture.generation ? undefined : retinueVentureIntro(state, venture.attribute, today)} open={ventureOpen} onOpen={() => setVentureOpen(true)} onClose={() => setVentureOpen(false)}
+                {venture && <DailyVenture busy={ventureBusy} venture={venture} introduction={venture.generation ? undefined : retinueVentureIntro(state, venture.attribute, today)} open={ventureOpen} onOpen={() => { update(markVentureSeen(stateRef.current!, venture.assignmentId, today)); setVentureOpen(true); }} onClose={() => setVentureOpen(false)}
                   onComplete={() => {
                     const current = stateRef.current!;
                     const next = completeDailyVenture(current, venture.assignmentId, new Date());
@@ -816,10 +835,12 @@ function OathboundApp() {
                   }} onReplace={async () => {
                     if (ventureRequest.current) return;
                     ventureRequest.current = true; setVentureBusy(true);
+                    update(markVentureSeen(stateRef.current!, venture.assignmentId, today));
                     const current = stateRef.current!, requested = new Date();
                     try {
                       const next = await generateReplacement(current, venture.assignmentId, requested, new JsonNarrativeProvider(current.living.settings));
-                      if (stateRef.current === current && dayKey(new Date()) === dayKey(requested) && next !== current) update(next);
+                      const latest = stateRef.current!;
+                      if (dayKey(new Date()) === dayKey(requested) && JSON.stringify(latest.ventures) === JSON.stringify(current.ventures) && JSON.stringify(latest.living.settings) === JSON.stringify(current.living.settings) && next !== current) update({...latest,ventures:next.ventures});
                     } finally { ventureRequest.current = false; setVentureBusy(false); }
                   }} />}
                 {showOath && (
@@ -962,7 +983,7 @@ function OathboundApp() {
                   {bodyAppearanceExplanation(state.weight, today) && <p className="muted appearance-status">{bodyAppearanceExplanation(state.weight, today)}</p>}
                 </div>
               </div>
-              <details className="profile-flavour"><summary>Your name in the campaign</summary><TitlePanel state={state} update={update} /></details><TechniqueBook state={state}/><NarrativeSettings state={state} update={update}/>
+              <details className="profile-flavour"><summary>Your name in the campaign</summary><TitlePanel state={state} update={update} /></details><TechniqueBook state={state}/><NarrativeSettings state={state} update={update} current={()=>stateRef.current}/>
               <section className="panel campaign-summary">
                 <div className="section-heading">
                   <h2>Your campaign</h2>
@@ -1026,7 +1047,7 @@ function OathboundApp() {
           )}
           {tab === "Journey" && (
             <>
-            <JourneyStory state={state} date={today} update={update}/><details className="earlier-road"><summary>The earlier road to Oakhaven</summary><section className="journey-story" aria-label="The campaign story"><ChapterPanel state={state} date={today} />
+            <JourneyStory state={state} date={today} update={update} current={()=>stateRef.current}/><details className="earlier-road"><summary>The earlier road to Oakhaven</summary><section className="journey-story" aria-label="The campaign story"><ChapterPanel state={state} date={today} />
             <EncounterPanel state={state} date={today} update={update} /></section></details>
             <section className="journey panel">
               <span className="eyebrow">THE ROAD TO OAKHAVEN</span>
@@ -1227,7 +1248,7 @@ function OathboundApp() {
               key={t.name}
               className={tab === t.name ? "active" : ""}
               aria-current={tab === t.name ? "page" : undefined}
-              aria-describedby={t.name === 'Journey' && state.world.encounters.some(e => !e.choiceId) ? 'road-story-status' : undefined}
+              aria-describedby={t.name === 'Journey' && roadAvailable ? 'road-story-status' : undefined}
               onClick={() => switchTab(t.name)}
             >
               <t.icon size={21} />

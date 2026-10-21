@@ -105,4 +105,10 @@ export const quests: Quest[] = [
     timing: "retrospective",
     reward: { renown: 25, xp: { Vitality: 15 } },
   },
+  {
+    id: "chore", goalId: "chore", name: "A chore a day",
+    description: "Complete one household chore of your choice",
+    category: "duties", difficulty: "light", timing: "immediate",
+    reward: { renown: 20, xp: { Resolve: 10 } },
+  },
 ];

@@ -8,6 +8,9 @@ import { attributes, quests, type Reward } from "./config";
 import { validDay, dayKey, weekStart, addDays } from "./calendar";
 import {
   createCampaign,
+  defaultGoals,
+  configureCampaign,
+  goalDefinitions,
   validGoals,
   validTarget,
   validWeeklyTarget,
@@ -16,7 +19,9 @@ import { ensureWeeklyPeriod } from "./weekly";
 import { campaignRules } from "./config";
 import { goalIds, portraitIds, type State, type Entry } from "./model";
 export const storageKeys = {
-  current: "oathbound.knight.v6",
+  current: "oathbound.knight.v7",
+  v6: "oathbound.knight.v6",
+  choreBackup: "oathbound.knight.v6.chore.backup",
   v5: "oathbound.knight.v5",
   livingBackup: "oathbound.knight.v5.living.backup",
   v4: "oathbound.knight.v4",
@@ -306,7 +311,7 @@ function addWeeklyModel(source: unknown, date: string): V3State {
       commissions: [],
     },
   };
-  const ready = ensureWeeklyPeriod({ ...next, version: 6, living: createLiving(), ventures: [], world: createWorld(date) }, date);
+  const ready = ensureWeeklyPeriod({ ...next, version: 7, living: createLiving(), ventures: [], world: createWorld(date) }, date);
   const { ventures: _ventures, world: _world, living: _living, ...legacy } = ready;
   return validateV3({ ...legacy, version: 3 });
 }
@@ -417,7 +422,7 @@ function migrateV3(source: unknown, date = dayKey()): V3State {
       created: old.created,
       entries,
       oaths: structuredClone(old.oaths),
-      campaign: createCampaign(old.created),
+      campaign: createCampaign(old.created, defaultGoals().filter(g=>g.id!=="chore")),
       weight: {
         settings: { displayUnit: "kg", baseline: null, targetGrams: null },
         measurements: [],
@@ -442,25 +447,36 @@ function validateV5(source: unknown) {
   validateV4({ ...source, version: 4 });
   return source;
 }
-export function validate(source: unknown): State {
+function validateV6(source: unknown) {
   if (!object(source) || source.version !== 6 || !validLiving(source.living, source.created)) return failure();
   validateV5({ ...source, version: 5 });
+  return source;
+}
+export function validate(source: unknown): State {
+  if (!object(source) || source.version !== 7) return failure();
+  validateV6({ ...source, version: 6 });
   return source as State;
 }
+function addChore(state:State,date:string):State {
+ const last=state.campaign.revisions.at(-1)!;
+ if(last.goals.some(g=>g.id==='chore'))return state;
+ return configureCampaign(state,[...last.goals,{id:'chore',active:true,target:structuredClone(goalDefinitions.chore.defaultTarget)}],date<last.effectiveDate?last.effectiveDate:date);
+}
 export function migrate(source: unknown, date = dayKey()): State {
-  if (object(source) && source.version === 6) return validate(source);
+  if (object(source) && source.version === 7) return validate(source);
   if (!object(source) || !validDay(date)) return failure();
-  if (source.version === 5) return validate({ ...validateV5(source), version: 6, living: createLiving() });
+  if (source.version === 6) return validate(addChore({...validateV6(source),version:7} as State,date));
+  if (source.version === 5) return validate(addChore({ ...validateV5(source), version: 7, living: createLiving() } as State,date));
   if (source.world !== undefined) return failure();
   const old = source.version === 4 ? validateV4(source) : { ...migrateV3(source, date), version: 4, ventures: [] };
-  return validate({ ...old, version: 6, living: createLiving(), world: createWorld(date < old.created ? old.created : date) });
+  return validate(addChore({ ...old, version: 7, living: createLiving(), world: createWorld(date < old.created ? old.created : date) },date));
 }
 export function load(
   store: Store = localStorage,
   date = dayKey(),
 ): State | null {
-  const v6 = store.getItem(storageKeys.current);
-  const current = v6 ?? store.getItem(storageKeys.v5) ?? store.getItem(storageKeys.v4) ?? store.getItem(storageKeys.v3);
+  const v7 = store.getItem(storageKeys.current);
+  const current = v7 ?? store.getItem(storageKeys.v6) ?? store.getItem(storageKeys.v5) ?? store.getItem(storageKeys.v4) ?? store.getItem(storageKeys.v3);
   if (current !== null) {
     const source = JSON.parse(current);
     const migrated = migrate(source, date);
@@ -476,7 +492,9 @@ export function load(
       store.setItem(storageKeys.worldBackup, current);
     if (source.version === 5 && store.getItem(storageKeys.livingBackup) === null)
       store.setItem(storageKeys.livingBackup, current);
-    if (v6 === null || source.version !== 6 || source.weekly === undefined || next !== migrated)
+    if (source.version === 6 && store.getItem(storageKeys.choreBackup) === null)
+      store.setItem(storageKeys.choreBackup, current);
+    if (v7 === null || source.version !== 7 || source.weekly === undefined || next !== migrated)
       store.setItem(storageKeys.current, JSON.stringify(next));
     return next;
   }

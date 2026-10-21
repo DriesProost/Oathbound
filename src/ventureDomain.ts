@@ -83,3 +83,11 @@ export function completeDailyVenture(state: State, id: string, now = new Date())
 export function completedVentures(state: State) {
   return state.ventures.filter(v => v.status === 'completed').sort((a, b) => b.date.localeCompare(a.date));
 }
+
+/** Prepare the first notice without spending its replacement. The scheduler also
+ * checks its seen/attempt journal before requesting or accepting new content. */
+export function prepareDailyNotice(state:State,id:string,definition:VentureDefinition,date:string):State {
+ const current=todaysVenture(state,date);
+ if(!current||current.assignmentId!==id||current.status!=='assigned'||current.replacementOf||current.replaced||definition.attribute!==current.attribute||definition.tier!==current.tier)return state;
+ return {...state,ventures:state.ventures.map(v=>v.assignmentId===id?snapshot(definition,date):v)};
+}

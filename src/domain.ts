@@ -26,7 +26,7 @@ export function createKnight(
 ): State {
   return ensureWeeklyPeriod(
     {
-      version: 6,
+      version: 7,
       living: createLiving(),
       world: createWorld(date),
       ventures: [],

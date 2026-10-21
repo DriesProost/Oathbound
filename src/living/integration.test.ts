@@ -26,7 +26,7 @@ describe('Living Campaign final integration',()=>{
    {...s,living:{...s.living,story:{...s.living.story,beats:[...s.living.story.beats,...s.living.story.beats]}}},
    {...s,living:{...s.living,battle:{id:'arbitrary'}}}
   ])expect(()=>validate(bad)).toThrow();
-  const raw=JSON.stringify(s);expect(raw).not.toContain('sessionKey');expect(storageKeys.current).toBe('oathbound.knight.v6');
+  const raw=JSON.stringify(s);expect(raw).not.toContain('sessionKey');expect(storageKeys.current).toBe('oathbound.knight.v7');
  });
  it('writes factual completed-month summaries without inventing empty months and corrects them in place',()=>{
   const base=confirmOath(createKnight('R','2026-09-01'),'2026-09-03','kept',new Date('2026-09-03T20:00:00'));

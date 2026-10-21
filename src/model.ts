@@ -13,6 +13,7 @@ export const goalIds = [
   "care",
   "study",
   "recovery",
+  "chore",
 ] as const;
 export type GoalId = (typeof goalIds)[number];
 export type BehaviourGoalId = Exclude<GoalId, "weight" | "temperance">;
@@ -101,7 +102,7 @@ export type WeighIn = {
   updatedAt: string;
 };
 export type State = {
-  version: 6;
+  version: 7;
   living: LivingCampaign;
   world: WorldState;
   ventures: VentureAssignment[];

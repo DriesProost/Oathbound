@@ -15,7 +15,8 @@ export function Landscape({location='forest',weather='Pale light',dusk=false,lab
 }
 export function KeepAtmosphere({state}:{state:State}){
  const present=retinue.filter(r=>state.world.milestones.some(m=>m.kind==='retinue'&&m.id===r.id));
- return <div className="keep-atmosphere"><Landscape location="keep" weather={state.living.story.weather} dusk/><div className="hearth-glow" aria-hidden="true"/><p>{present.length?`${present[0].name} is about the ${present[0].location.toLowerCase()}.`:'A place by the hearth, and a road beyond the door.'}</p></div>;
+ const line=state.living.story.creative.filter(e=>e.kind==='dialogue').at(-1),speaker=retinue.find(r=>r.id===line?.sourceId);
+ return <div className="keep-atmosphere"><Landscape location="keep" weather={state.living.story.weather} dusk/><div className="hearth-glow" aria-hidden="true"/><p>{line&&speaker?`${speaker.name}: “${line.text}”`:present.length?`${present[0].name} is about the ${present[0].location.toLowerCase()}.`:'A place by the hearth, and a road beyond the door.'}</p></div>;
 }
 export function RoomVignette({state,area,stage}:{state:State;area:KeepArea;stage:number}){
  const residents=retinue.filter(m=>m.location===area.title&&state.world.milestones.some(r=>r.kind==='retinue'&&r.id===m.id)),relics=state.world.milestones.filter(m=>m.kind==='relic'&&m.location===area.title),art=area.artwork?.[stage]??campaignArt.rooms[area.id]?.[stage]?.image;

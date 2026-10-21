@@ -38,7 +38,7 @@ export function validScene(v:unknown):v is SceneResponse {
  if(g.nextArc!==undefined&&(!exact(g.nextArc,['title','premise','mystery'])||!safeProse(g.nextArc.title,160)||!safeProse(g.nextArc.premise,800)||!safeProse(g.nextArc.mystery,300)))return false;
  return g.futureSeed===undefined||safeProse(g.futureSeed,150);
 }
-export async function continueStory(original:State,date:string,provider?:NarrativeProvider):Promise<State> {
+export async function continueStory(original:State,date:string,provider?:NarrativeProvider,signal?:AbortSignal):Promise<State> {
  let state=prepareStory(original,date);if(!canContinue(state,date))return state;
  let s=state.living.story,arc=s.arcs.find(a=>a.id===s.currentArcId)!;
  if(arc.completed){
@@ -68,7 +68,7 @@ export async function continueStory(original:State,date:string,provider?:Narrati
  const fallbackProse=stage===5&&previousBattle&&['defeat','withdrawn'].includes(previousBattle.status)?'After you find another route, a neighbour brings the account to the inn. The people named in it agree to speak. '+scene.prose.replace('Inside the tower, a ledger', 'A copied ledger'):scene.prose;
  const fallback:SceneResponse={title:scene.title,prose:fallbackProse,canonFactsAdded:stage===5?[mystery+' The neighbours’ account is now understood.']:[],hooksAdded:stage===0?[mystery]:[],hooksResolved:stage===6?[mystery]:[],choices};
  const enabled=state.living.settings.enabled&&state.living.settings.story;
- let generated=await generateSafely(enabled?provider:undefined,{task:'story',context:{...narrativeContext(state),nextScene:scene,requiredChoice:stage===3,previousOutcome:s.choices.at(-1)?.outcome},schema:{title:'string',prose:'string',canonFactsAdded:['fictional fact'],hooksAdded:['fictional hook'],hooksResolved:['existing hook only'],choices:stage===3?[{id:'string',label:'string',outcome:'fiction only'}]:[],speakerId:'optional established NPC ID',newNpc:'optional {id: npc:slug,name,role}',newPlace:'optional {id: place:slug,name,description}',futureSeed:'optional future arc title',nextArc:stage===6?'optional {title,premise,mystery} for a genuinely new local problem':'omit'},instruction:'Write the next stage of this connected arc, using nextScene as the structural plan and the previous choice as canon. Never resolve combat in prose. No real-life claims. Include two meaningful choices at the required choice stage and none elsewhere. Respect the planned discoveries and ending.'},validScene,fallback);
+ let generated=await generateSafely(enabled?provider:undefined,{task:'story',context:{...narrativeContext(state),nextScene:scene,requiredChoice:stage===3,previousOutcome:s.choices.at(-1)?.outcome},schema:{title:'string',prose:'string',canonFactsAdded:['fictional fact'],hooksAdded:['fictional hook'],hooksResolved:['existing hook only'],choices:stage===3?[{id:'string',label:'string',outcome:'fiction only'}]:[],speakerId:'optional established NPC ID',newNpc:'optional {id: npc:slug,name,role}',newPlace:'optional {id: place:slug,name,description}',futureSeed:'optional future arc title',nextArc:stage===6?'optional {title,premise,mystery} for a genuinely new local problem':'omit'},instruction:'Write the next stage of this connected arc, using nextScene as the structural plan and the previous choice as canon. Never resolve combat in prose. No real-life claims. Include two meaningful choices at the required choice stage and none elsewhere. Respect the planned discoveries and ending.'},validScene,fallback,signal);
  const g=generated.content;
  if((stage!==6&&!!g.nextArc)||(stage===4&&/\b(victory|defeated|killed|slain|health|stamina|momentum)\b/i.test(g.prose))||(stage===3?g.choices.length!==2:g.choices.length!==0)||g.speakerId&&!s.npcs.some(n=>n.id===g.speakerId)||g.hooksResolved.some(h=>!s.hooks.includes(h))||g.newNpc&&s.npcs.some(n=>n.id===g.newNpc!.id)||g.newPlace&&s.places.some(p=>p.id===g.newPlace!.id))generated={content:fallback,source:'authored'};
  const c=generated.content;
@@ -86,4 +86,14 @@ export function chooseStory(state:State,beatId:string,choiceId:string,date:strin
  const s=state.living.story,b=s.beats.find(b=>b.id===beatId),choice=b?.choices.find(c=>c.id===choiceId);
  if(!b||b.chosen||!choice||!validDay(date)||date<b.date)return state;
  return {...state,living:{...state.living,story:{...s,beats:s.beats.map(x=>x.id===beatId?{...x,chosen:choiceId}:x),choices:[...s.choices,{beatId,choiceId,outcome:choice.outcome,date}],worldFacts:[...s.worldFacts,choice.outcome],relationships:[...s.relationships,{npcId:'scout',note:'Ysabel remembers: '+choice.outcome}]}}};
+}
+
+export function storyWaitingMessage(state:State,date:string):string {
+ const s=state.living.story,last=s.beats.at(-1);
+ if(!last)return 'A letter is finding its way to the Keep. Your deeds are ready while the scene is prepared.';
+ if(s.beats.some(b=>b.choices.length&&!b.chosen))return 'Your reply above will shape this part of the road.';
+ if(last.combatSetup&&!state.living.battles.some(b=>b.beatId===last.id&&b.status!=='active'&&(b.status!=='withdrawn'||b.opponent.alternatives.length>0)))return 'The meeting on the road awaits your response. Choose how to approach it above.';
+ if(last.date>=date)return 'This is today’s page. The next page becomes available on a later day as your campaign grows.';
+ if(!canContinue(state,date))return 'The road is quiet. A little more recorded real-life activity will carry the story forward.';
+ return 'The next page is being prepared. Open it whenever it suits you.';
 }

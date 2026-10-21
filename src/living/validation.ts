@@ -9,6 +9,10 @@ export const exact = (v: unknown, keys: string[]): v is Record<string, any> => o
 const unique = (v: string[]) => new Set(v).size===v.length;
 export function validLiving(v: unknown, created: string): v is LivingCampaign {
  if(!object(v)||v.version!==1||!object(v.settings)||!object(v.story)||!Array.isArray(v.battles))return false;
+ if(v.automatic!==undefined){
+  const a=v.automatic;
+  if(!object(a)||a.version!==1||!texts(a.seenVentures,64)||!Array.isArray(a.jobs)||a.jobs.length>128||!a.jobs.every((j:any)=>object(j)&&text(j.id,300)&&validDay(j.date)&&j.date>=created&&['story','venture','dialogue','chronicle','bard'].includes(j.kind)&&text(j.target,200)&&text(j.stamp,100)&&['pending','done'].includes(j.status)&&typeof j.startedAt==='string'&&Number.isFinite(Date.parse(j.startedAt)))||!unique(a.jobs.map((j:any)=>j.id)))return false;
+ }
  const c=v.settings,s=v.story;
  if(!validDay(created))return false;
  if(s.plannedArc!==null&&(!object(s.plannedArc)||!text(s.plannedArc.title,160)||!text(s.plannedArc.premise,800)||!text(s.plannedArc.mystery,300)))return false;
@@ -23,6 +27,14 @@ export function validLiving(v: unknown, created: string): v is LivingCampaign {
  if(s.lastGenerated!==null&&!validDay(s.lastGenerated))return false;
  if(!Array.isArray(s.choices)||!s.choices.every((c:any)=>object(c)&&validDay(c.date)&&text(c.outcome)&&s.beats.some((b:any)=>b.id===c.beatId&&b.chosen===c.choiceId&&b.date<=c.date)))return false;
  if(!Array.isArray(s.creative)||!s.creative.every((e:any)=>object(e)&&text(e.id,250)&&['dialogue','bard','chronicle'].includes(e.kind)&&validDay(e.date)&&e.date>=created&&text(e.sourceId,180)&&text(e.sourceHash,100)&&text(e.text,8000)&&['authored','ai'].includes(e.source))||!unique(s.creative.map((e:any)=>e.id)))return false;
+ if(v.automatic?.preparedStory!==undefined){
+  const p=v.automatic.preparedStory;
+  if(!object(p)||!text(p.baseHash,100)||!validDay(p.preparedAt)||!object(p.arc)||!object(p.beat)||p.arc.id!==p.beat.arcId||!Array.isArray(p.npcs)||!Array.isArray(p.places)||p.seed!==undefined&&!text(p.seed,150))return false;
+  // Validate the queued fiction through the same complete story validator. Its
+  // active history is untouched until Read the next page is pressed.
+  const candidate={...v,automatic:undefined,story:{...s,arcs:[...s.arcs.filter((a:any)=>a.id!==p.arc.id),p.arc],currentArcId:p.arc.id,beats:[...s.beats,p.beat],npcs:[...s.npcs,...p.npcs],places:[...s.places,...p.places],plannedArc:p.plannedArc,mood:p.mood,season:p.season,weather:p.weather}};
+  if(!validLiving(candidate,created))return false;
+ }
  if(v.battle!==null&&!validBattle(v.battle,s as any))return false;
  if(!v.battles.every((b:any)=>validBattle(b,s as any)&&b.status!=='active')||!unique(v.battles.map((b:any)=>b.id)))return false;
  if(v.battle===null)return true;

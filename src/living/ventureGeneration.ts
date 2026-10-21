@@ -2,7 +2,7 @@ import {runtimeAi} from './aiConfig';
 import type {State} from '../model';
 import {attributes} from '../config';
 import {ventures,ventureTiers,type VentureDefinition} from '../ventures';
-import {selectVenture,replaceDailyVenture,todaysVenture} from '../ventureDomain';
+import {selectVenture,replaceDailyVenture,todaysVenture,prepareDailyNotice} from '../ventureDomain';
 import {dayKey} from '../calendar';
 import {narrativeContext} from './context';
 import {generateSafely,type NarrativeProvider} from './provider';
@@ -44,11 +44,21 @@ export async function generateReplacement(state:State,id:string,now:Date,provide
  if(!state.living.settings.enabled||!state.living.settings.ventures||!provider||!current||current.assignmentId!==id||current.status!=='assigned'||current.replaced||current.replacementOf)return replaceDailyVenture(state,id,now);
  const target=selectVenture(state.ventures,date,`${state.created}:${state.name}`,ventures,current.attribute);
  if(!target)return state;
+ const definition=await generatedDefinition(state,target,date,provider,'replacement');
+ return replaceDailyVenture(state,id,now,definition?[definition]:ventures);
+}
+export async function generateFirstNotice(state:State,date:string,provider?:NarrativeProvider,signal?:AbortSignal):Promise<State>{
+ const target=todaysVenture(state,date);
+ if(!target||target.status!=='assigned'||target.replacementOf||target.replaced||!state.living.settings.enabled||!state.living.settings.ventures||!provider)return state;
+ const definition=await generatedDefinition(state,target,date,provider,'first',signal);
+ return definition?prepareDailyNotice(state,target.assignmentId,definition,date):state;
+}
+async function generatedDefinition(state:State,target:VentureDefinition,date:string,provider:NarrativeProvider,slot:'first'|'replacement',signal?:AbortSignal):Promise<VentureDefinition|undefined>{
  const fallback:GeneratedVenture={title:target.title,attribute:target.attribute,tier:target.tier,minutes:20,introduction:target.introduction,instructions:target.instructions.length?target.instructions:['Read the notice.'],tags:target.tags,equipment:[],safety:target.safety??safety,consequenceHook:'The road offers another small possibility.'};
- const result=await generateSafely(provider,{task:'venture',context:{...narrativeContext(state),requiredAttribute:target.attribute,requiredTier:target.tier,physicalPlans},schema:{title:'string',attribute:target.attribute,tier:target.tier,minutes:'integer 5–60',introduction:'string',instructions:['string'],steps:'optional string[]',reading:'required for Wisdom, original 150–500 words',reflection:'optional string',secondaryAttribute:'optional distinct attribute',tags:['indoor or outdoor'],equipment:['known equipment only'],safety:'adaptation text',consequenceHook:'fictional hook',physicalPlan:'required physical plan key for physical attributes'},instruction:'Create one new conservative real-life Venture. Respect required attribute and tier, preferred duration, indoor/outdoor constraints and equipment. Physical instructions MUST be copied exactly from an eligible physicalPlans entry and tier Brief. Never prescribe free-form exercise, medicine, dieting or hazards. A Wisdom reading alone suffices; reflection is optional.'},validGeneratedVenture,fallback);
- if(result.source!=='ai')return replaceDailyVenture(state,id,now);
+ const result=await generateSafely(provider,{task:'venture',context:{...narrativeContext(state),requiredAttribute:target.attribute,requiredTier:target.tier,physicalPlans},schema:{title:'string',attribute:target.attribute,tier:target.tier,minutes:'integer 5–60',introduction:'string',instructions:['string'],steps:'optional string[]',reading:'required for Wisdom, original 150–500 words',reflection:'optional string',secondaryAttribute:'optional distinct attribute',tags:['indoor or outdoor'],equipment:['known equipment only'],safety:'adaptation text',consequenceHook:'fictional hook',physicalPlan:'required physical plan key for physical attributes'},instruction:'Create one new conservative real-life Venture. Respect required attribute and tier, preferred duration, indoor/outdoor constraints and equipment. Physical instructions MUST be copied exactly from an eligible physicalPlans entry and tier Brief. Never prescribe free-form exercise, medicine, dieting or hazards. A Wisdom reading alone suffices; reflection is optional.'},validGeneratedVenture,fallback,signal);
+ if(result.source!=='ai')return undefined;
  const g=result.content,settings=state.living.settings;
- if(g.attribute!==target.attribute||g.tier!==target.tier||g.minutes>settings.preferredMinutes||!settings.outdoors&&(g.tags.includes('outdoor')||g.physicalPlan==='easy-road'||/\b(outside|outdoors|park|street|trail|neighbourhood|neighborhood)\b/i.test(g.instructions.join(' ')))||g.equipment.some(e=>!settings.equipment.includes(e)))return replaceDailyVenture(state,id,now);
- const definition:VentureDefinition={id:`generated:${date}:replacement`,title:g.title,attribute:g.attribute,...(g.secondaryAttribute?{secondaryAttributes:[g.secondaryAttribute]}:{}),tier:g.tier,duration:`approximately ${g.minutes} min`,introduction:g.introduction,instructions:g.instructions,steps:g.steps,reading:g.reading,reflection:g.reflection,tags:g.tags,safety:`${g.safety} ${safety}`,generation:{source:'ai',date,model:runtimeAi.model,consequenceHook:g.consequenceHook}};
- return replaceDailyVenture(state,id,now,[definition]);
+ if(g.attribute!==target.attribute||g.tier!==target.tier||g.minutes>settings.preferredMinutes||!settings.outdoors&&(g.tags.includes('outdoor')||g.physicalPlan==='easy-road'||/\b(outside|outdoors|park|street|trail|neighbourhood|neighborhood)\b/i.test(g.instructions.join(' ')))||g.equipment.some(e=>!settings.equipment.includes(e)))return undefined;
+ const definition:VentureDefinition={id:`generated:${date}:${slot}`,title:g.title,attribute:g.attribute,...(g.secondaryAttribute?{secondaryAttributes:[g.secondaryAttribute]}:{}),tier:g.tier,duration:`approximately ${g.minutes} min`,introduction:g.introduction,instructions:g.instructions,steps:g.steps,reading:g.reading,reflection:g.reflection,tags:g.tags,safety:`${g.safety} ${safety}`,generation:{source:'ai',date,model:runtimeAi.model,consequenceHook:g.consequenceHook}};
+ return definition;
 }

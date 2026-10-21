@@ -42,6 +42,7 @@ const goalIcons = {
   care: Crown,
   study: BookOpen,
   recovery: Moon,
+  chore: Check,
 };
 // Campaign configuration owns its draft and flow; it has no Knight-domain dependency.
 export default function CampaignEditor({

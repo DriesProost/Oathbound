@@ -220,7 +220,7 @@ describe('v3 → v4 save migration', () => {
     const old = v3(), next = migrate(old, date), { ventures: history, world: _world, living: _living, version, ...rest } = next;
     const { version: _version, ...oldFields } = old;
     expect(rest).toEqual(oldFields);
-    expect(version).toBe(6); expect(history).toEqual([]);
+    expect(version).toBe(7); expect(history).toEqual([]);
   });
   it('backs up exact v3 bytes before committing v4 and keeps migration idempotent', () => {
     const old = v3(), raw = JSON.stringify(old, null, 2), store = memory(); store.setItem(storageKeys.v3, raw);

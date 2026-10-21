@@ -168,7 +168,7 @@ describe("v3 campaign saves", () => {
       raw = JSON.stringify(old);
     store.setItem(storageKeys.previous, raw);
     const s = load(store)!;
-    expect(s.version).toBe(6);
+    expect(s.version).toBe(7);
     expect(s.migratedFrom).toBe(2);
     expect(store.getItem(storageKeys.previous)).toBe(raw);
     expect(store.getItem(storageKeys.previousBackup)).toBe(raw);

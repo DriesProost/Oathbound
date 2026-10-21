@@ -34,6 +34,7 @@ export const goalDefinitions: Record<
   GoalId,
   { name: string; description: string; defaultTarget: GoalTarget }
 > = {
+  chore: {name:"A chore a day",description:"One household chore, chosen by you",defaultTarget:{metric:"check",criterion:"Complete one household chore of your choice"}},
   weight: {
     name: "Weight management",
     description: "An outcome record, separate from earned progress",
@@ -88,6 +89,7 @@ export const goalDefinitions: Record<
   },
 };
 const allowedMetrics: Record<GoalId, GoalTarget["metric"][]> = {
+  chore: ["check"],
   weight: ["outcome"],
   temperance: ["oath"],
   strength: ["check"],
@@ -161,8 +163,9 @@ export function validWeeklyTarget(
 export function validGoals(goals: unknown): goals is CampaignGoal[] {
   return (
     Array.isArray(goals) &&
-    goals.length === goalIds.length &&
-    new Set(goals.map((g) => g?.id)).size === goalIds.length &&
+    (goals.length === goalIds.length || goals.length === goalIds.length - 1 && !goals.some(g=>g?.id==='chore')) &&
+    goalIds.filter(id=>id!=='chore').every(id=>goals.some(g=>g?.id===id)) &&
+    new Set(goals.map((g) => g?.id)).size === goals.length &&
     goals.every(
       (g) =>
         g &&

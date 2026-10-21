@@ -33,8 +33,11 @@ export type Battle = {
  used: string[]; status: 'active' | 'victory' | 'defeat' | 'withdrawn' | 'resolved';
  log: string[]; lastAction: string;
 };
-export type LivingCampaign = { version: 1; settings: AiSettings; story: StoryState; battle: Battle | null; battles: Battle[] };
+export type AutomaticJob = {id:string;date:string;kind:'story'|'venture'|'dialogue'|'chronicle'|'bard';target:string;stamp:string;status:'pending'|'done';startedAt:string};
+export type PreparedStory = {baseHash:string;preparedAt:string;beat:StoryBeat;arc:Arc;npcs:StoryState['npcs'];places:StoryState['places'];plannedArc:StoryState['plannedArc'];seed?:string;mood:string;season:string;weather:string};
+export type AutomaticState = {version:1;jobs:AutomaticJob[];seenVentures:string[];preparedStory?:PreparedStory};
+export type LivingCampaign = { version: 1; automatic?: AutomaticState; settings: AiSettings; story: StoryState; battle: Battle | null; battles: Battle[] };
 export function createLiving(): LivingCampaign {
- return { version: 1, settings: { enabled: false, story: true, ventures: false, dialogue: false, endpoint: '', model: runtimeAi.model, preferredMinutes: 20, outdoors: true, equipment: [] },
+ return { version: 1, automatic:{version:1,jobs:[],seenVentures:[]}, settings: { enabled: false, story: true, ventures: true, dialogue: true, endpoint: '', model: runtimeAi.model, preferredMinutes: 20, outdoors: true, equipment: [] },
  story: { arcs: [], currentArcId: '', plannedArc: null, hooks: [], npcs: [], relationships: [], places: [], choices: [], mysteries: [], completedMysteries: [], worldFacts: [], beats: [], futureSeeds: ['The Miller’s Winter Ledger'], mood: 'Quiet expectation', season: 'The turning year', weather: 'Cloud over the road', lastGenerated: null, creative: [] }, battle: null, battles: [] };
 }
