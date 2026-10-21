@@ -1,3 +1,4 @@
+import {runtimeAi} from './aiConfig';
 import type {State} from '../model';
 import {attributes} from '../config';
 import {ventures,ventureTiers,type VentureDefinition} from '../ventures';
@@ -19,6 +20,8 @@ export function validGeneratedVenture(v:unknown):v is GeneratedVenture {
  if(!exact(v,['title','attribute','secondaryAttribute','tier','minutes','introduction','instructions','steps','reading','reflection','tags','equipment','safety','consequenceHook','physicalPlan']))return false;
  const g=v as GeneratedVenture;
  if(!safeProse(g.title,160)||!attributes.includes(g.attribute)||g.secondaryAttribute!==undefined&&(!attributes.includes(g.secondaryAttribute)||g.secondaryAttribute===g.attribute)||!Object.hasOwn(ventureTiers,g.tier)||!Number.isInteger(g.minutes)||g.minutes<5||g.minutes>60||!safeProse(g.introduction,800)||!texts(g.instructions,6)||!g.instructions.length||!g.instructions.every(t=>safeProse(t,800))||!texts(g.tags,8)||!texts(g.equipment,8)||!safeProse(g.safety,800)||!safeProse(g.consequenceHook,300))return false;
+ const range={Brief:[5,20],Standard:[15,40],Bold:[30,60]}[g.tier];if(g.minutes<range[0]||g.minutes>range[1])return false;
+ if(g.tags.some(t=>!['indoor','outdoor','evening','quiet','gym','kitchen','bodyweight','nature','equipment','reading','writing','social'].includes(t)))return false;
  if(g.steps!==undefined&&(!texts(g.steps,8)||!g.steps.every(t=>safeProse(t,500))))return false;
  if(g.reflection!==undefined&&!safeProse(g.reflection,500))return false;
  if(g.reading!==undefined&&(!safeProse(g.reading)||g.reading.trim().split(/\s+/).length<150||g.reading.trim().split(/\s+/).length>500))return false;
@@ -32,6 +35,7 @@ export function validGeneratedVenture(v:unknown):v is GeneratedVenture {
   const plan=physicalPlans[g.physicalPlan];
   if(g.attribute!==plan.attribute||g.tier!=='Brief'||g.minutes!==plan.minutes||g.steps?.length||g.instructions.join('\n')!==plan.instructions.join('\n'))return false;
  } else if(g.physicalPlan!==undefined)return false;
+ if(!physical&&/\b(?:squats?|push.ups?|burpees?|run|running|lifts?|sprint|planks?|lunges?|breath.hold|workouts?|exercises?|swim|climb)\b/i.test([...g.instructions,...(g.steps??[])].join(' ')))return false;
  if(!physical&&g.tags.some(t=>['gym','running','lifting','swimming','climbing'].includes(t)))return false;
  return true;
 }
@@ -44,7 +48,7 @@ export async function generateReplacement(state:State,id:string,now:Date,provide
  const result=await generateSafely(provider,{task:'venture',context:{...narrativeContext(state),requiredAttribute:target.attribute,requiredTier:target.tier,physicalPlans},schema:{title:'string',attribute:target.attribute,tier:target.tier,minutes:'integer 5–60',introduction:'string',instructions:['string'],steps:'optional string[]',reading:'required for Wisdom, original 150–500 words',reflection:'optional string',secondaryAttribute:'optional distinct attribute',tags:['indoor or outdoor'],equipment:['known equipment only'],safety:'adaptation text',consequenceHook:'fictional hook',physicalPlan:'required physical plan key for physical attributes'},instruction:'Create one new conservative real-life Venture. Respect required attribute and tier, preferred duration, indoor/outdoor constraints and equipment. Physical instructions MUST be copied exactly from an eligible physicalPlans entry and tier Brief. Never prescribe free-form exercise, medicine, dieting or hazards. A Wisdom reading alone suffices; reflection is optional.'},validGeneratedVenture,fallback);
  if(result.source!=='ai')return replaceDailyVenture(state,id,now);
  const g=result.content,settings=state.living.settings;
- if(g.attribute!==target.attribute||g.tier!==target.tier||g.minutes>settings.preferredMinutes||!settings.outdoors&&g.tags.includes('outdoor')||g.equipment.some(e=>!settings.equipment.includes(e)))return replaceDailyVenture(state,id,now);
- const definition:VentureDefinition={id:`generated:${date}:replacement`,title:g.title,attribute:g.attribute,...(g.secondaryAttribute?{secondaryAttributes:[g.secondaryAttribute]}:{}),tier:g.tier,duration:`approximately ${g.minutes} min`,introduction:g.introduction,instructions:g.instructions,steps:g.steps,reading:g.reading,reflection:g.reflection,tags:g.tags,safety:`${g.safety} ${safety}`,generation:{source:'ai',date,model:settings.model,consequenceHook:g.consequenceHook}};
+ if(g.attribute!==target.attribute||g.tier!==target.tier||g.minutes>settings.preferredMinutes||!settings.outdoors&&(g.tags.includes('outdoor')||g.physicalPlan==='easy-road'||/\b(outside|outdoors|park|street|trail|neighbourhood|neighborhood)\b/i.test(g.instructions.join(' ')))||g.equipment.some(e=>!settings.equipment.includes(e)))return replaceDailyVenture(state,id,now);
+ const definition:VentureDefinition={id:`generated:${date}:replacement`,title:g.title,attribute:g.attribute,...(g.secondaryAttribute?{secondaryAttributes:[g.secondaryAttribute]}:{}),tier:g.tier,duration:`approximately ${g.minutes} min`,introduction:g.introduction,instructions:g.instructions,steps:g.steps,reading:g.reading,reflection:g.reflection,tags:g.tags,safety:`${g.safety} ${safety}`,generation:{source:'ai',date,model:runtimeAi.model,consequenceHook:g.consequenceHook}};
  return replaceDailyVenture(state,id,now,[definition]);
 }

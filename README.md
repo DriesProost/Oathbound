@@ -125,3 +125,10 @@ On Android, open the address in Chrome, choose **⋮ → Install app / Add to ho
 ## The Eight Great Systems
 
 Retinue, six evolving Keep areas, twelve permanent Relics, weekly Illuminated Chronicle pages, Chapter I, ten Journey encounters, ten earned Titles and five Grey Host restoration milestones share the existing campaign progression. The 60 Daily Ventures remain intact. Nothing is lost through inactivity, and none of these world systems introduces rewards or a currency. See [architecture, save migration, content and verification](docs/eight-great-systems.md).
+
+
+### Living Campaign (save v6)
+
+The five destinations now combine the household and narrative systems: enter rooms in Keep, act through Quests, follow connected arcs and deterministic tactical confrontations in Journey, read factual/fictional manuscripts in Chronicle, and manage attributes/Techniques/preferences in Knight. Existing reward/history records are preserved through an exact-backed-up v5 → v6 migration.
+
+Optional runtime AI is **OpenAI `gpt-6-luna` only, low reasoning**, with no model escalation. It starts disabled and requires a configured HTTPS chat-completions backend (or a session-only direct key). No credential or backend service is bundled. Accepted content is cached; authored content and deterministic combat remain available offline. See [Living Campaign architecture, content, limitations and verification](docs/living-campaign.md).

@@ -1,3 +1,4 @@
+import {campaignArt} from './living/assets';
 import CreativeNote from './living/CreativeNote';
 import { useState } from 'react';
 import { Shield, Music2 } from 'lucide-react';
@@ -17,7 +18,7 @@ export default function RetinuePanel({ state, date, update, room }: { room?: str
       const arrived = state.world.milestones.find(m => m.kind === 'retinue' && m.id === member.id);
       if (!arrived) return <article className="retainer empty-chamber" key={member.id}><Shield aria-hidden="true" /><h3>{member.location}</h3><p>An empty chamber awaits a future guest.</p></article>;
       return <article className="retainer" key={member.id}>
-        <div className="retainer-seal" aria-hidden="true">{member.id === 'bard' ? <Music2 /> : <Shield />}<span>{member.name.split(' ').map(n => n[0]).join('')}</span></div>
+        <div className="retainer-seal" aria-hidden="true">{campaignArt.portraits[member.id]?.image ? <img width={60} height={72} src={campaignArt.portraits[member.id].image!} alt=""/> : member.id === 'bard' ? <Music2 /> : <Shield />}<span>{member.name.split(' ').map(n => n[0]).join('')}</span></div>
         <h3>{member.name}</h3><strong>{member.title}</strong><p className="muted">{member.role} · {member.location}</p>
         <blockquote>{currentRemark(state, member, date)}</blockquote><CreativeNote state={state} date={date} kind="dialogue" sourceId={member.id} update={update}/>
         <details><summary>By the hearth</summary><p>{member.biography}</p><p>{arrived.text}</p><small>{arrived.provenance === 'discovered' ? 'Welcomed on' : 'Arrived'} {formatDay(arrived.date, true)}</small></details>

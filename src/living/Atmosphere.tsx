@@ -5,13 +5,13 @@ import {retinue} from '../retinue';
 import type {KeepArea} from '../keep';
 import {keepStageNames} from '../keep';
 import './living.css';
-export function Landscape({location='forest',weather='Pale light',dusk=false}:{location?:string;weather?:string;dusk?:boolean}){
+export function Landscape({location='forest',weather='Pale light',dusk=false,label}:{location?:string;weather?:string;dusk?:boolean;label?:string}){
  const id=useId().replace(/:/g,''),art=campaignArt.journey[location as keyof typeof campaignArt.journey],rain=/rain/i.test(weather);
- return <div className={`campaign-landscape ${rain?'with-rain':''} ${dusk?'at-dusk':''}`} role="img" aria-label={`${location}, ${weather}`}>
+ return <div className={`campaign-landscape ${rain?'with-rain':''} ${dusk?'at-dusk':''}`} role="img" aria-label={`${label??location}, ${weather}`}>
  {art?.image?<img src={art.image} alt=""/>:<svg viewBox="0 0 900 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id={`sky-${id}`} x2="0" y2="1"><stop stopColor={dusk?'#71707a':'#9dada7'}/><stop offset="1" stopColor="#d5c8a4"/></linearGradient></defs><path d="M0 0H900V400H0Z" fill={`url(#sky-${id})`}/><circle cx="700" cy="85" r="36" fill="#e7d4a5" opacity=".55"/><path d="M0 220Q140 120 300 205T610 180T900 210V400H0Z" fill="#7b8b7a"/><path d="M0 270Q200 190 420 235T900 245V400H0Z" fill="#506554"/><path d="M405 400Q380 300 535 240Q460 295 550 400" fill="#a29578"/>
  {['forest','fields'].includes(location)?<>{[50,150,735,840].map((x,i)=><g key={x} transform={`translate(${x} ${80+i%2*30})`}><path d="M-9 300L-4 55H5L13 300" fill="#394b3d"/><path d="M0 0L-65 140L-38 140L-85 235H85L38 140H65Z" fill="#455c49"/></g>)}</>:<g fill="#78796b" stroke="#404b43" strokeWidth="3"><path d="M540 245V110H620V245M530 110V90H550V104H570V90H590V104H610V90H630V110Z"/><path d="M563 245V205Q580 180 597 205V245" fill="#313f36"/><path d="M555 130H566V155H555ZM594 130H605V155H594Z" fill="#303b33"/>{location==='monastery'&&<path d="M330 245V175L420 125L510 175V245M350 245V190Q370 170 390 190V245M410 245V190Q430 170 450 190V245M470 245V190Q490 170 510 190V245"/>}</g>}
  <path d="M0 365Q190 340 350 370T900 350V400H0Z" fill="#354b3a" opacity=".9"/><path className="distant-birds" d="M170 65q10-10 20 0q10-10 20 0m60 15q8-8 16 0q8-8 16 0" fill="none" stroke="#3e4a44" strokeWidth="2"/></svg>}
- <div className="scene-mist" aria-hidden="true"/>{rain&&<div className="scene-rain" aria-hidden="true"/>}<span className="scene-caption">{location.replaceAll('-',' ')} · {weather}</span></div>;
+ <div className="scene-mist" aria-hidden="true"/>{rain&&<div className="scene-rain" aria-hidden="true"/>}<span className="scene-caption">{label??location.replaceAll('-',' ')} · {weather}</span></div>;
 }
 export function KeepAtmosphere({state}:{state:State}){
  const present=retinue.filter(r=>state.world.milestones.some(m=>m.kind==='retinue'&&m.id===r.id));

@@ -36,3 +36,18 @@ describe('Narrative continuity',()=>{
   expect(canContinue(s,'2026-10-28')).toBe(true);s=await continueStory(s,'2026-10-28');expect(s.living.story.arcs).toHaveLength(2);expect(s.living.story.currentArcId).toBe('arc:2');
  });
 });
+
+describe('Endless arc continuation',()=>{
+ it('moves beyond both seeded arcs without reopening their solved mysteries or losing choices',async()=>{
+  const {startBattle,takeTurn}=await import('./combat');
+  let s=createKnight('R','2026-09-01');
+  for(let i=0;i<15;i++){
+   const d=new Date(Date.UTC(2026,8,i+1)).toISOString().slice(0,10);
+   s=completeQuest(s,'training',d,new Date(d+'T20:00:00'));s=completeQuest(s,'patrol',d,new Date(d+'T20:00:00'));s=await continueStory(s,d);
+   const beat=s.living.story.beats.at(-1)!;
+   if(beat.choices.length)s=chooseStory(s,beat.id,'quiet',d);
+   if(beat.combatSetup)s=takeTurn(startBattle(s,beat.id,d),'withdraw');
+  }
+  expect(s.living.story.arcs).toHaveLength(3);expect(s.living.story.arcs[2].template).toBe('open-road');expect(s.living.story.completedMysteries).toHaveLength(2);expect(s.living.story.mysteries.every(m=>!s.living.story.completedMysteries.includes(m))).toBe(true);expect(s.living.story.choices).toHaveLength(2);expect(validate(s)).toBe(s);
+ });
+});

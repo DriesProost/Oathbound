@@ -1,3 +1,4 @@
+import {reconcileMonths} from './living/monthlyChronicle';
 import { reconcileRestoration } from './worldState';
 import { reconcileTitles } from './titles';
 import { reconcileEncounters } from './encounters';
@@ -19,5 +20,5 @@ export function synchronizeWorld(state: State, date: string, provenance: WorldMi
   next = reconcileRelics(next, date, provenance);
   next = reconcileTitles(next, date, provenance);
   next = reconcileRestoration(next, date, provenance);
-  return reconcileChronicle(next, date);
+  return reconcileMonths(reconcileChronicle(next, date), date);
 }

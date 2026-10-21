@@ -443,7 +443,7 @@ function validateV5(source: unknown) {
   return source;
 }
 export function validate(source: unknown): State {
-  if (!object(source) || source.version !== 6 || !validLiving(source.living)) return failure();
+  if (!object(source) || source.version !== 6 || !validLiving(source.living, source.created)) return failure();
   validateV5({ ...source, version: 5 });
   return source as State;
 }

@@ -39,3 +39,14 @@ describe('Deterministic tactical combat',()=>{
   const m=new Map<string,string>(),store={getItem:(k:string)=>m.get(k)??null,setItem:(k:string,v:string)=>{m.set(k,v);}};save(started,store);expect(m.get(storageKeys.current)).toBeTruthy();const loaded=load(store,'2026-10-25')!;expect(loaded).toEqual(started);expect(takeTurn(loaded,'strike')).toEqual(takeTurn(started,'strike'));
  });
 });
+
+describe('Persisted encounters and optional practice',()=>{
+ it('keeps the snapshotted enemy independent of later content edits',async()=>{
+  const s=await ready(),started=startBattle(s,s.living.story.beats.at(-1)!.id,'2026-10-25'),enemy=enemies.find(e=>e.id==='road-brigand')!,previous=enemy.power;
+  try{const expected=takeTurn(started,'guard');enemy.power=previous+5;expect(takeTurn(started,'guard')).toEqual(expected);expect(validate(started)).toBe(started);}finally{enemy.power=previous;}
+ });
+ it('lets a withdrawn practice bout restart fully restored without erasing its attempt',async()=>{
+  let s=await ready();const beat=s.living.story.beats.at(-1)!;s={...s,living:{...s.living,story:{...s.living.story,beats:s.living.story.beats.map(b=>b.id===beat.id?{...b,combatSetup:'veteran'}:b)}}};
+  const first=takeTurn(startBattle(s,beat.id,'2026-10-25'),'withdraw'),next=startBattle(first,beat.id,'2026-10-26');expect(next.living.battle!.player.health).toBe(next.living.battle!.player.maxHealth);expect(next.living.battle!.id).not.toBe(first.living.battle!.id);expect(next.living.battles).toHaveLength(1);expect(validate(next)).toBe(next);expect(totals(next)).toEqual(totals(s));
+ });
+});

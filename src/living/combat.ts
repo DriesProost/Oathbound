@@ -4,7 +4,7 @@ import {totals} from '../domain';
 import {validDay} from '../calendar';
 import type {Battle,Fighter} from './model';
 import {combatRules as rules,enemies,intents,techniques,type Technique,type Intent} from './combatContent';
-export const enemyFor=(b:Battle)=>enemies.find(e=>e.id===b.enemyId)!;
+export const enemyFor=(b:Battle)=>b.opponent;
 export const enemyIntent=(b:Battle):Intent=>enemyFor(b).pattern[b.round%enemyFor(b).pattern.length];
 const bounded=(n:number,max:number)=>Math.max(0,Math.min(max,n));
 export function combatStats(levels:Battle['levels']):Fighter {
@@ -15,9 +15,9 @@ export function techniqueDiscovered(b:Battle,t:Technique){return (!t.retainer||b
 export function techniqueUsable(b:Battle,t:Technique){return techniqueDiscovered(b,t)&&(!t.requires||b.levels[t.requires.attribute]>=t.requires.level)&&b.player.stamina>=t.stamina&&b.player.momentum>=t.momentum&&(!t.once||!b.used.includes(t.id))&&(!t.human||enemyFor(b).human);}
 export function startBattle(state:State,beatId:string,date:string):State {
  const beat=state.living.story.beats.find(b=>b.id===beatId),enemy=enemies.find(e=>e.id===beat?.combatSetup);
- if(!beat||!enemy||date<beat.date||!validDay(date)||state.living.battle?.status==='active'||state.living.battles.some(b=>b.beatId===beatId))return state;
+ if(!beat||!enemy||date<beat.date||!validDay(date)||state.living.battle?.status==='active'||state.living.battles.some(b=>b.beatId===beatId&&!(b.status==='withdrawn'&&enemy.alternatives.length===0)))return state;
  const t=totals(state),levels=Object.fromEntries(attributes.map(a=>[a,Math.min(rules.levelCap,t.stats[a].level)])) as Battle['levels'];
- const b:Battle={id:`battle:${beatId}`,beatId,enemyId:enemy.id,date,round:0,player:combatStats(levels),enemy:{health:enemy.health,maxHealth:enemy.health,stamina:0,maxStamina:0,guard:enemy.guard,momentum:0},levels,allies:state.world.milestones.filter(m=>m.kind==='retinue').map(m=>m.id),distance:t.distance,used:[],status:'active',log:[`${enemy.name} watches the road. Intent: ${intents[enemy.pattern[0]].label}.`],lastAction:'ready'};
+ const b:Battle={id:`battle:${beatId}:attempt:${state.living.battles.filter(b=>b.beatId===beatId).length+1}`,beatId,enemyId:enemy.id,opponent:structuredClone(enemy),date,round:0,player:combatStats(levels),enemy:{health:enemy.health,maxHealth:enemy.health,stamina:0,maxStamina:0,guard:enemy.guard,momentum:0},levels,allies:state.world.milestones.filter(m=>m.kind==='retinue').map(m=>m.id),distance:t.distance,used:[],status:'active',log:[`${enemy.name} watches the road. Intent: ${intents[enemy.pattern[0]].label}.`],lastAction:'ready'};
  return {...state,living:{...state.living,battle:b}};
 }
 function archive(state:State,b:Battle):State {
@@ -44,6 +44,7 @@ export function takeTurn(state:State,actionId:string):State {
  if(e.health===0){b.status='victory';log.push('The confrontation ends. Your combat resources recover outside the fight.');}
  else {
   const evaded=technique.effect==='evade'&&['heavy','grapple'].includes(intent),disrupted=technique.effect==='disrupt';
+  if(disrupted)p.stamina=bounded(p.stamina+Math.floor(b.levels.Presence/3),p.maxStamina);
   if(evaded||disrupted){p.momentum=bounded(p.momentum+2,rules.momentumCap);log.push(evaded?'You step clear of the telegraphed attack.':'The remark breaks the opponent’s rhythm.');}
   else if(intent==='guard'){e.guard=bounded(e.guard+8,rules.guardCap);log.push('The opponent sets a Guard.');}
   else if(intent==='recover'){e.health=Math.min(e.maxHealth,e.health+3);log.push('The opponent catches breath.');}

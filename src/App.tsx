@@ -808,7 +808,7 @@ function OathboundApp() {
                 <div className="board-plaque">
                   <span>✦</span> THE QUEST BOARD <span>✦</span>
                 </div>
-                {venture && <DailyVenture busy={ventureBusy} venture={venture} introduction={retinueVentureIntro(state, venture.attribute, today)} open={ventureOpen} onOpen={() => setVentureOpen(true)} onClose={() => setVentureOpen(false)}
+                {venture && <DailyVenture busy={ventureBusy} venture={venture} introduction={venture.generation ? undefined : retinueVentureIntro(state, venture.attribute, today)} open={ventureOpen} onOpen={() => setVentureOpen(true)} onClose={() => setVentureOpen(false)}
                   onComplete={() => {
                     const current = stateRef.current!;
                     const next = completeDailyVenture(current, venture.assignmentId, new Date());

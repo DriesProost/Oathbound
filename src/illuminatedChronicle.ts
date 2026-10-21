@@ -59,12 +59,12 @@ export function reconcileChronicle(state:State,date:string):State {
 export function correctChronicle(before: State, after: State): State {
  let changed = false;
  const pages = after.world.pages.map(page => {
-  if (page.kind !== 'week') return page;
+  if (page.kind !== 'week' && page.kind !== 'month') return page;
   const oldFacts = weeklyPage(before, page.start, page.end);
   const newFacts = weeklyPage(after, page.start, page.end);
   if (JSON.stringify(oldFacts.highlights) === JSON.stringify(newFacts.highlights)) return page;
   changed = true;
-  return { ...page, narrative: newFacts.narrative, highlights: newFacts.highlights };
+  return { ...page, narrative: page.kind === 'month' ? newFacts.narrative.replace('for this week','for this month') : newFacts.narrative, highlights: newFacts.highlights };
  });
  const affected = new Set(pages.filter((page,i)=>page !== after.world.pages[i]).map(p=>p.id));
  return changed ? { ...after, world: { ...after.world, pages }, living: { ...after.living, story: { ...after.living.story, creative: after.living.story.creative.filter(e=>e.kind !== 'chronicle' || !affected.has(e.sourceId)) } } } : after;

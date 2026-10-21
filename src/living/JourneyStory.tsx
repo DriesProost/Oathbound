@@ -10,7 +10,7 @@ export default function JourneyStory({state,date,update}:{state:State;date:strin
  const [busy,setBusy]=useState(false),lock=useRef(false),latest=useRef(state);latest.current=state;
  const story=state.living.story,arc=story.arcs.find(a=>a.id===story.currentArcId),beat=story.beats.at(-1);
  return <section className="living-story" aria-label="Living campaign"><span className="eyebrow">YOUR CAMPAIGN · FICTIONAL JOURNEY</span><h2>{arc?.title??arcTemplates[0].title}</h2>
- <Landscape location={beat?.locationId??"forest"} weather={story.weather} dusk={story.beats.length%2===1}/><p className="story-premise">{arc?.premise??arcTemplates[0].premise}</p>
+ <Landscape label={story.places.find(p=>p.id===beat?.locationId)?.name} location={beat?.locationId??"forest"} weather={story.weather} dusk={story.beats.length%2===1}/><p className="story-premise">{arc?.premise??arcTemplates[0].premise}</p>
  {beat&&<article className="story-beat" key={beat.id}><h3>{beat.title}</h3><p>{beat.prose}</p><small>{beat.provenance.source==='ai'?'AI narration · saved in your campaign':'From the campaign manuscript'}</small>
  {beat.choices.length>0&&!beat.chosen&&<div className="encounter-choices">{beat.choices.map(c=><button className="secondary" key={c.id} onClick={()=>update(chooseStory(state,beat.id,c.id,date))}>{c.label}</button>)}</div>}
  {beat.chosen&&<blockquote>{beat.choices.find(c=>c.id===beat.chosen)?.outcome}</blockquote>}
