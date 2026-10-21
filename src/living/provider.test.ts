@@ -1,5 +1,6 @@
 import {describe,it,expect,vi} from 'vitest';
-import {JsonNarrativeProvider,generateSafely,setSessionKey,validEndpoint} from './provider';
+import {JsonNarrativeProvider,generateSafely,validEndpoint} from './provider';
+import {apiCredentials} from './credentials';
 import {createKnight} from '../domain';
 import {narrativeContext} from './context';
 const request={task:'story' as const,context:{},schema:{text:'string'},instruction:'A scene'};
@@ -15,9 +16,9 @@ describe('Narrative provider boundary',()=>{
  it('uses a bounded JSON backend request, immutable Bible, session-only key and retries transient status once',async()=>{
   const settings={...createKnight('R').living.settings,enabled:true,endpoint:'https://example.com/chat/completions'};
   const fetcher=vi.fn().mockResolvedValueOnce(new Response('',{status:503})).mockResolvedValue(new Response(JSON.stringify({choices:[{message:{content:JSON.stringify({text:'A quiet road'})}}]})));
-  setSessionKey('session-secret');const provider=new JsonNarrativeProvider(settings,fetcher);
+  apiCredentials.save(settings.endpoint,'session-secret',false);const provider=new JsonNarrativeProvider(settings,fetcher);
   expect((await generateSafely(provider,request,valid,{text:'fallback'})).source).toBe('ai');expect(fetcher).toHaveBeenCalledTimes(2);
-  const options=fetcher.mock.calls[1][1];expect(options.headers.Authorization).toBe('Bearer session-secret');expect(JSON.parse(options.body).messages[0].content).toContain('Never invent real-world');expect(JSON.stringify(settings)).not.toContain('secret');setSessionKey('');
+  const options=fetcher.mock.calls[1][1];expect(options.headers.Authorization).toBe('Bearer session-secret');expect(JSON.parse(options.body).messages[0].content).toContain('Never invent real-world');expect(JSON.stringify(settings)).not.toContain('secret');apiCredentials.forget(settings.endpoint);
  });
  it('calls the browser fetch with its global receiver, not the provider instance',async()=>{
   const native=globalThis.fetch;
