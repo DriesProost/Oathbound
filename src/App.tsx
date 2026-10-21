@@ -1,3 +1,4 @@
+import { KeepAtmosphere } from './living/Atmosphere';
 import { TechniqueBook } from './living/CombatScene';
 import JourneyStory, { StoryHistory } from './living/JourneyStory';
 import { generateReplacement } from './living/ventureGeneration';
@@ -71,7 +72,6 @@ import {
   goalActive,
   weekdayTemperance,
   weekdayOathSummary,
-  optionalOathDay,
   targetRules,
 } from "./campaign";
 import type { CampaignGoal } from "./model";
@@ -778,130 +778,8 @@ function OathboundApp() {
                 </div>
               </div>
               {state.living.story.hooks.length>0 && <button className="venture-teaser" onClick={()=>switchTab("Journey")}><strong>Word from the road</strong><span>{state.living.story.hooks.at(-1)}</span></button>}
-              <KeepOverview state={state} date={today} update={update} />
-              <details className="journal-attributes">
-                <summary><Shield size={17} /> Knight attributes <span>Six disciplines</span></summary>
-                <Attributes state={state} />
-              </details>
-              <div className="dashboard-grid">
-                <section>
-                  <div className="section-heading">
-                    <h2>Deeds for today</h2>
-                    <button
-                      className="text-button"
-                      onClick={() => switchTab("Quest Board")}
-                    >
-                      View board <ArrowRight size={15} />
-                    </button>
-                  </div>
-                  <div className="quest-list">
-                    {[...campaignQuests]
-                      .sort(
-                        (a, b) =>
-                          Number(a.timing !== "immediate") -
-                          Number(b.timing !== "immediate"),
-                      )
-                      .slice(0, 3)
-                      .map((q) => questCard(q, true))}
-                    {!campaignQuests.length && (
-                      <div className="campaign-empty">
-                        <ScrollText size={25} />
-                        <p>
-                          No reward-bearing deeds are active. Choose the
-                          behaviours that serve you.
-                        </p>
-                        <button
-                          className="text-button"
-                          onClick={() => editCampaign()}
-                        >
-                          Configure campaign <ArrowRight size={15} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="deeds-summary">
-                    <Check size={16} />
-                    <span>
-                      {deedsToday} {deedsToday === 1 ? "deed" : "deeds"}{" "}
-                      recorded today · {dailyRenown} Renown earned
-                    </span>
-                  </div>
-                  <p className="muted">
-                    A little progress is still progress. Choose what supports
-                    your real life.
-                  </p>
-                </section>
-                {showOath ? (
-                  <section className="oath-card">
-                    <div className="oath-title">
-                      <Shield size={21} />
-                      <span>THE OATH OF TEMPERANCE</span>
-                    </div>
-                    <h2>
-                      {weekdayTemperance(state, today) ? weekdayOathSummary(state, today).kept : oath.current}
-                      <small>{weekdayTemperance(state, today) ? "weekdays alcohol-free this week" : "days steadfast"}</small>
-                    </h2>
-                    <p>
-                      {oathKept
-                        ? "Today’s Oath is confirmed."
-                        : state.oaths[today]?.status === "taken"
-                          ? "Your Oath is active. Return this evening."
-                          : state.oaths[today]?.status === "broken"
-                            ? "Today is recorded. The campaign continues."
-                            : optionalOathDay(state, today) ? "Weekend · no Oath required."
-                            : weekdayTemperance(state, today) ? "An alcohol-free weekday. Confirm this evening." : "One promise. Renewed each day."}
-                    </p>
-                    <div className="oath-summary">
-                      <div>
-                        <strong>{oath.longest}</strong>
-                        <span>Longest oath</span>
-                      </div>
-                      <div>
-                        <strong>{oath.sober}</strong>
-                        <span>Alcohol-free days</span>
-                      </div>
-                    </div>
-                    <blockquote>
-                      A setback is a lost skirmish,
-                      <br />
-                      not a deleted campaign.
-                    </blockquote>
-                    <button
-                      className="text-button"
-                      onClick={() => switchTab("Quest Board")}
-                    >
-                      Attend to your Oath <ArrowRight size={16} />
-                    </button>
-                  </section>
-                ) : (
-                  <section className="panel campaign-summary">
-                    <span className="eyebrow">YOUR CAMPAIGN</span>
-                    <h2>A purpose of your own.</h2>
-                    <p>
-                      {activeGoals.length} active{" "}
-                      {activeGoals.length === 1 ? "goal" : "goals"}. No daily
-                      quota.
-                    </p>
-                    <ul>
-                      {activeGoals.map((g) => (
-                        <li key={g.id}>{goalDefinitions[g.id].name}</li>
-                      ))}
-                    </ul>
-                    {activeGoals.some((g) => g.id === "weight") && (
-                      <p className="target-help">
-                        Weight is recorded in Chronicle. Outcomes do not earn
-                        Renown or XP.
-                      </p>
-                    )}
-                    <button
-                      className="text-button"
-                      onClick={() => editCampaign()}
-                    >
-                      Configure campaign <ArrowRight size={15} />
-                    </button>
-                  </section>
-                )}
-              </div>
+              <KeepAtmosphere state={state}/><KeepOverview state={state} date={today} update={update} />
+              <button className="hero-link" onClick={()=>switchTab("Quest Board")}>Visit the Quest Board <ArrowRight size={16}/></button>
               <InstallApp />
               <div className="footer-note">
                 <span>✦</span> You are training more than a knight. You are
