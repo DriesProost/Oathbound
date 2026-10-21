@@ -1,3 +1,4 @@
+import { TechniqueBook } from './living/CombatScene';
 import JourneyStory, { StoryHistory } from './living/JourneyStory';
 import { generateReplacement } from './living/ventureGeneration';
 import { JsonNarrativeProvider } from './living/provider';
@@ -1083,7 +1084,7 @@ function OathboundApp() {
                   {bodyAppearanceExplanation(state.weight, today) && <p className="muted appearance-status">{bodyAppearanceExplanation(state.weight, today)}</p>}
                 </div>
               </div>
-              <details className="profile-flavour"><summary>Your name in the campaign</summary><TitlePanel state={state} update={update} /></details><NarrativeSettings state={state} update={update}/>
+              <details className="profile-flavour"><summary>Your name in the campaign</summary><TitlePanel state={state} update={update} /></details><TechniqueBook state={state}/><NarrativeSettings state={state} update={update}/>
               <section className="panel campaign-summary">
                 <div className="section-heading">
                   <h2>Your campaign</h2>

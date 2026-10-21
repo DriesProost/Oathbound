@@ -1,3 +1,4 @@
+import CombatScene from './CombatScene';
 import {useRef,useState} from 'react';
 import type {State} from '../model';
 import {canContinue,continueStory,chooseStory} from './director';
@@ -13,6 +14,7 @@ export default function JourneyStory({state,date,update}:{state:State;date:strin
  {beat.choices.length>0&&!beat.chosen&&<div className="encounter-choices">{beat.choices.map(c=><button className="secondary" key={c.id} onClick={()=>update(chooseStory(state,beat.id,c.id,date))}>{c.label}</button>)}</div>}
  {beat.chosen&&<blockquote>{beat.choices.find(c=>c.id===beat.chosen)?.outcome}</blockquote>}
  </article>}
+ {beat?.combatSetup&&<CombatScene state={state} date={date} beatId={beat.id} update={update}/>}
  <button className="secondary" disabled={busy||!canContinue(state,date)} onClick={async()=>{
   if(lock.current)return;lock.current=true;setBusy(true);const original=latest.current;
   try{const next=await continueStory(original,date,new JsonNarrativeProvider(original.living.settings));if(latest.current===original&&dayKey()===date)update(next);}finally{lock.current=false;setBusy(false);}
