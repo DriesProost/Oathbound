@@ -1,3 +1,4 @@
+import type { LivingCampaign } from './living/model';
 import type { WorldState } from "./worldModel";
 import type { VentureDefinition } from "./ventures";
 import type { Reward, Quest } from "./config";
@@ -100,7 +101,8 @@ export type WeighIn = {
   updatedAt: string;
 };
 export type State = {
-  version: 5;
+  version: 6;
+  living: LivingCampaign;
   world: WorldState;
   ventures: VentureAssignment[];
   name: string;

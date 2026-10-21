@@ -64,10 +64,10 @@ describe('Retinue and world foundation', () => {
     expect(writeSong(createKnight('R',date),{title:'x',notes:'',chords:''},date).world.songs).toEqual([]);
   });
   it('migrates exact v4 values and bytes with no invented world history; backup failure prevents commit', () => {
-    const {world:_world,...base}=progressed(), old={...base,version:4}, memory=store(), raw=JSON.stringify(old);
+    const {world:_world,living:_living,...base}=progressed(), old={...base,version:4}, memory=store(), raw=JSON.stringify(old);
     memory.setItem(storageKeys.v4,raw); const next=load(memory,date)!;
     expect(next.world.milestones).toEqual([]); expect(next.world.songs).toEqual([]);
-    const {world:_next,version:_version,...fields}=next; const {version:_oldVersion,...oldFields}=old;
+    const {world:_next,living:_nextLiving,version:_version,...fields}=next; const {version:_oldVersion,...oldFields}=old;
     expect(fields).toEqual(oldFields); expect(memory.getItem(storageKeys.worldBackup)).toBe(raw); expect(memory.getItem(storageKeys.v4)).toBe(raw);
     expect(load(memory,date)).toEqual(next); expect(migrate(old,date)).toEqual(next);
     const blocked=store();blocked.setItem(storageKeys.v4,raw);

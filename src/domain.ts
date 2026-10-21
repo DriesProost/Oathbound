@@ -1,3 +1,4 @@
+import { createLiving } from './living/model';
 import { correctChronicle } from "./illuminatedChronicle";
 import { createWorld } from "./worldModel";
 import { ensureWeeklyPeriod, recordWeeklyActivity,grantWeeklyBonuses } from "./weekly";
@@ -25,7 +26,8 @@ export function createKnight(
 ): State {
   return ensureWeeklyPeriod(
     {
-      version: 5,
+      version: 6,
+      living: createLiving(),
       world: createWorld(date),
       ventures: [],
       name: name.trim() || "The Traveller",

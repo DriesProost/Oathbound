@@ -19,7 +19,7 @@ function rich(){let s=createKnight('Rowan','2026-10-05');for(const d of ['2026-1
 }
 describe('Eight-system integration',()=>{
  it('preserves all populated v4 values, rewards and source bytes through migration and world discovery',()=>{
-  const {world:_world,...source}=rich(),old={...source,version:4},raw=JSON.stringify(old,null,2),store=memory();store.setItem(storageKeys.v4,raw);
+  const {world:_world,living:_living,...source}=rich(),old={...source,version:4},raw=JSON.stringify(old,null,2),store=memory();store.setItem(storageKeys.v4,raw);
   const migrated=load(store,date)!,developed=synchronizeWorld(migrated,date,'discovered');
   expect(store.getItem(storageKeys.worldBackup)).toBe(raw);expect(store.getItem(storageKeys.v4)).toBe(raw);
   for(const key of ['name','created','portrait','entries','oaths','ventures','weight','campaign','deedNotes'] as const)expect(developed[key]).toEqual(old[key]);

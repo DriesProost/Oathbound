@@ -1,3 +1,5 @@
+import { createLiving } from './living/model';
+import { validLiving } from './living/validation';
 import { createWorld } from "./worldModel";
 import { validWorld } from "./worldValidation";
 import { validVentureHistory } from "./ventureValidation";
@@ -14,7 +16,9 @@ import { ensureWeeklyPeriod } from "./weekly";
 import { campaignRules } from "./config";
 import { goalIds, portraitIds, type State, type Entry } from "./model";
 export const storageKeys = {
-  current: "oathbound.knight.v5",
+  current: "oathbound.knight.v6",
+  v5: "oathbound.knight.v5",
+  livingBackup: "oathbound.knight.v5.living.backup",
   v4: "oathbound.knight.v4",
   worldBackup: "oathbound.knight.v4.world.backup",
   v3: "oathbound.knight.v3",
@@ -25,8 +29,8 @@ export const storageKeys = {
   backup: "oathbound.knight.v1.backup",
   previousBackup: "oathbound.knight.v2.backup",
 };
-type V3State = Omit<State, "version" | "ventures" | "world"> & { version: 3 };
-type V4State = Omit<State, "version" | "world"> & { version: 4 };
+type V3State = Omit<State, "version" | "ventures" | "world" | "living"> & { version: 3 };
+type V4State = Omit<State, "version" | "world" | "living"> & { version: 4 };
 type Store = Pick<Storage, "getItem" | "setItem">;
 type ObjectValue = Record<string, any>;
 const failure = (): never => {
@@ -302,8 +306,8 @@ function addWeeklyModel(source: unknown, date: string): V3State {
       commissions: [],
     },
   };
-  const ready = ensureWeeklyPeriod({ ...next, version: 5, ventures: [], world: createWorld(date) }, date);
-  const { ventures: _ventures, world: _world, ...legacy } = ready;
+  const ready = ensureWeeklyPeriod({ ...next, version: 6, living: createLiving(), ventures: [], world: createWorld(date) }, date);
+  const { ventures: _ventures, world: _world, living: _living, ...legacy } = ready;
   return validateV3({ ...legacy, version: 3 });
 }
 function validateV2(s: unknown) {
@@ -433,23 +437,30 @@ function validateV4(source: unknown): V4State {
   if (!unique(receipts)) return failure();
   return source as V4State;
 }
-export function validate(source: unknown): State {
+function validateV5(source: unknown) {
   if (!object(source) || source.version !== 5 || !validWorld(source.world, source.created)) return failure();
   validateV4({ ...source, version: 4 });
+  return source;
+}
+export function validate(source: unknown): State {
+  if (!object(source) || source.version !== 6 || !validLiving(source.living)) return failure();
+  validateV5({ ...source, version: 5 });
   return source as State;
 }
 export function migrate(source: unknown, date = dayKey()): State {
-  if (object(source) && source.version === 5) return validate(source);
-  if (!object(source) || source.world !== undefined || !validDay(date)) return failure();
+  if (object(source) && source.version === 6) return validate(source);
+  if (!object(source) || !validDay(date)) return failure();
+  if (source.version === 5) return validate({ ...validateV5(source), version: 6, living: createLiving() });
+  if (source.world !== undefined) return failure();
   const old = source.version === 4 ? validateV4(source) : { ...migrateV3(source, date), version: 4, ventures: [] };
-  return validate({ ...old, version: 5, world: createWorld(date < old.created ? old.created : date) });
+  return validate({ ...old, version: 6, living: createLiving(), world: createWorld(date < old.created ? old.created : date) });
 }
 export function load(
   store: Store = localStorage,
   date = dayKey(),
 ): State | null {
-  const v5 = store.getItem(storageKeys.current);
-  const current = v5 ?? store.getItem(storageKeys.v4) ?? store.getItem(storageKeys.v3);
+  const v6 = store.getItem(storageKeys.current);
+  const current = v6 ?? store.getItem(storageKeys.v5) ?? store.getItem(storageKeys.v4) ?? store.getItem(storageKeys.v3);
   if (current !== null) {
     const source = JSON.parse(current);
     const migrated = migrate(source, date);
@@ -463,7 +474,9 @@ export function load(
       store.setItem(storageKeys.ventureBackup, current);
     if (source.version === 4 && store.getItem(storageKeys.worldBackup) === null)
       store.setItem(storageKeys.worldBackup, current);
-    if (v5 === null || source.version !== 5 || source.weekly === undefined || next !== migrated)
+    if (source.version === 5 && store.getItem(storageKeys.livingBackup) === null)
+      store.setItem(storageKeys.livingBackup, current);
+    if (v6 === null || source.version !== 6 || source.weekly === undefined || next !== migrated)
       store.setItem(storageKeys.current, JSON.stringify(next));
     return next;
   }
