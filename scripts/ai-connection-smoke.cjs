@@ -12,7 +12,7 @@ try{
  await p.route('https://api.openai.com/v1/chat/completions',async route=>{
   calls.push({body:route.request().postDataJSON(),authorization:route.request().headers().authorization});
   const headers={'access-control-allow-origin':'*','access-control-allow-headers':'content-type,authorization'};
-  if(mode==='slow'){await new Promise(r=>setTimeout(r,200));return route.fulfill({status:200,headers,contentType:'application/json',body:JSON.stringify({model:'gpt-6-luna',choices:[{message:{content:'{"ok":true}'}}]})}).catch(()=>{});}
+  if(mode==='slow'){await new Promise(r=>setTimeout(r,2000));return route.fulfill({status:200,headers,contentType:'application/json',body:JSON.stringify({model:'gpt-6-luna',choices:[{message:{content:'{"ok":true}'}}]})}).catch(()=>{});}
   if(mode==='success')return route.fulfill({status:200,headers,contentType:'application/json',body:JSON.stringify({model:'gpt-6-luna',choices:[{message:{content:'{"ok":true}'}}]})});
   if(mode==='model')return route.fulfill({status:404,headers,contentType:'application/json',body:JSON.stringify({error:{code:'model_not_found',message:'Provider echoed sk-test-private-value'}})});
   if(mode==='quota')return route.fulfill({status:429,headers,contentType:'application/json',body:JSON.stringify({error:{code:'insufficient_quota',message:'Provider echoed sk-test-private-value'}})});

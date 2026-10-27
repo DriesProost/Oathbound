@@ -34,7 +34,7 @@ export default function NarrativeSettings({state,update,current}:{current?:()=>S
  }}>
  <fieldset disabled={testing} className="narrative-configuration"><legend className="sr-only">AI configuration</legend>
  <label className="check-row"><input type="checkbox" checked={settings.enabled} onChange={e=>setSettings({...settings,enabled:e.target.checked,...(e.target.checked?{story:true,ventures:true,dialogue:true}:{})})}/>Enable AI narration</label>
- <p className="muted">Stories, Ventures and household remarks are prepared automatically. You choose when to read each page; unread story never expires.</p>
+ <p className="muted">Journey pages prepare as patrol steps reach each story milestone. Ventures and household remarks prepare automatically. You choose when to read; unread pages never expire.</p>
  <label>Chat-completions endpoint<input type="url" maxLength={2000} value={settings.endpoint} onChange={e=>{setSettings({...settings,endpoint:e.target.value});setTest({kind:'idle',text:''});setMessage('');}}/></label>
  <p><strong>OpenAI GPT-6 Luna</strong> · {runtimeAi.model} · low reasoning. No automatic model escalation. If Luna is unavailable, the authored campaign continues.</p>
  <label>API key<input type="password" autoComplete="off" maxLength={16000} value={key} placeholder={saved==='remembered'?'Key remembered · leave blank to keep it':saved==='session'?'Session key available · leave blank to keep it':'Paste your existing API key'} onChange={e=>{setKey(e.target.value);setTest({kind:'idle',text:''});setMessage('');}}/></label>

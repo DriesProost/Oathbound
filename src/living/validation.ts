@@ -18,6 +18,7 @@ export function validLiving(v: unknown, created: string): v is LivingCampaign {
  if(s.plannedArc!==null&&(!object(s.plannedArc)||!text(s.plannedArc.title,160)||!text(s.plannedArc.premise,800)||!text(s.plannedArc.mystery,300)))return false;
  if(!['enabled','story','ventures','dialogue','outdoors'].every(k=>typeof c[k]==='boolean')||typeof c.endpoint!=='string'||c.endpoint.length>2000||c.model!==runtimeAi.model||!Number.isInteger(c.preferredMinutes)||c.preferredMinutes<5||c.preferredMinutes>90||!texts(c.equipment,20))return false;
  if(!Array.isArray(s.arcs)||!s.arcs.every((a:any)=>object(a)&&text(a.id,160)&&text(a.template,160)&&text(a.title,200)&&text(a.premise)&&Number.isInteger(a.stage)&&a.stage>=0&&a.stage<=6&&validDay(a.started)&&a.started>=created&&(a.completed===undefined||validDay(a.completed)&&a.completed>=a.started))||!unique(s.arcs.map((a:any)=>a.id)))return false;
+ if(s.arcs.some((a:any)=>a.route!==undefined&&(!object(a.route)||!text(a.route.pickupId,160)||!text(a.route.pickupName,200)||typeof a.route.startKm!=='number'||!Number.isFinite(a.route.startKm)||a.route.startKm<0)))return false;
  if(typeof s.currentArcId!=='string'||s.currentArcId!==''&&!s.arcs.some((a:any)=>a.id===s.currentArcId))return false;
  if(!['hooks','mysteries','completedMysteries','worldFacts','futureSeeds'].every(k=>texts(s[k],10000))||!['mood','season','weather'].every(k=>text(s[k],300)))return false;
  if(!Array.isArray(s.npcs)||!s.npcs.every((n:any)=>object(n)&&text(n.id,160)&&text(n.name,200)&&text(n.role,500))||!unique(s.npcs.map((n:any)=>n.id)))return false;

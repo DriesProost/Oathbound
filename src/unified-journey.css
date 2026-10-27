@@ -1,0 +1,57 @@
+.unified-journey { max-width: 960px; margin-inline:auto; }
+.journey-heading h2 { margin:.4rem 0; }
+.journey-heading>p { font-size:1.1rem; color:#435d3c; margin:.5rem 0; }
+.journey-heading progress { width:100%; height:9px; accent-color:#5d714a; display:block; margin:.8rem 0; }
+.route-map-heading { display:flex; justify-content:space-between; align-items:center; gap:.5rem; }
+.route-map-heading select { width:100%; max-width:300px; padding:.5rem; font-size:.8rem; background:#f4eddc; color:#4b533e; border:1px solid #b8aa8c; }
+.route-map-heading label { min-width:0; }
+.unified-journey .map-sheet>svg { width:100%; display:block; max-height:245px; }
+.unified-journey .map-key { flex-wrap:wrap; gap:.5rem; }
+.unified-journey .map-caption { position:static; }
+.current-place { margin-top:1.5rem; border:1px solid #bca881; background:#f8f0de; overflow:hidden; }
+.current-place>.campaign-landscape { max-height:230px; }
+.current-place>.place-note { padding:.7rem 1.2rem; margin:0; font-style:italic; color:#5b624c; border-bottom:1px solid #d5c6a6; }
+.current-place .living-story { margin:0; padding:1.2rem; background:transparent; border:0; box-shadow:none; }
+.current-place .living-story h3 { font-family:Georgia,serif; font-size:1.6rem; color:#304b36; margin:.5rem 0; }
+.current-place .story-beat h4 { font-family:Georgia,serif; font-size:1.25rem; margin:.7rem 0; }
+.current-place .story-beat p { line-height:1.7; max-width:65ch; }
+.current-place .story-premise,.quest-progress { font-size:.85rem; color:#6b6b58; }
+.story-recap,.story-more { font-size:.9rem; margin:.8rem 0; }
+.story-recap summary,.story-more summary { cursor:pointer; padding:.5rem 0; }
+.current-place .chosen-response { font-size:.9rem; border-left:3px solid #9aab7b; padding-left:.8rem; }
+.next-on-road { padding:1.3rem 0; }
+.next-on-road h3 { margin:.5rem 0; font-size:1.4rem; }
+.next-on-road .muted { font-size:.85rem; max-width:65ch; }
+.road-meetings { padding:1rem 1.2rem; border-top:1px solid #d5c6a6; }
+.journey-journal,.route-itinerary,.journey-world { border-top:1px solid #c9b997; padding:.8rem 0; }
+.journey-journal>summary,.route-itinerary>summary,.journey-world>summary,.road-meetings>summary { cursor:pointer; min-height:44px; display:flex; align-items:center; font-weight:600; }
+.journey-journal .journey-postcards { gap:.5rem; margin:1rem 0; }
+.journey-journal .journey-postcard { grid-column:1/-1; }
+.journey-journal .postcard-caption h3 { font-size:1.2rem; }
+.journey-journal .postcard-scene { max-height:240px; }
+.next-resident { color:#556642; font-size:.9rem; }
+@media(max-width:480px){.route-map-heading { display:block; }.route-map-heading select { margin-top:.5rem; max-width:100%; }.current-place .living-story { padding:1rem; }.unified-journey .map-place-name { font-size:13px; }}
+
+.journey-people:has(p) { padding:.6rem 1.2rem 0; color:#4e6141; font-size:.85rem; }.quest-objective { border-left:3px solid #a6b184; padding-left:.8rem; font-size:.9rem; }
+/* Keep the route readable as a single page; the older atlas used centred,
+   widely spaced prose for a standalone map. */
+.journey-page .unified-journey { text-align:left; padding:clamp(1rem,3vw,1.75rem); }
+.unified-journey p { margin:.65rem 0; max-width:65ch; }
+.unified-journey .journey-heading h2 { font-size:1.9rem; margin:.35rem 0; }
+.unified-journey .journey-heading>p { margin:.45rem 0; }
+.unified-journey .journey-heading>small { display:block; margin-bottom:.8rem; }
+.unified-journey .map-sheet>svg { min-height:0; max-height:155px; }
+.unified-journey .current-place { margin-top:1rem; }
+.unified-journey .current-place>.campaign-landscape { min-height:0; height:145px; aspect-ratio:auto; }
+.unified-journey .primary { margin:.7rem 0 0; }
+.unified-journey .quest-progress { margin:.5rem 0; }
+.unified-journey .next-on-road { padding:1rem 0; }
+.unified-journey .next-on-road .muted { margin:.7rem 0; }
+.unified-journey .journey-people p { margin:.5rem 0; }
+
+.route-map-heading select { min-height:44px; }
+.journey-journal>summary::after,.route-itinerary>summary::after,.journey-world>summary::after,.road-meetings>summary::after { content:'＋';margin-left:auto;padding-left:.5rem;color:#64734c; }
+.journey-journal[open]>summary::after,.route-itinerary[open]>summary::after,.journey-world[open]>summary::after,.road-meetings[open]>summary::after { content:'−'; }
+.journey-page .unified-journey p { margin:.65rem 0; }
+.journey-page .unified-journey .place-note { margin:0; }
+.journey-page .unified-journey .primary { margin:.7rem 0 0; }

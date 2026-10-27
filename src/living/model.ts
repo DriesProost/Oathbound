@@ -5,7 +5,7 @@ export type AiSettings = {
  enabled: boolean; story: boolean; ventures: boolean; dialogue: boolean;
  endpoint: string; model: string; preferredMinutes: number; outdoors: boolean; equipment: string[];
 };
-export type Arc = { id: string; template: string; title: string; premise: string; stage: number; started: string; completed?: string; mystery?: string };
+export type Arc = { id: string; template: string; title: string; premise: string; stage: number; started: string; completed?: string; mystery?: string; route?: {pickupId:string;pickupName:string;startKm:number} };
 export type StoryChoice = { id: string; label: string; outcome: string };
 export type StoryBeat = {
  id: string; date: string; arcId: string; stage: number; progress: number;

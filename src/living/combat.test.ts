@@ -1,10 +1,12 @@
+import {withDistance} from '../testFixtures/journey';
 import type {State} from '../model';
 import {describe,it,expect} from 'vitest';
-import {createKnight,totals,completeQuest} from '../domain';
+import {createKnight as newKnight,totals,completeQuest} from '../domain';
 import {continueStory} from './director';
 import {startBattle,takeTurn,enemyIntent,techniqueDiscovered,techniqueUsable,combatStats,resolveWithoutCombat} from './combat';
 import {techniques,enemies} from './combatContent';
 import {save,load,storageKeys,validate} from '../storage';
+const createKnight=(...args:Parameters<typeof newKnight>)=>withDistance(newKnight(...args),50);
 const date='2026-10-21';
 async function ready(){let s=createKnight('R',date);for(let i=0;i<=4;i++){const d=`2026-10-${21+i}`;s=completeQuest(s,'patrol',d,new Date(d+'T20:00:00'));s=completeQuest(s,'training',d,new Date(d+'T20:00:00'));s=await continueStory(s,d);const b=s.living.story.beats.at(-1)!;if(b.choices.length){const {chooseStory}=await import('./director');s=chooseStory(s,b.id,'public',d);}}return s;}
 describe('Deterministic tactical combat',()=>{

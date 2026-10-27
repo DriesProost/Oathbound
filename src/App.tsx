@@ -2,15 +2,12 @@ import {ensureAutomatic, markVentureSeen} from './living/automatic';
 import {useAutomaticCampaign} from './living/useAutomaticCampaign';
 import { KeepAtmosphere } from './living/Atmosphere';
 import { TechniqueBook } from './living/CombatScene';
-import JourneyStory, { StoryHistory } from './living/JourneyStory';
+import UnifiedJourney from './UnifiedJourney';
 import { generateReplacement } from './living/ventureGeneration';
 import { JsonNarrativeProvider } from './living/provider';
 import NarrativeSettings from './living/NarrativeSettings';
-import WorldFrontier from "./WorldFrontier";
 import TitlePanel from "./TitlePanel";
 import { displayedTitle } from "./titles";
-import EncounterPanel from "./EncounterPanel";
-import ChapterPanel from "./ChapterPanel";
 import IlluminatedChronicle from "./IlluminatedChronicle";
 import RelicCabinet from "./RelicCabinet";
 import KeepOverview from "./KeepOverview";
@@ -83,7 +80,6 @@ import WeeklyReview from './WeeklyReview';
 import KnightArt from "./KnightArt";
 import { bodyAppearanceExplanation, knightAppearance, knightlyName } from "./appearance";
 import { formatDay } from "./presentation";
-import JourneyMap from "./JourneyMap";
 import {
   Attributes,
   OathPanel,
@@ -697,8 +693,12 @@ function OathboundApp() {
           <FeedbackSurface onReadJourney={() => {
             feedback.dismiss();
             switchTab("Journey");
-            requestAnimationFrame(() => document.querySelector<HTMLDetailsElement>(".journey-postcard[open]")
-              ?.querySelector<HTMLElement>("summary")?.focus());
+            requestAnimationFrame(() => {
+              const journal=document.querySelector<HTMLDetailsElement>('.journey-journal');
+              if(journal)journal.open=true;
+              const visit=Array.from(document.querySelectorAll<HTMLDetailsElement>('.journey-postcard')).at(-1);
+              if(visit){visit.open=true;visit.querySelector<HTMLElement>('summary')?.focus();}
+            });
           }} />
           {notice && (
             <div className="notice" role="status">
@@ -796,7 +796,7 @@ function OathboundApp() {
                   </div>
                 </div>
               </div>
-              {(state.living.automatic?.preparedStory || state.living.story.hooks.length>0) && <button className="venture-teaser" onClick={()=>switchTab("Journey")}><strong>{state.living.automatic?.preparedStory ? "A new page awaits." : "Word from the road"}</strong><span>{state.living.automatic?.preparedStory?.beat.title ?? state.living.story.hooks.at(-1)}</span></button>}
+              {(state.living.automatic?.preparedStory || state.living.story.hooks.length>0) && <button className="venture-teaser" onClick={()=>switchTab("Journey")}><strong>{state.living.automatic?.preparedStory ? "Your Journey · a new page awaits" : "Continue your Journey"}</strong><span>{state.living.automatic?.preparedStory?.beat.title ?? state.living.story.hooks.at(-1)}</span></button>}
               <KeepAtmosphere state={state}/><KeepOverview state={state} date={today} update={update} current={()=>stateRef.current}/>
               <button className="hero-link" onClick={()=>switchTab("Quest Board")}>Visit the Quest Board <ArrowRight size={16}/></button>
               <InstallApp />
@@ -1045,43 +1045,7 @@ function OathboundApp() {
               </section>
             </>
           )}
-          {tab === "Journey" && (
-            <>
-            <JourneyStory state={state} date={today} update={update} current={()=>stateRef.current}/><details className="earlier-road"><summary>The earlier road to Oakhaven</summary><section className="journey-story" aria-label="The campaign story"><ChapterPanel state={state} date={today} />
-            <EncounterPanel state={state} date={today} update={update} /></section></details>
-            <section className="journey panel">
-              <span className="eyebrow">THE ROAD TO OAKHAVEN</span>
-              <h2>{routeSteps(total.distance)} route steps</h2>
-              <JourneyMap distance={total.distance} />
-              <WorldFrontier state={state} />
-              <p className="journey-method">
-                {campaignQuests.find((q) => q.id === "patrol")?.target
-                  ?.metric === "steps"
-                  ? "Confirm your patrol after reaching your step target. Route progress estimates 0.75 metres per step; no automatic step tracking. Earlier distance is preserved as equivalent route steps."
-                  : campaignQuests.find((q) => q.id === "patrol")
-                    ? "Your earlier distance remains preserved. Switch your patrol to steps below, then adjust the target in Campaign settings. Route steps are an estimate, not a measured step count."
-                    : "Your earlier travels remain here. Enable a walking goal to continue this route."}
-              </p>
-              {currentGoals.find(g => g.id === 'walking')?.target.metric === 'km' && <button className="secondary" onClick={() => {
-                const goals = currentGoals.map(g => g.id === 'walking' && g.target.metric === 'km' ? {...g,target:{metric:'steps' as const,value:Math.max(100,Math.min(100000,kmToSteps(g.target.value)))}} : g);
-                update(configureCampaign(state,goals,today));
-              }}>Use steps for patrols</button>}
-              <button
-                className="primary"
-                onClick={() =>
-                  campaignQuests.some((q) => q.id === "patrol")
-                    ? switchTab("Quest Board")
-                    : editCampaign()
-                }
-              >
-                {campaignQuests.some((q) => q.id === "patrol")
-                  ? "Take a patrol"
-                  : "Configure walking goal"}{" "}
-                <ArrowRight size={16} />
-              </button>
-            </section>
-            </>
-          )}
+          {tab === "Journey" && <UnifiedJourney state={state} date={today} update={update} current={()=>stateRef.current} walking={campaignQuests.some(q=>q.id==='patrol')} onPatrol={()=>campaignQuests.some(q=>q.id==='patrol')?switchTab('Quest Board'):editCampaign()}/>}
           {tab === "Chronicle" && (
             <>
               <div className="history-stats">
@@ -1153,7 +1117,7 @@ function OathboundApp() {
                   window.scrollTo({ top: 0 });
                 }}
               />
-              <StoryHistory state={state}/><IlluminatedChronicle state={state} date={today} update={update}/><RelicCabinet state={state} />
+              <IlluminatedChronicle state={state} date={today} update={update}/><RelicCabinet state={state} />
               <VentureLedger state={state} />
               <WeeklyLedger state={state} date={today} />
               <WeeklyReview state={state} now={now} />

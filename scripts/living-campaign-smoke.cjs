@@ -6,7 +6,7 @@ try{
  await p.clock.install({time:new Date('2026-10-21T19:00:00+02:00')});await p.goto('http://127.0.0.1:5173');
  const fixture=await p.evaluate(async()=>{
   const d=await import('/src/domain.ts'),w=await import('/src/worldProgression.ts');
-  let s=d.createKnight('Rowan','2026-10-01');s=d.completeQuest(s,'training','2026-10-20',new Date('2026-10-20T20:00:00'));
+  const {withDistance}=await import('/src/testFixtures/journey.ts');let s=withDistance(d.createKnight('Rowan','2026-10-01'),120);s=d.completeQuest(s,'training','2026-10-20',new Date('2026-10-20T20:00:00'));
   s.oaths['2026-10-20']={status:'kept',reward:{renown:3500,xp:{Strength:300,Endurance:300,Wisdom:300,Vitality:300,Presence:300,Resolve:300}}};s=w.synchronizeWorld(s,'2026-10-20','discovered');
   const {living,...old}=s;return {...old,version:5};
  });

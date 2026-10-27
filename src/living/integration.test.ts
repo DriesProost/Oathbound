@@ -1,12 +1,14 @@
+import {withDistance} from '../testFixtures/journey';
 import {ensureWeeklyPeriod} from '../weekly';
 import {describe,it,expect,vi} from 'vitest';
-import {createKnight,totals,confirmOath} from '../domain';
+import {createKnight as newKnight,totals,confirmOath} from '../domain';
 import {continueStory} from './director';
 import {synchronizeWorld} from '../worldProgression';
 import {save,load,validate,storageKeys} from '../storage';
 import {runtimeAi} from './aiConfig';
 import {narrativeContext} from './context';
 import {detectFeedback} from '../feedback/events';
+const createKnight=(...args:Parameters<typeof newKnight>)=>withDistance(newKnight(...args),30);
 const date='2026-10-21';
 describe('Living Campaign final integration',()=>{
  it('stays fully local when disabled, including reload, inactivity and factual corrections',async()=>{
@@ -33,7 +35,7 @@ describe('Living Campaign final integration',()=>{
   const s=synchronizeWorld(base,date),month=s.world.pages.find(p=>p.kind==='month')!;
   expect(month).toMatchObject({id:'month:2026-09-01',start:'2026-09-01',end:'2026-09-30'});
   const corrected=confirmOath(s,'2026-09-03','broken',new Date(date+'T20:00:00'));expect(corrected.world.pages.find(p=>p.id===month.id)!.highlights.find(h=>h.label==='Oaths kept')!.value).toBe('0');
-  expect(synchronizeWorld(createKnight('R','2026-01-01'),date).world.pages).toEqual([]);
+  expect(synchronizeWorld(newKnight('R','2026-01-01'),date).world.pages).toEqual([]);
  });
  it('includes only completed generated Venture hooks and deterministic combat outcomes in AI context',()=>{
   const s=createKnight('R',date),context=narrativeContext(s);expect(context.recentConfrontations).toEqual([]);expect(context).not.toHaveProperty('weight');expect(context).not.toHaveProperty('name');expect(context).not.toHaveProperty('save');

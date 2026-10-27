@@ -1,3 +1,4 @@
+import {withDistance} from './testFixtures/journey';
 import { defaultGoals } from './campaign';
 import { describe, it, expect } from 'vitest';
 import { createKnight, totals } from './domain';
@@ -8,7 +9,7 @@ import { meets } from './worldConditions';
 import { load, migrate, save, storageKeys } from './storage';
 import { detectFeedback } from './feedback/events';
 const date = '2026-10-14';
-function progressed() { const s = createKnight('Rowan', date); return { ...s, oaths: { [date]: { status: 'kept' as const, reward: { renown: 3100, xp: { Strength: 250, Endurance: 250, Wisdom: 250, Vitality: 250, Presence: 250, Resolve: 250 } } } } }; }
+function progressed() { const s = withDistance(createKnight('Rowan', date),120); return { ...s, oaths: { [date]: { status: 'kept' as const, reward: { renown: 3100, xp: { Strength: 250, Endurance: 250, Wisdom: 250, Vitality: 250, Presence: 250, Resolve: 250 } } } } }; }
 function store() { const data = new Map<string,string>(); return { getItem: (k:string) => data.get(k) ?? null, setItem: (k:string,v:string) => { data.set(k,v); } }; }
 describe('Retinue and world foundation', () => {
   it('keeps a new household quiet, then unlocks deterministically without requiring enabled goals', () => {
@@ -21,21 +22,16 @@ describe('Retinue and world foundation', () => {
   it('does not welcome the entire household at Knight Errant or one shared age threshold', () => {
     const s = createKnight('R', '2026-01-01', defaultGoals(false));
     const ranked = { ...s, oaths: { '2026-01-01': { status: 'kept' as const, reward: { renown: 3100, xp: {} } } } };
-    expect(reconcileRetinue(ranked, '2026-01-01', 'earned').world.milestones.filter(m => m.kind === 'retinue').map(m => m.id)).toEqual(['bard']);
+    expect(reconcileRetinue(ranked, '2026-01-01', 'earned').world.milestones.filter(m => m.kind === 'retinue').map(m => m.id)).toEqual([]);
     expect(retinue.filter(m => m.attribute).every(m => !meets(ranked, m.arrival, '2026-02-01'))).toBe(true);
   });
-  it('paces six distinct fallback arrivals with any activity even when their own goals are disabled', () => {
-    let s = createKnight('R', '2026-01-01', defaultGoals(false));
-    for (let i = 1; i <= 40; i++) {
-      const d = new Date(Date.UTC(2026, 0, i)).toISOString().slice(0, 10);
-      s = { ...s, oaths: { ...s.oaths, [d]: { status: 'kept', reward: { renown: 0, xp: {} } } } };
-    }
-    // These receipts supply recorded active days without growing any attribute.
-    const checkpoints = ['2026-01-14','2026-01-21','2026-01-28','2026-02-04','2026-02-11','2026-02-18'];
-    expect(checkpoints.map(d => retinue.filter(m => m.attribute && meets(s, m.arrival, d)).length)).toEqual([1,2,3,4,5,6]);
-    for (const member of retinue.filter(m => m.attribute)) {
-      const direct = { ...createKnight('R', date, defaultGoals(false)), oaths: { [date]: { status: 'kept' as const, reward: { renown: 0, xp: { [member.attribute!]: 250 } } } } };
-      expect(meets(direct, member.arrival, date)).toBe(true);
+  it('introduces household members at seven distinct reached places, independent of levels and age',()=>{
+    const initial=createKnight('R','2026-01-01',defaultGoals(false));
+    const thresholds=[9,21,30,45,65,90,120];
+    expect(thresholds.map(km=>retinue.filter(m=>meets(withDistance(initial,km),m.arrival,'2026-12-01')).length)).toEqual([1,2,3,4,5,6,7]);
+    for(const member of retinue){
+      const ranked={...initial,oaths:{'2026-01-01':{status:'kept' as const,reward:{renown:10000,xp:{Strength:10000,Endurance:10000,Wisdom:10000,Vitality:10000,Presence:10000,Resolve:10000}}}}};
+      expect(meets(ranked,member.arrival,'2026-12-01')).toBe(false);
     }
   });
   it('rejects edits predating a song creation even within the campaign lifetime', () => {

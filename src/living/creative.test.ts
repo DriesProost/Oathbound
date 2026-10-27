@@ -1,3 +1,4 @@
+import {withDistance} from '../testFixtures/journey';
 import {describe,it,expect,vi} from 'vitest';
 import {createKnight,confirmOath,totals} from '../domain';
 import {reconcileChronicle} from '../illuminatedChronicle';
@@ -5,7 +6,7 @@ import {illuminatePage,chroniclePacket,askBard,speakWith,dialoguePacket} from '.
 import {synchronizeWorld} from '../worldProgression';
 import {validate} from '../storage';
 const date='2026-10-21';
-function household(){const s=createKnight('Private name','2026-10-01');return synchronizeWorld({...s,oaths:{'2026-10-02':{status:'kept',reward:{renown:3500,xp:{Wisdom:250}}}}},date);}
+function household(){const s=createKnight('Private name','2026-10-01');return synchronizeWorld({...withDistance(s,90),oaths:{'2026-10-02':{status:'kept',reward:{renown:3500,xp:{Wisdom:250}}}}},date);}
 describe('Factual Chronicle and creative Bard',()=>{
  it('arranges only authoritative fact IDs, refusing invented values or unsupported prose',async()=>{
   let s=confirmOath(createKnight('R','2026-10-05'),'2026-10-06','kept',new Date('2026-10-06T20:00:00'));s=reconcileChronicle(s,date);s.living.settings.enabled=true;

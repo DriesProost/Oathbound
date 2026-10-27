@@ -1,8 +1,11 @@
+import {storyRouteKm} from '../journey';
+import {withDistance} from '../testFixtures/journey';
 import {describe,it,expect,vi} from 'vitest';
-import {createKnight,completeQuest,totals} from '../domain';
+import {createKnight as newKnight,completeQuest,totals} from '../domain';
 import {continueStory,chooseStory,canContinue,validScene} from './director';
 import {startBattle,takeTurn} from './combat';
 import {validate} from '../storage';
+const createKnight=(...args:Parameters<typeof newKnight>)=>withDistance(newKnight(...args),30);
 const date='2026-10-21';
 const scene=()=>({title:'A neighbour at the gate',prose:'The traveller carries a letter for the miller.',canonFactsAdded:['The miller has a cousin in the village.'],hooksAdded:[],hooksResolved:[],choices:[]});
 describe('Narrative continuity',()=>{
@@ -25,29 +28,31 @@ describe('Narrative continuity',()=>{
   let s=createKnight('R',date);
   for(let i=0;i<7;i++){
    const d=`2026-10-${21+i}`;s=completeQuest(s,'training',d,new Date(d+'T20:00:00'));s=completeQuest(s,'patrol',d,new Date(d+'T20:00:00'));
-   s=await continueStory(s,d);
+   s=withDistance(s,storyRouteKm(Math.floor(i/7),i%7));s=await continueStory(s,d);
    const beat=s.living.story.beats.at(-1)!;
    if(beat.choices.length){s=chooseStory(s,beat.id,'public',d);expect(chooseStory(s,beat.id,'quiet',d)).toBe(s);}
    // Story/combat integration records a resolved confrontation; engine verifies it later.
    if(beat.combatSetup)s=takeTurn(startBattle(s,beat.id,d),'withdraw');
   }
   expect(s.living.story.arcs[0].completed).toBe('2026-10-27');expect(s.living.story.choices).toHaveLength(1);expect(s.living.story.completedMysteries).toHaveLength(1);
+  s.living.story.plannedArc={title:'An unrelated tale',premise:'A different story.',mystery:'A different question?'};
+  const history=structuredClone(s.living.story.arcs);
   s=completeQuest(s,'training','2026-10-28',new Date('2026-10-28T20:00:00'));s=completeQuest(s,'patrol','2026-10-28',new Date('2026-10-28T20:00:00'));
-  expect(canContinue(s,'2026-10-28')).toBe(true);s=await continueStory(s,'2026-10-28');expect(s.living.story.arcs).toHaveLength(2);expect(s.living.story.currentArcId).toBe('arc:2');
+  s=withDistance(s,65);expect(canContinue(s,'2026-10-28')).toBe(true);s=await continueStory(s,'2026-10-28');expect(s.living.story.arcs).toHaveLength(2);expect(s.living.story.currentArcId).toBe('arc:2');expect(s.living.story.arcs[1].title).toBe('The Miller’s Winter Ledger');expect(s.living.story.arcs[0]).toEqual(history[0]);
  });
 });
 
 describe('Endless arc continuation',()=>{
- it('moves beyond both seeded arcs without reopening their solved mysteries or losing choices',async()=>{
+ it('continues to a connected authored quest beyond the first two, preserving solved mysteries and choices',async()=>{
   const {startBattle,takeTurn}=await import('./combat');
   let s=createKnight('R','2026-09-01');
   for(let i=0;i<15;i++){
    const d=new Date(Date.UTC(2026,8,i+1)).toISOString().slice(0,10);
-   s=completeQuest(s,'training',d,new Date(d+'T20:00:00'));s=completeQuest(s,'patrol',d,new Date(d+'T20:00:00'));s=await continueStory(s,d);
+   s=completeQuest(s,'training',d,new Date(d+'T20:00:00'));s=completeQuest(s,'patrol',d,new Date(d+'T20:00:00'));s=withDistance(s,storyRouteKm(Math.floor(i/7),i%7));s=await continueStory(s,d);
    const beat=s.living.story.beats.at(-1)!;
    if(beat.choices.length)s=chooseStory(s,beat.id,'quiet',d);
    if(beat.combatSetup)s=takeTurn(startBattle(s,beat.id,d),'withdraw');
   }
-  expect(s.living.story.arcs).toHaveLength(3);expect(s.living.story.arcs[2].template).toBe('open-road');expect(s.living.story.completedMysteries).toHaveLength(2);expect(s.living.story.mysteries.every(m=>!s.living.story.completedMysteries.includes(m))).toBe(true);expect(s.living.story.choices).toHaveLength(2);expect(validate(s)).toBe(s);
+  expect(s.living.story.arcs).toHaveLength(3);expect(s.living.story.arcs[2].template).toBe('noon-bell');expect(s.living.story.completedMysteries).toHaveLength(2);expect(s.living.story.mysteries.every(m=>!s.living.story.completedMysteries.includes(m))).toBe(true);expect(s.living.story.choices).toHaveLength(2);expect(validate(s)).toBe(s);
  });
 });

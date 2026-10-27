@@ -1,10 +1,12 @@
+import {withDistance} from '../testFixtures/journey';
 import {describe,it,expect,vi} from 'vitest';
-import {createKnight,completeQuest,totals} from '../domain';
+import {createKnight as newKnight,completeQuest,totals} from '../domain';
 import {ensureDailyVenture,todaysVenture,completeDailyVenture} from '../ventureDomain';
 import {ensureAutomatic,nextAutomaticJob,reserveAutomaticJob,runAutomaticJob,finishAutomaticJob,readPreparedStory,markVentureSeen} from './automatic';
 import {canContinue} from './director';
 import {validate,load,save} from '../storage';
 import type {State} from '../model';
+const createKnight=(...args:Parameters<typeof newKnight>)=>withDistance(newKnight(...args),30);
 const date='2026-10-21',time=(d=date)=>new Date(d+'T20:00:00');
 async function prepare(s:State,d=date,provider?:any){const job=nextAutomaticJob(s,time(d))!;expect(job).toBeDefined();const base=reserveAutomaticJob(s,job,time(d));return finishAutomaticJob(base,base,await runAutomaticJob(base,job,provider),job,d);}
 describe('Automatic content, explicit story reading',()=>{
@@ -17,10 +19,10 @@ describe('Automatic content, explicit story reading',()=>{
   const queued=await prepare(createKnight('R',date));expect(nextAutomaticJob(queued,time('2026-11-03'))).toBeUndefined();
   const read=readPreparedStory(queued,'2026-11-03');expect(read.living.story.beats).toHaveLength(1);expect(read.living.story.beats[0].date).toBe('2026-11-03');expect(read.living.story.beats[0].provenance.generatedAt).toBe(date);expect(read.living.story.arcs[0].started).toBe('2026-11-03');expect(readPreparedStory(read,'2026-11-03')).toBe(read);expect(validate(read)).toBe(read);
  });
- it('retains one read page per local day and requires real-life development for subsequent pages',async()=>{
+ it('retains one read page per local day and requires route steps rather than ordinary deeds for subsequent pages',async()=>{
   let s=readPreparedStory(await prepare(createKnight('R',date)),date);
   s=completeQuest(s,'training',date,time());s=completeQuest(s,'chore',date,time());expect(canContinue(s,date)).toBe(false);expect(nextAutomaticJob(s,time())?.kind).not.toBe('story');
-  s=await prepare(s,'2026-10-22');expect(s.living.story.beats).toHaveLength(1);expect(s.living.automatic!.preparedStory?.beat.stage).toBe(1);
+  expect(canContinue(s,'2026-10-22')).toBe(false);s=withDistance(s,34);s=await prepare(s,'2026-10-22');expect(s.living.story.beats).toHaveLength(1);expect(s.living.automatic!.preparedStory?.beat.stage).toBe(1);
   const read=readPreparedStory(s,'2026-10-27');expect(read.living.story.beats.map(b=>b.stage)).toEqual([0,1]);expect(read.living.story.beats[1].date).toBe('2026-10-27');
  });
  it('recovers an interrupted request with authored content rather than making another paid request',async()=>{

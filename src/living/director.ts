@@ -1,3 +1,6 @@
+import {storyRouteKm,routePosition} from '../journey';
+import {routeSteps} from '../walking';
+import {totals} from '../domain';
 import {enemies} from './combatContent';
 import {runtimeAi} from './aiConfig';
 import type {State} from '../model';
@@ -14,16 +17,23 @@ export const progressCount=(s:State)=>s.entries.length+s.ventures.filter(v=>v.re
 export function prepareStory(state:State,date:string):State {
  if(state.living.story.arcs.length||!validDay(date)||date<state.created)return state;
  const template=arcTemplates[0],id='arc:1';
- const arc:Arc={id,template:template.id,title:template.title,premise:template.premise,mystery:template.mystery,stage:0,started:date};
+ const pickup=routePosition(storyRouteKm(0,0)).current;
+ const arc:Arc={id,template:template.id,title:template.title,premise:template.premise,mystery:template.mystery,stage:0,started:date,route:{pickupId:pickup.id,pickupName:pickup.name,startKm:storyRouteKm(0,0)}};
  return {...state,living:{...state.living,story:{...state.living.story,arcs:[arc],currentArcId:id,npcs:retinue.map(m=>({id:m.id,name:m.name,role:m.role})),places:structuredClone(storyPlaces),mysteries:[template.mystery]}}};
+}
+export function nextStoryRoute(state:State) {
+ const s=state.living.story,arc=s.arcs.find(a=>a.id===s.currentArcId);
+ const arcIndex=arc&&!arc.completed?s.arcs.indexOf(arc):s.arcs.length;
+ const stage=arc&&!arc.completed?arc.stage:0,km=storyRouteKm(arcIndex,stage);
+ return {arcIndex,stage,km,place:routePosition(km).current,remaining:Math.max(0,km-totals(state).distance)};
 }
 export function canContinue(state:State,date:string):boolean {
  if(!validDay(date)||date<state.created)return false;
  const s=state.living.story,last=s.beats.at(-1);
- if(!last)return true;
+ if(!last)return !!state.living.automatic?.preparedStory || nextStoryRoute(state).remaining===0;
  if(last.date>=date||s.beats.some(b=>b.choices.length&&!b.chosen)||last.combatSetup&&!state.living.battles.some(b=>b.beatId===last.id&&b.status!=='active'&&(b.status!=='withdrawn'||(enemies.find(e=>e.id===b.enemyId)?.alternatives.length??1)>0)))return false;
- // Two recorded real-world actions between developments; no deadline or loss.
- return progressCount(state)>=(last.progress??0)+2;
+ // Steps unlock the next road event. Previously prepared pages stay earned.
+ return !!state.living.automatic?.preparedStory || nextStoryRoute(state).remaining===0;
 }
 type SceneResponse={title:string;prose:string;canonFactsAdded:string[];hooksAdded:string[];hooksResolved:string[];choices:StoryChoice[];speakerId?:string;newNpc?:{id:string;name:string;role:string};newPlace?:{id:string;name:string;description:string};futureSeed?:string;nextArc?:{title:string;premise:string;mystery:string}};
 const forbiddenTruth=/\b(?:xp|renown|rank|oath|kilometre|kilometer|workout|weight|calorie|attribute level|relic earned|completed.{0,15}venture|you (?:ran|walked|trained|lost))\b/i;
@@ -39,14 +49,16 @@ export function validScene(v:unknown):v is SceneResponse {
  return g.futureSeed===undefined||safeProse(g.futureSeed,150);
 }
 export async function continueStory(original:State,date:string,provider?:NarrativeProvider,signal?:AbortSignal):Promise<State> {
- let state=prepareStory(original,date);if(!canContinue(state,date))return state;
+ if(!canContinue(original,date))return original;
+ let state=prepareStory(original,date);
  let s=state.living.story,arc=s.arcs.find(a=>a.id===s.currentArcId)!;
  if(arc.completed){
   const template=arcTemplates[s.arcs.length%arcTemplates.length],id=`arc:${s.arcs.length+1}`,seed=s.futureSeeds.at(-1);
   const planned=s.plannedArc;
-  arc={id,template:s.arcs.length<2?template.id:'open-road',title:planned?.title??seed??template.title,
-   premise:planned?.premise??(s.arcs.length<2?template.premise:'A neighbouring household has sent a letter. A local question is waiting for patient attention.'),
-   mystery:planned?.mystery??(s.arcs.length<2?template.mystery:`What has prompted the letter called “${seed??template.title}”?`),stage:0,started:date};
+  const authored=s.arcs.length<arcTemplates.length,pickup=routePosition(storyRouteKm(s.arcs.length,0)).current;
+  arc={id,template:authored?template.id:'open-road',title:authored?template.title:planned?.title??seed??template.title,
+   premise:authored?template.premise:planned?.premise??'A neighbouring household has sent a letter. A local question is waiting for patient attention.',
+   mystery:authored?template.mystery:planned?.mystery??`What has prompted the letter called “${seed??template.title}”?`,stage:0,started:date,route:{pickupId:pickup.id,pickupName:pickup.name,startKm:storyRouteKm(s.arcs.length,0)}};
   s={...s,arcs:[...s.arcs,arc],currentArcId:id,plannedArc:null,mysteries:[...s.mysteries,arc.mystery!]};state={...state,living:{...state.living,story:s}};
  }
  const template=arcTemplates.find(t=>t.id===arc.template)??arcTemplates[0],stage=arc.stage;
@@ -68,7 +80,7 @@ export async function continueStory(original:State,date:string,provider?:Narrati
  const fallbackProse=stage===5&&previousBattle&&['defeat','withdrawn'].includes(previousBattle.status)?'After you find another route, a neighbour brings the account to the inn. The people named in it agree to speak. '+scene.prose.replace('Inside the tower, a ledger', 'A copied ledger'):scene.prose;
  const fallback:SceneResponse={title:scene.title,prose:fallbackProse,canonFactsAdded:stage===5?[mystery+' The neighbours’ account is now understood.']:[],hooksAdded:stage===0?[mystery]:[],hooksResolved:stage===6?[mystery]:[],choices};
  const enabled=state.living.settings.enabled&&state.living.settings.story;
- let generated=await generateSafely(enabled?provider:undefined,{task:'story',context:{...narrativeContext(state),nextScene:scene,requiredChoice:stage===3,previousOutcome:s.choices.at(-1)?.outcome},schema:{title:'string',prose:'string',canonFactsAdded:['fictional fact'],hooksAdded:['fictional hook'],hooksResolved:['existing hook only'],choices:stage===3?[{id:'string',label:'string',outcome:'fiction only'}]:[],speakerId:'optional established NPC ID',newNpc:'optional {id: npc:slug,name,role}',newPlace:'optional {id: place:slug,name,description}',futureSeed:'optional future arc title',nextArc:stage===6?'optional {title,premise,mystery} for a genuinely new local problem':'omit'},instruction:'Write the next stage of this connected arc, using nextScene as the structural plan and the previous choice as canon. Never resolve combat in prose. No real-life claims. Include two meaningful choices at the required choice stage and none elsewhere. Respect the planned discoveries and ending.'},validScene,fallback,signal);
+ let generated=await generateSafely(enabled?provider:undefined,{task:'story',context:{...narrativeContext(state),nextScene:scene,requiredChoice:stage===3,previousOutcome:s.choices.at(-1)?.outcome},schema:{title:'string',prose:'string',canonFactsAdded:['fictional fact'],hooksAdded:['fictional hook'],hooksResolved:['existing hook only'],choices:stage===3?[{id:'string',label:'string',outcome:'fiction only'}]:[],speakerId:'optional established NPC ID',newNpc:'optional {id: npc:slug,name,role}',newPlace:'optional {id: place:slug,name,description}',futureSeed:'optional future arc title',nextArc:stage===6?'optional {title,premise,mystery} for a genuinely new local problem':'omit'},instruction:'Write one concise scene (80–140 words) on this single walking journey. Use nextScene as the structural plan and the previous choice as canon. The journey packet gives the reached place and quest pickup. Connect this event to that road; do not start a second independent journey. Unreached places may send letters but cannot be described as already visited. Never resolve combat in prose. No real-life claims. Include two meaningful choices at the required choice stage and none elsewhere. Respect the planned discoveries and ending.'},validScene,fallback,signal);
  const g=generated.content;
  if((stage!==6&&!!g.nextArc)||(stage===4&&/\b(victory|defeated|killed|slain|health|stamina|momentum)\b/i.test(g.prose))||(stage===3?g.choices.length!==2:g.choices.length!==0)||g.speakerId&&!s.npcs.some(n=>n.id===g.speakerId)||g.hooksResolved.some(h=>!s.hooks.includes(h))||g.newNpc&&s.npcs.some(n=>n.id===g.newNpc!.id)||g.newPlace&&s.places.some(p=>p.id===g.newPlace!.id))generated={content:fallback,source:'authored'};
  const c=generated.content;
@@ -79,8 +91,8 @@ export async function continueStory(original:State,date:string,provider?:Narrati
   hooks:[...new Set([...s.hooks.filter(h=>!c.hooksResolved.includes(h)),...c.hooksAdded])],worldFacts:[...new Set([...s.worldFacts,...c.canonFactsAdded])],
   npcs:c.newNpc?[...s.npcs,c.newNpc]:s.npcs,places:c.newPlace?[...s.places,c.newPlace]:s.places,
   mysteries:ending?s.mysteries.filter(m=>m!==mystery):s.mysteries,completedMysteries:ending?[...new Set([...s.completedMysteries,mystery])]:s.completedMysteries,
-  plannedArc:ending?c.nextArc??null:s.plannedArc,
-  futureSeeds:ending?[...s.futureSeeds,c.futureSeed??template.seed]:s.futureSeeds,mood:ending?'A lamp at a new window':'A question worth following',weather:recordedDays(state).size%2?'Rain beyond the windows':'Pale light on the road'}}};
+  plannedArc:ending?(s.arcs.length<arcTemplates.length?null:c.nextArc??null):s.plannedArc,
+  futureSeeds:ending?[...s.futureSeeds,arcTemplates[s.arcs.length]?.title??c.futureSeed??(arc.template==='open-road'?`Letters Beyond the Hill: ${s.arcs.length+1}`:template.seed)]:s.futureSeeds,mood:ending?'A lamp at a new window':'A question worth following',weather:recordedDays(state).size%2?'Rain beyond the windows':'Pale light on the road'}}};
 }
 export function chooseStory(state:State,beatId:string,choiceId:string,date:string):State {
  const s=state.living.story,b=s.beats.find(b=>b.id===beatId),choice=b?.choices.find(c=>c.id===choiceId);
@@ -90,10 +102,12 @@ export function chooseStory(state:State,beatId:string,choiceId:string,date:strin
 
 export function storyWaitingMessage(state:State,date:string):string {
  const s=state.living.story,last=s.beats.at(-1);
- if(!last)return 'A letter is finding its way to the Keep. Your deeds are ready while the scene is prepared.';
+ const target=nextStoryRoute(state);
+ if(!last&&target.remaining>0)return `Your first story quest waits at ${target.place.name}. ${routeSteps(target.remaining)} more route steps to reach it.`;
+ if(!last)return 'A story from this road is being prepared.';
  if(s.beats.some(b=>b.choices.length&&!b.chosen))return 'Your reply above will shape this part of the road.';
  if(last.combatSetup&&!state.living.battles.some(b=>b.beatId===last.id&&b.status!=='active'&&(b.status!=='withdrawn'||b.opponent.alternatives.length>0)))return 'The meeting on the road awaits your response. Choose how to approach it above.';
- if(last.date>=date)return 'This is today’s page. The next page becomes available on a later day as your campaign grows.';
- if(!canContinue(state,date))return 'The road is quiet. A little more recorded real-life activity will carry the story forward.';
+ if(last.date>=date)return 'This is today’s page. The next unlocked page can be read on a later day.';
+ if(!canContinue(state,date))return `${routeSteps(target.remaining)} more route steps to the next story event near ${target.place.name}.`;
  return 'The next page is being prepared. Open it whenever it suits you.';
 }
