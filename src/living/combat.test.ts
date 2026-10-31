@@ -17,7 +17,7 @@ describe('Deterministic tactical combat',()=>{
  });
  it('checks discovery, real attribute requirements, costs, enemy type and once-per-fight abilities',async()=>{
   const s=await ready(),next=startBattle(s,s.living.story.beats.at(-1)!.id,'2026-10-25'),b=next.living.battle!,half=techniques.find(t=>t.id==='half-sword')!;
-  expect(techniqueDiscovered(b,half)).toBe(false);expect(takeTurn(next,'half-sword')).toBe(next);
+  expect(techniqueDiscovered({...b,distance:44},half)).toBe(false);expect(techniqueDiscovered(b,half)).toBe(true);expect(takeTurn(next,'half-sword')).toBe(next);
   const trained={...b,allies:['arms','physician','scout'],levels:{...b.levels,Strength:5,Vitality:3,Endurance:3},player:{...b.player,momentum:3}};
   expect(techniqueUsable(trained,half)).toBe(true);expect(techniqueUsable({...trained,player:{...trained.player,stamina:0}},half)).toBe(false);
   const heal=techniques.find(t=>t.id==='second-wind')!;expect(techniqueUsable({...trained,used:['second-wind']},heal)).toBe(false);

@@ -4,7 +4,7 @@ const originalLandmarks = [
   {
     id: "keep",
     sceneAlt: "A modest stone holdfast at dawn, with a smoking chimney and muddy working yard.",
-    name: "Your Keep",
+    name: "The Starting Gate",
     km: 0,
     x: 70,
     y: 260,

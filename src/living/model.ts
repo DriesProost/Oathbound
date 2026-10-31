@@ -38,6 +38,6 @@ export type PreparedStory = {baseHash:string;preparedAt:string;beat:StoryBeat;ar
 export type AutomaticState = {version:1;jobs:AutomaticJob[];seenVentures:string[];preparedStory?:PreparedStory};
 export type LivingCampaign = { version: 1; automatic?: AutomaticState; settings: AiSettings; story: StoryState; battle: Battle | null; battles: Battle[] };
 export function createLiving(): LivingCampaign {
- return { version: 1, automatic:{version:1,jobs:[],seenVentures:[]}, settings: { enabled: false, story: true, ventures: true, dialogue: true, endpoint: '', model: runtimeAi.model, preferredMinutes: 20, outdoors: true, equipment: [] },
+ return { version: 1, automatic:{version:1,jobs:[],seenVentures:[]}, settings: { enabled: false, story: true, ventures: true, dialogue: false, endpoint: '', model: runtimeAi.model, preferredMinutes: 20, outdoors: true, equipment: [] },
  story: { arcs: [], currentArcId: '', plannedArc: null, hooks: [], npcs: [], relationships: [], places: [], choices: [], mysteries: [], completedMysteries: [], worldFacts: [], beats: [], futureSeeds: ['The Miller’s Winter Ledger'], mood: 'Quiet expectation', season: 'The turning year', weather: 'Cloud over the road', lastGenerated: null, creative: [] }, battle: null, battles: [] };
 }

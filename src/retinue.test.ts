@@ -11,11 +11,11 @@ import { detectFeedback } from './feedback/events';
 const date = '2026-10-14';
 function progressed() { const s = withDistance(createKnight('Rowan', date),120); return { ...s, oaths: { [date]: { status: 'kept' as const, reward: { renown: 3100, xp: { Strength: 250, Endurance: 250, Wisdom: 250, Vitality: 250, Presence: 250, Resolve: 250 } } } } }; }
 function store() { const data = new Map<string,string>(); return { getItem: (k:string) => data.get(k) ?? null, setItem: (k:string,v:string) => { data.set(k,v); } }; }
-describe('Retinue and world foundation', () => {
-  it('keeps a new household quiet, then unlocks deterministically without requiring enabled goals', () => {
+describe('Archived Retinue records and world foundation', () => {
+  it('keeps retired household features dormant even at previously qualifying milestones', () => {
     const initial = createKnight('Rowan', date, defaultGoals(false)); expect(synchronizeWorld(initial,date)).toBe(initial);
     const s = progressed(), next = synchronizeWorld(s,date);
-    expect(next.world.milestones.filter(m=>m.kind==='retinue')).toHaveLength(7);
+    expect(next.world.milestones.filter(m=>m.kind==='retinue')).toHaveLength(0);
     expect(synchronizeWorld(s,date)).toEqual(next); expect(synchronizeWorld(next,date)).toBe(next);
     expect(totals(next)).toEqual(totals(s));
   });
@@ -35,7 +35,7 @@ describe('Retinue and world foundation', () => {
     }
   });
   it('rejects edits predating a song creation even within the campaign lifetime', () => {
-    const s = synchronizeWorld({ ...progressed(), created: '2026-10-01' }, date);
+    const s = reconcileRetinue({ ...progressed(), created: '2026-10-01' }, date,'earned');
     const written = writeSong(s, { title: 'Air', notes: '', chords: '' }, date);
     const rejected = writeSong(written, { title: 'Changed', notes: '', chords: '' }, '2026-10-13', written.world.songs[0].id);
     expect(rejected).toBe(written);
@@ -46,13 +46,13 @@ describe('Retinue and world foundation', () => {
     expect(synchronizeWorld(corrected,'2027-01-01').world.milestones).toEqual(next.world.milestones);
   });
   it('provides deterministic remarks and optional Venture flavour without changing mechanics', () => {
-    const s=synchronizeWorld(progressed(),date), scholar=retinue.find(m=>m.id==='scholar')!;
+    const s=reconcileRetinue(progressed(),date,'earned'), scholar=retinue.find(m=>m.id==='scholar')!;
     expect(currentRemark(s,scholar,date)).toBe(currentRemark(s,scholar,date));
     expect(retinueVentureIntro(s,'Wisdom','2026-10-15')).toContain('Aldren');
     expect(retinueVentureIntro(createKnight('Rowan',date),'Wisdom',date)).toBeUndefined();
   });
   it('stores and edits authored songs while metadata never fabricates audio or progression', () => {
-    const s=synchronizeWorld(progressed(),date), next=writeSong(s,{title:'An air',notes:'Four lines\nBy the fire',chords:'Am G'},date);
+    const s=reconcileRetinue(progressed(),date,'earned'), next=writeSong(s,{title:'An air',notes:'Four lines\nBy the fire',chords:'Am G'},date);
     expect(next.world.songs).toHaveLength(1); expect(totals(next)).toEqual(totals(s));
     const edited=writeSong(next,{title:'An air',notes:'A fifth line',chords:'Am'},date,next.world.songs[0].id);
     expect(edited.world.songs[0].created).toBe(date);
@@ -75,9 +75,9 @@ describe('Retinue and world foundation', () => {
     expect(()=>save({...s,world:{...s.world,milestones:[...s.world.milestones,s.world.milestones[0]]}},memory)).toThrow();
     memory.setItem(storageKeys.current,'{bad'); expect(()=>load(memory,date)).toThrow();
   });
-  it('coordinates arrivals in one feedback surface and never replays them on reload or quiet discovery', () => {
+  it('never presents retired arrivals as new earned feedback', () => {
     const before=progressed(), after=synchronizeWorld(before,date);
-    expect(detectFeedback(before,after,'deed').filter(e=>e.kind==='retinue')).toHaveLength(7);
+    expect(detectFeedback(before,after,'deed').filter(e=>e.kind==='retinue')).toHaveLength(0);
     expect(detectFeedback(after,structuredClone(after),'deed')).toEqual([]);
     expect(detectFeedback(before,after,'quiet')).toEqual([]);
     expect(detectFeedback(before,synchronizeWorld(before,date,'discovered'),'deed')).toEqual([]);

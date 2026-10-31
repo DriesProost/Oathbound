@@ -1,10 +1,9 @@
 import type {State} from '../model';
 import type {AutomaticJob,AutomaticState} from './model';
-import {addDays,dayKey,validDay,weekStart} from '../calendar';
+import {addDays,dayKey,validDay} from '../calendar';
 import {todaysVenture} from '../ventureDomain';
-import {retinue} from '../retinue';
 import {canContinue,continueStory,progressCount} from './director';
-import {askBard,speakWith,illuminatePage,chroniclePacket,creativeCurrent} from './creative';
+import {illuminatePage,chroniclePacket,creativeCurrent} from './creative';
 import {sourceHash} from './context';
 import {generateFirstNotice} from './ventureGeneration';
 import type {NarrativeProvider} from './provider';
@@ -12,7 +11,7 @@ export function ensureAutomatic(state:State,date:string):State {
  if(state.living.automatic)return state;
  // A notice already present in an older save may already have been read. Keep it.
  const automatic:AutomaticState={version:1,jobs:[],seenVentures:state.ventures.filter(v=>v.date===date).map(v=>v.assignmentId)};
- return {...state,living:{...state.living,automatic,settings:state.living.settings.enabled?{...state.living.settings,story:true,ventures:true,dialogue:true}:state.living.settings}};
+ return {...state,living:{...state.living,automatic,settings:state.living.settings.enabled?{...state.living.settings,story:true,ventures:true,dialogue:false}:state.living.settings}};
 }
 export function markVentureSeen(state:State,id:string,date:string):State {
  const next=ensureAutomatic(state,date),a=next.living.automatic!;
@@ -37,16 +36,9 @@ export function nextAutomaticJob(state:State,now:Date,recoverPending=false):Auto
   const p=plan('venture',v.assignmentId);if(p)return p;
  }
  if(!a.preparedStory&&canContinue(state,date)){const p=plan('story',state.living.story.currentArcId||'arc:1');if(p)return p;}
- const present=retinue.filter(m=>state.world.milestones.some(r=>r.kind==='retinue'&&r.id===m.id));
- if(present.length){
-  const member=present.find(m=>m.id===state.living.story.beats.at(-1)?.speakerId)||present.find(m=>m.attribute===v?.attribute)||present[Math.floor(Date.parse(date)/86400000)%present.length];
-  if(!state.living.story.creative.some(e=>e.kind==='dialogue'&&e.date===date)) {const p=plan('dialogue',member.id);if(p)return p;}
- }
  const page=[...state.world.pages].filter(p=>p.end<date&&p.kind!=='chapter').sort((a,b)=>b.end.localeCompare(a.end))[0];
  if(page&&!creativeCurrent(state,'chronicle',page.id,chroniclePacket(page))){const p=plan('chronicle',page.id,`auto:${date}:chronicle:${sourceHash(chroniclePacket(page))}`);if(p)return p;}
- // A song at an arc ending or a new weekly manuscript; no daily song treadmill.
- const ending=state.living.story.arcs.find(a=>a.completed===date),week=weekStart(date),newWeek=state.world.pages.some(p=>p.kind==='week'&&p.end>=addDays(date,-3)&&p.end<date);
- if(present.some(m=>m.id==='bard')&&(ending||newWeek)&&!state.living.story.creative.some(e=>e.kind==='bard'&&(ending?e.date===date:e.date>=week))){const p=plan('bard','bard');if(p)return p;}
+
 }
 export function reserveAutomaticJob(state:State,plan:AutomaticPlan,now:Date):State {
  const a=state.living.automatic;if(!a||a.jobs.some(j=>j.id===plan.id))return state;
@@ -57,9 +49,9 @@ export async function runAutomaticJob(state:State,job:AutomaticPlan,provider?:Na
  const p=job.recover?undefined:provider;
  if(job.kind==='story')return continueStory(state,job.date,p,signal);
  if(job.kind==='venture')return generateFirstNotice(state,job.date,p,signal);
- if(job.kind==='dialogue')return speakWith(state,job.target,job.date,p,signal);
+ if(job.kind==='dialogue'||job.kind==='bard')return state;
  if(job.kind==='chronicle')return illuminatePage(state,job.target,job.date,p,signal);
- return askBard(state,job.date,p,signal);
+ return state;
 }
 export function finishAutomaticJob(latest:State,base:State,result:State,job:AutomaticPlan,date:string):State {
  const a=latest.living.automatic;if(!a?.jobs.some(j=>j.id===job.id&&j.status==='pending'))return latest;

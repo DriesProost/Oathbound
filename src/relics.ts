@@ -1,3 +1,4 @@
+// Legacy snapshot utilities only; these systems are not part of the active app.
 import type { State } from './model';
 import { meets, type WorldCondition } from './worldConditions';
 import { remember } from './worldRecords';

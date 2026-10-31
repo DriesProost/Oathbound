@@ -55,3 +55,9 @@
 .journey-page .unified-journey p { margin:.65rem 0; }
 .journey-page .unified-journey .place-note { margin:0; }
 .journey-page .unified-journey .primary { margin:.7rem 0 0; }
+.journey-section-links { display:flex;flex-wrap:wrap;gap:.5rem;margin-block:1rem; }
+.journey-section-links button { min-height:44px;padding:.5rem .7rem;border:1px solid #b6a27f;border-radius:3px;background:#eee5cf;color:#3d583f;font-size:.85rem; }
+.journey-next-action { border-left:4px solid #6d8157;padding:.9rem 1rem;margin-block:1rem;background:#e9e5cf; }
+.journey-next-action h3 { margin:.35rem 0;font-size:1.2rem; }
+.journey-next-action p { font-size:.9rem;line-height:1.6; }
+#journey-current,#journey-map,#journey-journal { scroll-margin-top:95px; }

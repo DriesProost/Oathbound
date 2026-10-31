@@ -23,7 +23,7 @@ export function reconcileChapters(state:State,date:string,provenance:WorldMilest
  for(const chapter of chapters) {
   if(known(next,'chapter',chapter.id)||!meets(next,chapter.openingCondition,date)||(chapter.previous&&!known(next,'chapter',chapter.previous))||!meets(next,chapter.closingCondition,date))continue;
   next=remember(next,{id:chapter.id,kind:'chapter',date,provenance,title:chapter.closingTitle,text:chapter.closing,location:'Journey'});
-  if(chapter.song)next=remember(next,{id:chapter.song.id,kind:'song',date,provenance,title:chapter.song.title,text:'An air named for the chapter, preserved in the Songbook. Its music will come in its own time.',location:'Great Hall'});
+
   const previous=chapter.previous?next.world.milestones.find(m=>m.kind==='chapter'&&m.id===chapter.previous)?.date:undefined;
   const start=previous??(next.world.trackingSince>date?date:next.world.trackingSince), event=next.world.milestones.find(m=>m.kind==='chapter'&&m.id===chapter.id)!;
   next=snapshotPage(next,{id:`chapter:${chapter.id}`,kind:'chapter',start,end:date,title:chapter.title,narrative:`${chapter.opening}\n\n${chapter.closing}`,

@@ -5,7 +5,7 @@ try{
  const context=await browser.newContext({viewport:{width:390,height:844}}),p=await context.newPage(),errors=[],calls=[];p.on('pageerror',e=>errors.push(e.message));
  await p.goto('http://127.0.0.1:5173');await p.evaluate(async()=>{const {createKnight}=await import('/src/domain.ts');localStorage.clear();localStorage.setItem('oathbound.knight.v7',JSON.stringify(createKnight('Private name','2026-10-01')));});await p.reload();
  const go=async name=>{const nav=await p.getByRole('navigation',{name:'Main navigation'}).isVisible()?'Main navigation':'Desktop navigation';await p.getByRole('navigation',{name:nav}).getByRole('button',{name,exact:true}).click();};
- const open=async()=>{await go('Knight');await p.getByText('Narrative preferences',{exact:false}).filter({hasText:'Optional AI storyteller'}).first().click();};
+ const open=async()=>{await go('Knight');await p.getByText('Narrative preferences',{exact:false}).filter({hasText:'AI quests and Journey'}).first().click();};
  await open();
  const endpoint=p.getByLabel('Chat-completions endpoint',{exact:true}),key=p.getByLabel('API key',{exact:true});assert.equal(await endpoint.inputValue(),'https://api.openai.com/v1/chat/completions');assert.equal(await p.getByLabel('Remember key on this device',{exact:true}).isChecked(),true);
  let mode='success';

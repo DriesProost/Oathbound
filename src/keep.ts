@@ -1,3 +1,4 @@
+// Legacy snapshot utilities only; these systems are not part of the active app.
 import type { Attribute } from './config';
 import type { State } from './model';
 import { totals } from './domain';

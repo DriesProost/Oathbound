@@ -1,0 +1,25 @@
+.task-results { margin-block:1rem; }
+.task-results .section-heading { gap:.7rem; align-items:center; }
+.task-results h2 { font-size:1.3rem; }
+.task-results select { min-height:44px; background:#f4ecd8; border:1px solid #b5a17b; color:#43543b; padding:.4rem; }
+.task-results>p { font-size:.85rem; line-height:1.6; }
+.results-scroll { overflow-x:auto; max-width:100%; }
+.task-results table { width:100%; border-collapse:collapse; font-size:.8rem; text-align:center; }
+.task-results th,.task-results td { border-bottom:1px solid #ccbb98; padding:.35rem .2rem; }
+.task-results th:first-child { text-align:left; min-width:105px; max-width:150px; }
+.task-results th time { display:block; min-width:32px; font-size:.65rem; }
+.result-cell { width:36px; min-height:44px; border:1px solid #c6b79a; border-radius:4px; background:#eee8da; color:#666754; font-size:1.05rem; cursor:pointer; }
+.result-done { color:#335b37;background:#dbe5ce;border-color:#83976f; }
+.result-failed { color:#823e2e;background:#efd6c8;border:2px solid #a3664d;font-weight:700; }
+.result-not-planned,.result-flexible { background:#e8e4d9;color:#6e715c; }
+.result-unlogged { border-style:dashed; background:#f6edda; }
+.result-inactive { opacity:.4;cursor:default; }
+.result-counts { white-space:nowrap; }.result-counts strong { color:#823e2e; }
+.result-key { color:#62664f; }
+.result-editor { border:1px solid #b9a47e;background:#f7efdc;padding:1rem;margin-block:.8rem; }
+.result-editor-actions { display:flex;gap:.5rem;flex-wrap:wrap; }.result-editor-actions button { min-height:44px;padding:.5rem .7rem;background:#e9dfc8;border:1px solid #a9926d;color:#384d39; }
+.quest.failed { border-color:#aa7257; }.deed-result-badge { display:inline-block;margin:.4rem 0;color:#823e2e;font-weight:700;font-size:.8rem; }
+@media(max-width:480px){.task-results .section-heading h2{font-size:1.1rem;}.result-cell{width:32px;}.task-results th:first-child{min-width:95px;}}
+.results-detail>summary { cursor:pointer; min-height:44px; padding:.7rem 0; font-weight:600; color:#3e573d; }
+.failure-pattern { border-left:3px solid #a3664d; padding-left:.7rem; }
+.task-results>.muted { font-size:.78rem; }

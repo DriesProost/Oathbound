@@ -5,7 +5,7 @@ import {enemies} from './combatContent';
 import {runtimeAi} from './aiConfig';
 import type {State} from '../model';
 import {validDay} from '../calendar';
-import {retinue} from '../retinue';
+import {roadText} from '../retiredHousehold';
 import {recordedDays} from '../worldConditions';
 import {arcTemplates,storyPlaces} from './arcs';
 import type {StoryBeat,StoryChoice,Arc} from './model';
@@ -19,7 +19,7 @@ export function prepareStory(state:State,date:string):State {
  const template=arcTemplates[0],id='arc:1';
  const pickup=routePosition(storyRouteKm(0,0)).current;
  const arc:Arc={id,template:template.id,title:template.title,premise:template.premise,mystery:template.mystery,stage:0,started:date,route:{pickupId:pickup.id,pickupName:pickup.name,startKm:storyRouteKm(0,0)}};
- return {...state,living:{...state.living,story:{...state.living.story,arcs:[arc],currentArcId:id,npcs:retinue.map(m=>({id:m.id,name:m.name,role:m.role})),places:structuredClone(storyPlaces),mysteries:[template.mystery]}}};
+ return {...state,living:{...state.living,story:{...state.living.story,arcs:[arc],currentArcId:id,npcs:[],places:structuredClone(storyPlaces),mysteries:[template.mystery]}}};
 }
 export function nextStoryRoute(state:State) {
  const s=state.living.story,arc=s.arcs.find(a=>a.id===s.currentArcId);
@@ -74,16 +74,17 @@ export async function continueStory(original:State,date:string,provider?:Narrati
  const baseScene=arc.template==='open-road'?genericScenes[stage]:template.scenes[stage];
  const rotation=['poacher','boar','veteran','ambush','tavern-challenger'];
  const rotatedEnemy=rotation[(s.arcs.length-3+rotation.length)%rotation.length];
- const scene=arc.template==='open-road'&&stage===4?{...baseScene,enemy:rotatedEnemy,prose:rotatedEnemy==='boar'?'A startled boar stands beside the thicket. It needs space, not an argument. The path beyond remains visible.':rotatedEnemy==='veteran'?'A veteran offers a measured bout with practice blades, as a test before opening the tower’s training court. You may leave and return; settling the bout requires facing it.':'A local confrontation interrupts the question you are following. There is room to understand the people involved before deciding how to proceed.'}:baseScene,mystery=arc.mystery??template.mystery;
+ const candidateScene=arc.template==='open-road'&&stage===4?{...baseScene,enemy:rotatedEnemy,prose:rotatedEnemy==='boar'?'A startled boar stands beside the thicket. It needs space, not an argument. The path beyond remains visible.':rotatedEnemy==='veteran'?'A veteran offers a measured bout with practice blades, as a test before opening the tower’s training court. You may leave and return; settling the bout requires facing it.':'A local confrontation interrupts the question you are following. There is room to understand the people involved before deciding how to proceed.'}:baseScene,mystery=arc.mystery??template.mystery;
  const choices:StoryChoice[]=stage===3?[{id:'public',label:'Carry the request for an open hearing',outcome:'You carry the neighbours’ request for a public hearing. The innkeeper offers a table and agrees to listen.'},{id:'quiet',label:'Begin with a quiet conversation',outcome:'You ask for a quiet conversation first. The villagers agree to hear what comes of it before gathering.'}]:[];
+ const scene={...candidateScene,prose:roadText(candidateScene.prose)};
  const previousBattle=state.living.battles.at(-1);
- const fallbackProse=stage===5&&previousBattle&&['defeat','withdrawn'].includes(previousBattle.status)?'After you find another route, a neighbour brings the account to the inn. The people named in it agree to speak. '+scene.prose.replace('Inside the tower, a ledger', 'A copied ledger'):scene.prose;
- const fallback:SceneResponse={title:scene.title,prose:fallbackProse,canonFactsAdded:stage===5?[mystery+' The neighbours’ account is now understood.']:[],hooksAdded:stage===0?[mystery]:[],hooksResolved:stage===6?[mystery]:[],choices};
+ const rawFallbackProse=stage===5&&previousBattle&&['defeat','withdrawn'].includes(previousBattle.status)?'After you find another route, a neighbour brings the account to the inn. The people named in it agree to speak. '+scene.prose.replace('Inside the tower, a ledger', 'A copied ledger'):scene.prose;
+ const fallback:SceneResponse={title:scene.title,prose:roadText(rawFallbackProse),canonFactsAdded:stage===5?[mystery+' The neighbours’ account is now understood.']:[],hooksAdded:stage===0?[mystery]:[],hooksResolved:stage===6?[mystery]:[],choices};
  const enabled=state.living.settings.enabled&&state.living.settings.story;
- let generated=await generateSafely(enabled?provider:undefined,{task:'story',context:{...narrativeContext(state),nextScene:scene,requiredChoice:stage===3,previousOutcome:s.choices.at(-1)?.outcome},schema:{title:'string',prose:'string',canonFactsAdded:['fictional fact'],hooksAdded:['fictional hook'],hooksResolved:['existing hook only'],choices:stage===3?[{id:'string',label:'string',outcome:'fiction only'}]:[],speakerId:'optional established NPC ID',newNpc:'optional {id: npc:slug,name,role}',newPlace:'optional {id: place:slug,name,description}',futureSeed:'optional future arc title',nextArc:stage===6?'optional {title,premise,mystery} for a genuinely new local problem':'omit'},instruction:'Write one concise scene (80–140 words) on this single walking journey. Use nextScene as the structural plan and the previous choice as canon. The journey packet gives the reached place and quest pickup. Connect this event to that road; do not start a second independent journey. Unreached places may send letters but cannot be described as already visited. Never resolve combat in prose. No real-life claims. Include two meaningful choices at the required choice stage and none elsewhere. Respect the planned discoveries and ending.'},validScene,fallback,signal);
+ let generated=await generateSafely(enabled?provider:undefined,{task:'story',context:{...narrativeContext(state),nextScene:scene,requiredChoice:stage===3,previousOutcome:s.choices.at(-1)?.outcome},schema:{title:'string',prose:'string',canonFactsAdded:['fictional fact'],hooksAdded:['fictional hook'],hooksResolved:['existing hook only'],choices:stage===3?[{id:'string',label:'string',outcome:'fiction only'}]:[],speakerId:'optional established NPC ID',newNpc:'optional {id: npc:slug,name,role}',newPlace:'optional {id: place:slug,name,description}',futureSeed:'optional future arc title',nextArc:stage===6?'optional {title,premise,mystery} for a genuinely new local problem':'omit'},instruction:'Write one concise scene (80–140 words) on this single walking journey. Use nextScene as the structural plan and the previous choice as canon. The journey packet gives the reached place and quest pickup. Connect this event to that road; do not start a second independent journey. Unreached places may send letters but cannot be described as already visited. The knight travels independently; do not introduce a household, residents, recruitment or companions at a Keep. Never resolve combat in prose. No real-life claims. Include two meaningful choices at the required choice stage and none elsewhere. Respect the planned discoveries and ending.'},validScene,fallback,signal);
  const g=generated.content;
  if((stage!==6&&!!g.nextArc)||(stage===4&&/\b(victory|defeated|killed|slain|health|stamina|momentum)\b/i.test(g.prose))||(stage===3?g.choices.length!==2:g.choices.length!==0)||g.speakerId&&!s.npcs.some(n=>n.id===g.speakerId)||g.hooksResolved.some(h=>!s.hooks.includes(h))||g.newNpc&&s.npcs.some(n=>n.id===g.newNpc!.id)||g.newPlace&&s.places.some(p=>p.id===g.newPlace!.id))generated={content:fallback,source:'authored'};
- const c=generated.content;
+ const c={...generated.content,title:roadText(generated.content.title),prose:roadText(generated.content.prose),choices:generated.content.choices.map(c=>({...c,label:roadText(c.label),outcome:roadText(c.outcome)})),canonFactsAdded:generated.content.canonFactsAdded.map(roadText)};
  const beat:StoryBeat={id:`${arc.id}:stage:${stage}`,date,arcId:arc.id,stage,type:scene.type,title:c.title,prose:c.prose,speakerId:c.speakerId,locationId:c.newPlace?.id??scene.location,canonFactsAdded:c.canonFactsAdded,hooksAdded:c.hooksAdded,hooksResolved:c.hooksResolved,choices:c.choices,progress:progressCount(state),...('enemy' in scene?{combatSetup:scene.enemy}:{}),provenance:{source:generated.source,generatedAt:date,...(generated.source==='ai'?{model:runtimeAi.model}:{})}};
  if(s.beats.some(b=>b.id===beat.id))return state;
  const ending=stage===6;
@@ -97,7 +98,7 @@ export async function continueStory(original:State,date:string,provider?:Narrati
 export function chooseStory(state:State,beatId:string,choiceId:string,date:string):State {
  const s=state.living.story,b=s.beats.find(b=>b.id===beatId),choice=b?.choices.find(c=>c.id===choiceId);
  if(!b||b.chosen||!choice||!validDay(date)||date<b.date)return state;
- return {...state,living:{...state.living,story:{...s,beats:s.beats.map(x=>x.id===beatId?{...x,chosen:choiceId}:x),choices:[...s.choices,{beatId,choiceId,outcome:choice.outcome,date}],worldFacts:[...s.worldFacts,choice.outcome],relationships:[...s.relationships,{npcId:'scout',note:'Ysabel remembers: '+choice.outcome}]}}};
+ return {...state,living:{...state.living,story:{...s,beats:s.beats.map(x=>x.id===beatId?{...x,chosen:choiceId}:x),choices:[...s.choices,{beatId,choiceId,outcome:choice.outcome,date}],worldFacts:[...s.worldFacts,choice.outcome],relationships:s.relationships}}};
 }
 
 export function storyWaitingMessage(state:State,date:string):string {

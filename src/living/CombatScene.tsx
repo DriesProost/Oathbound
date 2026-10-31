@@ -26,8 +26,8 @@ export default function CombatScene({state,date,beatId,update,current}:{current?
 function Resource({label,value,max}:{label:string;value:number;max:number}){return <label className="combat-resource">{label} {value}/{max}<meter aria-label={label} min={0} max={max} value={value}/></label>;}
 export function TechniqueBook({state}:{state:State}){
  const stats=totals(state).stats;
- return <details className="profile-flavour"><summary>Your practice and Techniques</summary><p>Useful lessons come from the household and road. Real-world development makes them usable in a fictional confrontation.</p><div className="technique-book">{techniques.map(t=>{
- const known=(!t.retainer||state.world.milestones.some(m=>m.kind==='retinue'&&m.id===t.retainer))&&(!t.distance||totals(state).distance>=t.distance),usable=known&&(!t.requires||stats[t.requires.attribute].level>=t.requires.level);
- return <article key={t.id}><h3>{t.name}</h3><small>{usable?'Ready to practise':known?'Discovered · developing':'A lesson still to find'} · {t.source}</small><p>{t.description}</p>{t.requires&&<p>{t.requires.attribute} level {t.requires.level}{t.retainer?' · learned from the resident named above':''}</p>}</article>;
+ return <details className="profile-flavour"><summary>Your practice and Techniques</summary><p>Useful lessons come from the road. Real-world development makes them usable in a fictional confrontation.</p><div className="technique-book">{techniques.map(t=>{
+ const known=t.retainer ? state.world.milestones.some(m=>m.kind==='retinue'&&m.id===t.retainer)||totals(state).distance>=(t.distance??Infinity) : !t.distance||totals(state).distance>=t.distance,usable=known&&(!t.requires||stats[t.requires.attribute].level>=t.requires.level);
+ return <article key={t.id}><h3>{t.name}</h3><small>{usable?'Ready to practise':known?'Discovered · developing':'A lesson still to find'} · {t.source}</small><p>{t.description}</p>{t.requires&&<p>{t.requires.attribute} level {t.requires.level}{t.distance?` · discovered along the route`:''}</p>}</article>;
  })}</div></details>;
 }

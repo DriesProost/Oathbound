@@ -93,7 +93,7 @@ export function detectFeedback(
         });
     }
   }
-  for (const m of after.world.milestones.filter(m => (m.kind === 'retinue' || m.kind === 'keep' || m.kind === 'relic' || m.kind === 'chapter' || m.kind === 'title' || m.kind === 'restoration') && m.provenance === 'earned' &&
+  for (const m of after.world.milestones.filter(m => (m.kind === 'chapter' || m.kind === 'title' || m.kind === 'restoration') && m.provenance === 'earned' &&
     !before.world.milestones.some(b => b.kind === m.kind && b.id === m.id)))
     events.push({ kind: m.kind as 'retinue' | 'keep' | 'relic' | 'chapter' | 'title' | 'restoration', id: m.id, title: m.title, text: m.text });
   // New action receipts or permanent world milestones are required.

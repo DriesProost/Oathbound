@@ -18,7 +18,7 @@ describe('Narrative continuity',()=>{
   const s=createKnight('R',date);s.living.settings.enabled=true;const provider={generate:vi.fn().mockResolvedValue(scene())};
   const next=await continueStory(s,date,provider);expect(next.living.story.worldFacts).toContain(scene().canonFactsAdded[0]);expect(next.living.story.beats[0].provenance.source).toBe('ai');
   const copy=JSON.parse(JSON.stringify(next));expect(await continueStory(copy,date,provider)).toBe(copy);expect(provider.generate).toHaveBeenCalledTimes(1);
-  expect(provider.generate.mock.calls[0][0].context.retinue).toEqual([]);
+  expect(provider.generate.mock.calls[0][0].context).not.toHaveProperty('retinue');
  });
  it('rejects unsupported progression/combat fields and invented real-life claims',()=>{
   expect(validScene(scene())).toBe(true);

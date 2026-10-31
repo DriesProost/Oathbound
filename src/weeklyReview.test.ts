@@ -8,7 +8,7 @@ describe('weekly outcome review',()=>{
   let s=createKnight('Rowan','2026-10-05');s=completeQuest(s,'training','2026-10-06',now);
   s=recordDeedStatus(s,'training','2026-10-07','not-completed',now);s=recordDeedStatus(s,'training','2026-10-08','not-planned',now);
   const before=structuredClone(s),progress=totals(s);const review=weeklyReview(s,'2026-10-05',now);
-  expect(review.rows.find(r=>r.id==='strength')).toMatchObject({done:1,failed:1,rest:1,unlogged:4});
+  expect(review.rows.find(r=>r.id==='strength')).toMatchObject({done:1,failed:1,rest:1,unlogged:0,flexible:4});
   expect(s).toEqual(before);expect(totals(s)).toEqual(progress);expect(review.rows.some(r=>r.id==='weight')).toBe(false);
  });
  it('later completion replaces a failed note and earns the normal reward once',()=>{

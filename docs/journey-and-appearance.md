@@ -1,5 +1,7 @@
 # Earned appearance and the Oakhaven road
 
+Current product note: the Keep and resident characters have been retired. The knight-focused app, results grid, personalised Daily Ventures and Journey navigation are documented in [Living Campaign](living-campaign.md#knight-focused-results-and-tailored-daily-ventures). Earlier sections below retain the historical architecture and migration record.
+
 The character uses detailed, original, generated transparent illustrations rather than the first polygon-style SVG. Five equipment stages follow the existing Squire → Man-at-Arms → Knight Errant → Knight → Knight Banneret rank thresholds. Onboarding, Keep and Knight use the same component and asset registry.
 
 Rank controls clothing, armour, weapons, shield and heraldry. Wisdom controls facial hair independently: clean-shaven initially, short brown beard at level 3, full brown beard at level 6. Each beard stage has its own sheet for all five ranks, with independent build and grooming variants. Wisdom no longer grants the old visual satchel, and Endurance no longer adds the old rolled cloak. Those were placeholders for the new physical-character direction.

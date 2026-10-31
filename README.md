@@ -1,6 +1,6 @@
 # Oathbound
 
-A mobile-first self-improvement app. Real-world actions train a grounded medieval knight; a setback is a lost skirmish, not a deleted campaign.
+A mobile-first self-improvement app centred on your knight, daily deeds, optional Daily Ventures and a step-driven Journey. The four destinations are Quests, Journey, Knight and Chronicle; the Keep and household characters have been retired.
 
 ## Development
 
@@ -141,3 +141,11 @@ Campaign content now prepares automatically while the app is open, with accepted
 ### One step-driven Journey
 
 Journey now combines the map, current story quest, roadside meetings, choices and combat. Patrol steps unlock the adventure; ordinary deeds no longer advance a separate narrative. Six connected authored quests and sixteen destinations extend the road to Lantern Hill (1,000,000 estimated route steps). The first quest begins at Oakhaven; new household members are met at distinct route places. Existing members, choices, battles and unread pages are preserved. Read at most one new story page daily, with every visited place and earlier page rereadable in the closed Journey journal. Rewards, Daily Ventures and save v7 remain unchanged. See [progression, preservation and offline details](docs/living-campaign.md#unified-step-driven-journey).
+
+### Knight, results and personalised Ventures
+
+The Quest Board is home. **Your recent results** separates completed, explicitly failed, not-planned, unlogged, flexible-training and open-today outcomes in a 7/14-day grid. Failures have visible badges on deeds and a per-task summary. Select a date to record what happened; a genuine later completion replaces its failure note and awards the existing daily reward once. Silence is unknown, not failure. No XP is deducted for a missed deed; optional Ventures are never counted as missed tasks.
+
+With existing AI settings enabled, Daily Ventures use a compact summary of the previous fourteen completed local dates and recent completed Ventures. Only GPT-6 Luna is enabled, with low reasoning and authored offline fallback. Regular deeds stay under player control. Physical suggestions must copy a reviewed plan in the assigned tier; rewards, attribute rotation, replacement limits, persistent assignment and cached/opened notices remain unchanged.
+
+Journey now leads with **What to do next** (walk, read, respond, resume combat or reread), plus direct jumps to the current quest, map and journal. Earlier unanswered pages are brought into view instead of silently blocking progress. Keep profiles, room growth, household dialogue, Bard generation and new household rewards are removed. Old records, songs, story snapshots, XP, Renown and migration backups remain preserved in save v7. Techniques and restoration now follow the road, with previously learned techniques retained.

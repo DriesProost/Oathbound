@@ -1,5 +1,7 @@
 # The Eight Great Systems
 
+Current product note: the Keep and resident characters have been retired. The knight-focused app, results grid, personalised Daily Ventures and Journey navigation are documented in [Living Campaign](living-campaign.md#knight-focused-results-and-tailored-daily-ventures). Earlier sections below retain the historical architecture and migration record.
+
 This expansion uses the existing campaign's reward receipts. It adds no currency, reward claim, streak, inactivity penalty or combat system. Daily Ventures retain all 60 authored definitions, their split XP, replacement rules and historical snapshots.
 
 ## One permanent world ledger

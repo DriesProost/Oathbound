@@ -11,7 +11,7 @@ export function combatStats(levels:Battle['levels']):Fighter {
  const maxHealth=rules.healthBase+rules.healthPerVitality*bounded(levels.Vitality,rules.levelCap),maxStamina=rules.staminaBase+Math.floor(bounded(levels.Endurance,rules.levelCap)/2);
  return {health:maxHealth,maxHealth,stamina:maxStamina,maxStamina,guard:0,momentum:0};
 }
-export function techniqueDiscovered(b:Battle,t:Technique){return (!t.retainer||b.allies.includes(t.retainer))&&(!t.distance||b.distance>=t.distance);}
+export function techniqueDiscovered(b:Battle,t:Technique){return t.retainer ? b.allies.includes(t.retainer)||b.distance>=(t.distance??Infinity) : !t.distance||b.distance>=t.distance;}
 export function techniqueUsable(b:Battle,t:Technique){return techniqueDiscovered(b,t)&&(!t.requires||b.levels[t.requires.attribute]>=t.requires.level)&&b.player.stamina>=t.stamina&&b.player.momentum>=t.momentum&&(!t.once||!b.used.includes(t.id))&&(!t.human||enemyFor(b).human);}
 export function startBattle(state:State,beatId:string,date:string):State {
  const beat=state.living.story.beats.find(b=>b.id===beatId),enemy=enemies.find(e=>e.id===beat?.combatSetup);

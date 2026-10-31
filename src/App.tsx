@@ -1,6 +1,6 @@
+import TaskResults from './TaskResults';
 import {ensureAutomatic, markVentureSeen} from './living/automatic';
 import {useAutomaticCampaign} from './living/useAutomaticCampaign';
-import { KeepAtmosphere } from './living/Atmosphere';
 import { TechniqueBook } from './living/CombatScene';
 import UnifiedJourney from './UnifiedJourney';
 import { generateReplacement } from './living/ventureGeneration';
@@ -9,11 +9,7 @@ import NarrativeSettings from './living/NarrativeSettings';
 import TitlePanel from "./TitlePanel";
 import { displayedTitle } from "./titles";
 import IlluminatedChronicle from "./IlluminatedChronicle";
-import RelicCabinet from "./RelicCabinet";
-import KeepOverview from "./KeepOverview";
 import { synchronizeWorld } from "./worldProgression";
-import { retinueVentureIntro } from "./retinue";
-import { ventureAttributeLabel } from "./ventures";
 import { DailyVenture, VentureLedger } from "./DailyVenture";
 import { ensureDailyVenture, todaysVenture, completeDailyVenture } from "./ventureDomain";
 import { AppUpdate, InstallApp } from "./PwaStatus";
@@ -32,7 +28,6 @@ import { ensureWeeklyPeriod, weeklyTarget, currentCommission,weeklyRewardsOn } f
 import { weekStart, nextWeekStart } from "./calendar";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
-  Castle,
   ScrollText,
   Map,
   Shield,
@@ -88,7 +83,6 @@ import {
   icons,
 } from "./components";
 const tabs = [
-  { name: "Keep", icon: Castle },
   { name: "Quest Board", icon: ScrollText },
   { name: "Journey", icon: Map },
   { name: "Knight", icon: Shield },
@@ -119,7 +113,7 @@ function OathboundApp() {
   const stateRef = useRef<State | null>(initial.state);
   const [state, setState] = useState<State | null>(initial.state),
     [error, setError] = useState(initial.error);
-  const [tab, setTab] = useState("Keep"),
+  const [tab, setTab] = useState("Quest Board"),
     [name, setName] = useState(""),
     [step, setStep] = useState(0);
   const [turnDirection,setTurnDirection]=useState<'forward'|'backward'>('forward');
@@ -425,7 +419,7 @@ function OathboundApp() {
       <article
         className={
           (material ? "quest parchment-notice " : "quest ") +
-          (completed ? "completed" : "") +
+          (completed ? "completed" : state!.deedNotes?.some(n=>n.date===date&&n.questId===q.id&&n.status==='not-completed') ? "failed" : "") +
           (pulse?.events.some((e) => e.kind === "deed" && e.id === recorded?.id)
             ? " deed-just-recorded"
             : "")
@@ -451,6 +445,7 @@ function OathboundApp() {
               {!completed && target.metric==='km' && <button className="text-button" onClick={()=>steps>targetRules.steps.max?editCampaign():update(configureCampaign(state!,currentGoals.map(g=>g.id==='walking'?{...g,target:{metric:'steps' as const,value:Math.max(targetRules.steps.min,steps)}}:g),today))}>{steps>targetRules.steps.max?'Choose a step target':'Use this step target'}</button>}
             </div>;
           })() : <p>{recorded?.deed.description || q.description}</p>}
+          {!completed && state!.deedNotes?.some(n=>n.date===date&&n.questId===q.id&&n.status==='not-completed')&&<span className="deed-result-badge">FAILED · no reward recorded</span>}
           {!completed && <RewardText reward={q.reward} />}
           {!completed && <details className="deed-status-options">
             <summary>{state!.deedNotes?.find((n) => n.date === date && n.questId === q.id)?.status === "not-planned"
@@ -501,7 +496,7 @@ function OathboundApp() {
                 ? "Complete"
                 : "Confirm"}
           </button>
-          {q.goalId!=='strength' && <button className="failed-button" data-recorded={state!.deedNotes?.some(n=>n.date===date&&n.questId===q.id&&n.status==='not-completed')||undefined} disabled={!allowed} aria-label={`Mark ${q.name} failed`}
+          {<button className="failed-button" data-recorded={state!.deedNotes?.some(n=>n.date===date&&n.questId===q.id&&n.status==='not-completed')||undefined} disabled={!allowed} aria-label={`Mark ${q.name} failed`}
             aria-describedby={`timing-${q.id}`}
             onClick={() => {
               const before=stateRef.current!;
@@ -579,8 +574,8 @@ function OathboundApp() {
       <div className="main-shell">
         <header className="topbar">
           <span>
-            <Castle size={17} /> Your{" "}
-            {tab === "Keep" ? "keep" : tab.toLowerCase()}
+            <Shield size={17} /> Your{" "}
+            {tab.toLowerCase()}
           </span>
           <div>
             <span className="date">
@@ -606,7 +601,6 @@ function OathboundApp() {
           className={
             "content " +
             ({
-              Keep: "keep-page",
               "Quest Board": "board-page",
               Knight: "knight-page",
               Chronicle: "chronicle-page",
@@ -624,19 +618,13 @@ function OathboundApp() {
             </svg>
             <div>
               <span className="eyebrow">
-                {tab === "Keep"
-                  ? "A NEW DAY. A WORTHY PURPOSE."
-                  : tab === "Quest Board"
-                    ? "NOTICES FROM YOUR KEEP"
-                    : "YOUR CAMPAIGN, ONE DAY AT A TIME."}
+                {tab === "Quest Board" ? "DEEDS FOR YOUR DAY" : "YOUR CAMPAIGN, ONE DAY AT A TIME."}
               </span>
               <h1>
-                {tab === 'Keep'?'Your keep':tab}
+                {tab}
               </h1>
               <p>
-                {tab === "Keep"
-                  ? "A life well fought."
-                  : tab === "Quest Board"
+                {tab === "Quest Board"
                     ? "Choose what serves you today. No perfect-day checklist."
                     : tab === "Journey"
                       ? "Walk. Record. Discover."
@@ -688,7 +676,7 @@ function OathboundApp() {
           <div className="journal-folio" aria-label="Journal section">
             <span>{tab === 'Quest Board' ? 'Deeds' : tab}</span>
             <span className="swipe-hint">Swipe to turn the page</span>
-            <span>Folio {['I','II','III','IV','V'][tabs.findIndex(t=>t.name===tab)]}</span>
+            <span>Folio {['I','II','III','IV'][tabs.findIndex(t=>t.name===tab)]}</span>
           </div>
           <FeedbackSurface onReadJourney={() => {
             feedback.dismiss();
@@ -722,90 +710,6 @@ function OathboundApp() {
               </button>
             </div>
           )}
-          {tab === "Keep" && (
-            <>
-              {venture && venture.status !== 'completed' && <button className="venture-teaser" onClick={() => {
-                update(markVentureSeen(stateRef.current!, venture.assignmentId, today)); switchTab("Quest Board"); setVentureOpen(true);
-              }}><strong>A fresh commission awaits.</strong><span>{venture.title} · {ventureAttributeLabel(venture)}</span></button>}
-              <div
-                className={
-                  "hero" +
-                  (pulse?.events.some((e) => e.kind === "rank")
-                    ? " knight-just-promoted"
-                    : "")
-                }
-              >
-                <div className="hero-copy">
-                  <span className="eyebrow">WITHIN YOUR STRONGHOLD</span>
-                  <h2>{displayName}</h2>
-                  <span className="rank-badge">
-                    <Shield size={14} />
-                    {rank.rank.name}
-                  </span>
-                  {displayedTitle(state) && <p className="preferred-title">{displayedTitle(state)}</p>}
-                  <div className="renown-label">
-                    <span>RENOWN</span>
-                    <strong>
-                      <span aria-label={`${total.renown} Renown`}>
-                        <span aria-hidden="true">{animatedRenown}</span>
-                      </span>{" "}
-                      <small>
-                        {rank.next
-                          ? `/ ${rank.next.threshold}`
-                          : "· highest rank"}
-                      </small>
-                    </strong>
-                  </div>
-                  <div
-                    className="progress"
-                    role="progressbar"
-                    aria-label="Knight rank progress"
-                    aria-valuenow={Math.round(rank.progress * 100)}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                  >
-                    <i style={{ width: `${animatedRank.progress * 100}%` }} />
-                  </div>
-                  <small className="next-rank">
-                    {rank.next
-                      ? `${rank.next.threshold - total.renown} Renown to ${rank.next.name}`
-                      : "Your highest rank, earned."}
-                  </small>
-                  <button
-                    className="hero-link"
-                    onClick={() => switchTab("Knight")}
-                  >
-                    Meet your knight <ArrowRight size={16} />
-                  </button>
-                </div>
-                <div className="hero-art">
-                  <div className="stronghold-arch" aria-hidden="true" />
-                  <KnightArt renown={total.renown} xp={total.xp} weight={state.weight} today={today} portrait={state.portrait} placement="keep" />
-                  <span>STEADY IN PURPOSE</span>
-                </div>
-                <div className="hero-quote">
-                  {total.renown
-                    ? "Good deeds leave their mark."
-                    : "Your keep is quiet."}
-                  <br />
-                  {total.renown
-                    ? "Return steady in purpose."
-                    : "Your story is just beginning."}
-                  <div>
-                    EST. {new Date(state.created + "T12:00:00").getFullYear()}
-                  </div>
-                </div>
-              </div>
-              {(state.living.automatic?.preparedStory || state.living.story.hooks.length>0) && <button className="venture-teaser" onClick={()=>switchTab("Journey")}><strong>{state.living.automatic?.preparedStory ? "Your Journey · a new page awaits" : "Continue your Journey"}</strong><span>{state.living.automatic?.preparedStory?.beat.title ?? state.living.story.hooks.at(-1)}</span></button>}
-              <KeepAtmosphere state={state}/><KeepOverview state={state} date={today} update={update} current={()=>stateRef.current}/>
-              <button className="hero-link" onClick={()=>switchTab("Quest Board")}>Visit the Quest Board <ArrowRight size={16}/></button>
-              <InstallApp />
-              <div className="footer-note">
-                <span>✦</span> You are training more than a knight. You are
-                building a life.
-              </div>
-            </>
-          )}
           {tab === "Quest Board" && (
             <>
               <div className="board-summary">
@@ -823,11 +727,12 @@ function OathboundApp() {
                 </div>
                 <span className="board-inscription">BY DEED, NOT WORD</span>
               </div>
+              <TaskResults state={state} now={now} update={update} current={()=>stateRef.current}/>
               <div className="notice-board">
                 <div className="board-plaque">
                   <span>✦</span> THE QUEST BOARD <span>✦</span>
                 </div>
-                {venture && <DailyVenture busy={ventureBusy} venture={venture} introduction={venture.generation ? undefined : retinueVentureIntro(state, venture.attribute, today)} open={ventureOpen} onOpen={() => { update(markVentureSeen(stateRef.current!, venture.assignmentId, today)); setVentureOpen(true); }} onClose={() => setVentureOpen(false)}
+                {venture && <DailyVenture busy={ventureBusy} venture={venture} open={ventureOpen} onOpen={() => { update(markVentureSeen(stateRef.current!, venture.assignmentId, today)); setVentureOpen(true); }} onClose={() => setVentureOpen(false)}
                   onComplete={() => {
                     const current = stateRef.current!;
                     const next = completeDailyVenture(current, venture.assignmentId, new Date());
@@ -983,7 +888,7 @@ function OathboundApp() {
                   {bodyAppearanceExplanation(state.weight, today) && <p className="muted appearance-status">{bodyAppearanceExplanation(state.weight, today)}</p>}
                 </div>
               </div>
-              <details className="profile-flavour"><summary>Your name in the campaign</summary><TitlePanel state={state} update={update} /></details><TechniqueBook state={state}/><NarrativeSettings state={state} update={update} current={()=>stateRef.current}/>
+              <details className="profile-flavour"><summary>Your name in the campaign</summary><TitlePanel state={state} update={update} /></details><TechniqueBook state={state}/><InstallApp/><NarrativeSettings state={state} update={update} current={()=>stateRef.current}/>
               <section className="panel campaign-summary">
                 <div className="section-heading">
                   <h2>Your campaign</h2>
@@ -1117,7 +1022,7 @@ function OathboundApp() {
                   window.scrollTo({ top: 0 });
                 }}
               />
-              <IlluminatedChronicle state={state} date={today} update={update}/><RelicCabinet state={state} />
+              <IlluminatedChronicle state={state} date={today} update={update}/>
               <VentureLedger state={state} />
               <WeeklyLedger state={state} date={today} />
               <WeeklyReview state={state} now={now} />

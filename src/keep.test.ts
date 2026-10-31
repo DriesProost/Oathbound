@@ -12,9 +12,9 @@ describe('Evolving Keep',()=>{
   const next=reconcileKeep(grown,date,'earned');expect(keepStage(next,'Wisdom')).toBe(1);expect(totals(next)).toEqual(totals(grown));
   const corrected={...next,oaths:{}};expect(keepStage(corrected,'Wisdom')).toBe(1);expect(reconcileKeep(corrected,'2027-01-01','earned')).toBe(corrected);
  });
- it('emits one threshold ceremony and no reload replay',()=>{
+ it('keeps archived room thresholds out of new feedback',()=>{
   const s=createKnight('R',date),grown={...s,oaths:{[date]:{status:'kept' as const,reward:{renown:0,xp:{Wisdom:400}}}}};
-  const next=reconcileKeep(grown,date,'earned');expect(detectFeedback(grown,next,'deed').map(e=>e.kind)).toEqual(['keep']);
+  const next=reconcileKeep(grown,date,'earned');expect(detectFeedback(grown,next,'deed').map(e=>e.kind)).toEqual([]);
   expect(detectFeedback(next,structuredClone(next),'deed')).toEqual([]);
  });
 });

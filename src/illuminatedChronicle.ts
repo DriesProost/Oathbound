@@ -33,7 +33,7 @@ export function weeklyPage(state:State,start:string,end=addDays(start,6)):Chroni
  if(ventures.length)sentences.push(`${ventures.length} ${ventures.length===1?'Venture was':'Ventures were'} undertaken.`);
  if(kept)sentences.push(`${kept} ${kept===1?'Oath was':'Oaths were'} confirmed kept.`);
  if(reached.length)sentences.push(`The road reached ${reached.join(' and ')}.`);
- if(events.length)sentences.push(`The household remembers ${events.map(e=>e.title).join('; ')}.`);
+ if(events.length)sentences.push(`The campaign records ${events.map(e=>e.title).join('; ')}.`);
  const startLabel=new Date(start+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
  const highlights=[{label:'Renown earned',value:String(renown)},{label:'Ventures completed',value:String(ventures.length)},
   {label:'Journey kilometres',value:String(Number(distance.toFixed(3)))},{label:'Training sessions',value:String(training)},
@@ -44,7 +44,7 @@ export function weeklyPage(state:State,start:string,end=addDays(start,6)):Chroni
  const stanzaKind=(['chapter','restoration','keep','retinue'] as const).find(kind=>events.some(e=>e.kind===kind));
  const occasional=Math.floor(Date.parse(start)/604800000)%4===0;
  return {id:`week:${start}`,kind:'week',start,end,title:`The week of ${startLabel}`,narrative:sentences.join(' '),highlights,events:structuredClone(events),
-  reconstructed:end<state.world.trackingSince,...(bard&&stanzaKind&&occasional?{stanza:chronicleCopy.stanzas[stanzaKind]}:{})};
+  reconstructed:end<state.world.trackingSince};
 }
 export function reconcileChronicle(state:State,date:string):State {
  const currentWeek=weekStart(date,state.weekly.weekStartsOn);

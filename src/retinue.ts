@@ -1,3 +1,4 @@
+// Legacy snapshot utilities only; these systems are not part of the active app.
 import {residentStop} from './journey';
 import type { Attribute } from './config';
 import type { State } from './model';
