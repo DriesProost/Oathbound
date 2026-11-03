@@ -24,7 +24,7 @@ export function useAutomaticCampaign(state:State|null,now:Date,access:{current:(
    const current=latest.current.fresh();if(!current)return;
    const date=dayKey(new Date()),job=nextAutomaticJob(current,new Date(),locked);if(!job)return;
    processed=true;
-   if(!job.recover&&!latest.current.update(reserveAutomaticJob(current,job,new Date())))return;
+   if(!job.recover&&!latest.current.update(reserveAutomaticJob(current,job,new Date()))){processed=false;return;}
    const base=latest.current.current();if(!base)return;
    const cfg=base.living.settings;
    const authenticated=endpointIdentity(cfg.endpoint)!==openAiEndpoint||!!apiCredentials.getKey(cfg.endpoint);
@@ -34,7 +34,7 @@ export function useAutomaticCampaign(state:State|null,now:Date,access:{current:(
    catch{if(request.signal.aborted)return;result=await runAutomaticJob(base,{...job,recover:true});}
    if(request.signal.aborted)return;
    const currentState=latest.current.fresh();if(!currentState)return;
-   latest.current.update(finishAutomaticJob(currentState,base,result,job,dayKey(new Date())===date?date:dayKey(new Date())));
+   if(!latest.current.update(finishAutomaticJob(currentState,base,result,job,dayKey(new Date())===date?date:dayKey(new Date()))))processed=false;
   };
   void (async()=>{
    try{
