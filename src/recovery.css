@@ -1,0 +1,10 @@
+.campaign-recovery { margin-block:1rem;min-width:0; }
+.campaign-recovery>summary { cursor:pointer;min-height:44px;padding:.5rem 0;font-weight:600; }
+.campaign-recovery p { font-size:.9rem;line-height:1.6;overflow-wrap:anywhere; }
+.recovery-actions { display:flex;flex-wrap:wrap;gap:.6rem; }
+.recovery-import { display:grid;gap:.4rem;font-size:.9rem;max-width:100%; }
+.recovery-import input { max-width:100%;min-height:44px; }
+.recovery-copy { border-top:1px solid #c2b08c;margin-top:.8rem;padding-top:.8rem; }
+.recovery-copy h3 { margin:.4rem 0; }
+.restore-preview { margin-top:1rem;padding:1rem;border:2px solid #92794e;background:#f6ecd6; }
+.welcome .campaign-recovery { text-align:left; }

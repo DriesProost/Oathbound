@@ -1,3 +1,5 @@
+import CampaignRecovery from './CampaignRecovery';
+import {storedRecoveryEntries} from './recovery';
 import TaskResults from './TaskResults';
 import {ensureAutomatic, markVentureSeen} from './living/automatic';
 import {useAutomaticCampaign} from './living/useAutomaticCampaign';
@@ -25,7 +27,7 @@ import WeightChronicle from "./WeightChronicle";
 import { setWeightSettings } from "./weight";
 import { WeeklyTraining, WeeklyLedger } from "./WeeklyTraining";
 import { ensureWeeklyPeriod, weeklyTarget, currentCommission,weeklyRewardsOn } from "./weekly";
-import { weekStart, nextWeekStart } from "./calendar";
+import { weekStart, nextWeekStart, campaignDay } from "./calendar";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ScrollText,
@@ -54,7 +56,7 @@ import {
   type Reward,
   type Quest,
 } from "./domain";
-import { load, save } from "./storage";
+import { load, save, storageKeys, SaveConflictError, SaveRegressionError, progressRegressed } from "./storage";
 import CampaignEditor from "./CampaignEditor";
 import {
   availableQuests,
@@ -101,16 +103,18 @@ function OathboundApp() {
   const [initial] = useState(() => {
     try {
       const saved = load();
-      return { state: saved ? ensureAutomatic(saved, dayKey()) : null, error: "" };
+      return { state: saved ? ensureAutomatic(saved, dayKey()) : null, error: "", raw:localStorage.getItem(storageKeys.current), hasCopies:!saved&&(storedRecoveryEntries().length>0||localStorage.getItem(storageKeys.beforeRecovery)!==null) };
     } catch {
       return {
-        state: null,
+        state: null, raw:undefined, hasCopies:true,
         error:
           "Your saved chronicle could not be read or migrated. Your original data has been left untouched. Please do not clear browser storage.",
       };
     }
   });
   const stateRef = useRef<State | null>(initial.state);
+  const saveBaseline=useRef<string|null|undefined>(initial.raw);
+  const [allowNew,setAllowNew]=useState(false);
   const [state, setState] = useState<State | null>(initial.state),
     [error, setError] = useState(initial.error);
   const [tab, setTab] = useState("Quest Board"),
@@ -159,19 +163,25 @@ function OathboundApp() {
   }, [state, now]);
   useAutomaticCampaign(state, now, {
     current: () => stateRef.current,
-    fresh: () => {
-      const current = stateRef.current;
-      if (!current) return null;
-      const saved = load();
-      if (!saved) return null;
-      const ready = ensureAutomatic(saved, dayKey());
-      if (JSON.stringify(ready) !== JSON.stringify(current)) {
-        stateRef.current = ready; setState(ready);
-      }
-      return ready;
-    },
+    fresh: () => refreshSaved(),
     update: next => update(next),
   });
+  function refreshSaved(force=false):State|null {
+    try {
+      if(saveBaseline.current===undefined&&!force)return null;
+      const raw=localStorage.getItem(storageKeys.current);
+      if(raw===null&&stateRef.current){saveBaseline.current=undefined;setError('The saved campaign was removed or became unavailable. This window still holds your campaign: keep it open and download a backup in Knight → Save & recovery.');return null;}
+      const saved=load();if(!saved)return null;
+      if(stateRef.current&&progressRegressed(stateRef.current,saved)){saveBaseline.current=undefined;setError('A different or older save appeared in another window. Your visible campaign is kept in memory. Download it in Knight → Save & recovery before choosing which copy to restore.');return null;}
+      const ready=ensureAutomatic(saved,dayKey());saveBaseline.current=localStorage.getItem(storageKeys.current);
+      if(JSON.stringify(ready)!==JSON.stringify(stateRef.current)){stateRef.current=ready;setState(ready);}
+      return ready;
+    }catch{saveBaseline.current=undefined;setError('The save could not be read safely. Your visible campaign is kept in memory; download a backup in Knight → Save & recovery.');return null;}
+  }
+  useEffect(()=>{
+    const changed=(event:StorageEvent)=>{if(event.storageArea===localStorage&&(event.key===storageKeys.current||event.key===null)){refreshSaved(true);setNow(new Date());}};
+    window.addEventListener('storage',changed);return ()=>window.removeEventListener('storage',changed);
+  },[]);
   function update(next: State, intent: FeedbackIntent = "quiet") {
     const before = stateRef.current;
     const ready = synchronizeWorld(ensureDailyVenture(ensureWeeklyPeriod(next, dayKey(now)), dayKey(now)), dayKey(now), intent === "quiet" ? "discovered" : "earned");
@@ -184,12 +194,16 @@ function OathboundApp() {
   }
   function persist(next: State) {
     try {
-      save(next);
+      if(saveBaseline.current===undefined)throw new SaveConflictError();
+      save(next,localStorage,saveBaseline.current);
+      saveBaseline.current=localStorage.getItem(storageKeys.current);
       stateRef.current = next;
       setState(next);
       setError("");
       return true;
-    } catch {
+    } catch (cause) {
+      if(cause instanceof SaveConflictError){refreshSaved(true);setError("This save changed in another window. The attempted action was not recorded. Check the latest campaign or download a backup in Knight → Save & recovery before retrying.");return false;}
+      if(cause instanceof SaveRegressionError){setError(cause.message);return false;}
       setError(
         "Your progress could not be saved. Check that browser storage is available. This action has not been recorded.",
       );
@@ -257,6 +271,7 @@ function OathboundApp() {
             Small actions. Steady resolve. Train your knight through the things
             that make your real life better.
           </p>
+          <CampaignRecovery open={!!error||initial.hasCopies}/>
           {error ? (
             <p role="alert" className="error">
               {error}
@@ -277,7 +292,8 @@ function OathboundApp() {
                   Write your own chronicle
                 </span>
               </div>
-              <button className="primary" onClick={() => setStep(1)}>
+              {initial.hasCopies&&<label><input type="checkbox" checked={allowNew} onChange={e=>setAllowNew(e.target.checked)}/> I want a new campaign; keep the saved recovery copies.</label>}
+              <button className="primary" disabled={initial.hasCopies&&!allowNew} onClick={() => setStep(1)}>
                 Begin your campaign <ArrowRight size={18} />
               </button>
               <small className="muted">
@@ -635,14 +651,7 @@ function OathboundApp() {
             </div>
             <span className="day-badge">
               <Sun size={17} /> Day{" "}
-              {Math.max(
-                1,
-                Math.round(
-                  (new Date(today + "T12:00:00").getTime() -
-                    new Date(state.created + "T12:00:00").getTime()) /
-                    86400000,
-                ) + 1,
-              )}
+              {campaignDay(state.created,today)}
             </span>
           </div>
           {error && (
@@ -888,7 +897,7 @@ function OathboundApp() {
                   {bodyAppearanceExplanation(state.weight, today) && <p className="muted appearance-status">{bodyAppearanceExplanation(state.weight, today)}</p>}
                 </div>
               </div>
-              <details className="profile-flavour"><summary>Your name in the campaign</summary><TitlePanel state={state} update={update} /></details><TechniqueBook state={state}/><InstallApp/><NarrativeSettings state={state} update={update} current={()=>stateRef.current}/>
+              <details className="profile-flavour"><summary>Your name in the campaign</summary><TitlePanel state={state} update={update} /></details><TechniqueBook state={state}/><CampaignRecovery memoryState={state}/><InstallApp/><NarrativeSettings state={state} update={update} current={()=>stateRef.current}/>
               <section className="panel campaign-summary">
                 <div className="section-heading">
                   <h2>Your campaign</h2>

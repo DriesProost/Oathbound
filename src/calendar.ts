@@ -38,3 +38,9 @@ export function nextWeekStart(
 ) {
   return addDays(weekStart(day, startsOn), 7);
 }
+
+/** Calendar ordinals, independent of time of day and daylight-saving offsets. */
+export function campaignDay(created:string,today=dayKey()) {
+ if(!validDay(created)||!validDay(today))throw Error('Invalid campaign date.');
+ return Math.max(1,(Date.parse(today+'T00:00:00Z')-Date.parse(created+'T00:00:00Z'))/86400000+1);
+}

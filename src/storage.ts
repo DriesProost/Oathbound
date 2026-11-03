@@ -20,6 +20,8 @@ import { campaignRules } from "./config";
 import { goalIds, portraitIds, type State, type Entry } from "./model";
 export const storageKeys = {
   current: "oathbound.knight.v7",
+  lastGood: "oathbound.knight.last-good.v1",
+  beforeRecovery: "oathbound.knight.before-recovery.v1",
   v6: "oathbound.knight.v6",
   choreBackup: "oathbound.knight.v6.chore.backup",
   v5: "oathbound.knight.v5",
@@ -476,6 +478,7 @@ export function load(
   date = dayKey(),
 ): State | null {
   const v7 = store.getItem(storageKeys.current);
+  if(v7===null&&store.getItem(storageKeys.lastGood)!==null)throw Error("The current campaign is missing, but a protected copy exists. Review Save & recovery before starting over.");
   const current = v7 ?? store.getItem(storageKeys.v6) ?? store.getItem(storageKeys.v5) ?? store.getItem(storageKeys.v4) ?? store.getItem(storageKeys.v3);
   if (current !== null) {
     const source = JSON.parse(current);
@@ -495,7 +498,7 @@ export function load(
     if (source.version === 6 && store.getItem(storageKeys.choreBackup) === null)
       store.setItem(storageKeys.choreBackup, current);
     if (v7 === null || source.version !== 7 || source.weekly === undefined || next !== migrated)
-      store.setItem(storageKeys.current, JSON.stringify(next));
+      save(next, store, v7);
     return next;
   }
   // An invalid newer source must never silently fall back to older history.
@@ -506,9 +509,36 @@ export function load(
   const backupKey =
     v2 !== null ? storageKeys.previousBackup : storageKeys.backup;
   if (store.getItem(backupKey) === null) store.setItem(backupKey, source);
-  store.setItem(storageKeys.current, JSON.stringify(next));
+  save(next, store, null);
   return next;
 }
-export function save(state: State, store: Store = localStorage) {
-  store.setItem(storageKeys.current, JSON.stringify(validate(state)));
+export class SaveConflictError extends Error {
+ constructor(){super('This campaign changed in another window. The newer save has not been overwritten.');}
+}
+export class SaveRegressionError extends Error {
+ constructor(){super('This change would remove recorded campaign history. The existing save has not been overwritten.');}
+}
+export function progressRegressed(before:State,after:State) {
+ const entries=new Set(after.entries.map(e=>e.id)),awards=new Set(after.ventures.flatMap(v=>v.rewardGrant?[v.rewardGrant.id]:[]));
+ const milestones=new Set(after.world.milestones.map(m=>m.kind+':'+m.id)),pages=new Set(after.world.pages.map(p=>p.id)),beats=new Set(after.living.story.beats.map(b=>b.id)),battles=new Set(after.living.battles.map(b=>b.id));
+ return before.name!==after.name||before.created!==after.created||
+  before.entries.some(e=>!entries.has(e.id))||before.ventures.some(v=>v.rewardGrant&&!awards.has(v.rewardGrant.id))||
+  Object.keys(before.oaths).some(date=>!after.oaths[date])||before.world.milestones.some(m=>!milestones.has(m.kind+':'+m.id))||
+  before.world.pages.some(p=>!pages.has(p.id))||before.living.story.beats.some(b=>!beats.has(b.id))||before.living.battles.some(b=>!battles.has(b.id));
+}
+export function save(state: State, store: Store = localStorage, expectedRaw?:string|null,allowReplacement=false) {
+  const raw=JSON.stringify(validate(state)),previous=store.getItem(storageKeys.current);
+  if(expectedRaw!==undefined&&previous!==expectedRaw)throw new SaveConflictError();
+  if(previous===raw)return;
+  // Secure exact bytes before replacing a readable campaign. A failed backup
+  // aborts this write. A regressed copy must not overwrite a better backup.
+  if(previous!==null){
+    const before=migrate(JSON.parse(previous));
+    if(!allowReplacement&&progressRegressed(before,state))throw new SaveRegressionError();
+    const protectedRaw=store.getItem(storageKeys.lastGood);
+    let protect=true;
+    if(protectedRaw!==null){try{protect=!progressRegressed(migrate(JSON.parse(protectedRaw)),before);}catch{protect=false;}}
+    if(protect)store.setItem(storageKeys.lastGood,previous);
+  }
+  store.setItem(storageKeys.current,raw);
 }
